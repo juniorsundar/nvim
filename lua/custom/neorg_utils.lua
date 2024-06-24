@@ -101,7 +101,7 @@ function M.neorg_agenda()
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, buffer_lines)
 
 	-- Open the buffer in a new split window
-	vim.cmd("split")
+	vim.cmd("tabnew")
 	vim.api.nvim_win_set_buf(0, buf)
 
 	vim.api.nvim_set_option_value("filetype", "norg", { buf = buf })
