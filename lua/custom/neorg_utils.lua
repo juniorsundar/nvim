@@ -75,7 +75,7 @@ function M.neorg_agenda()
 	local buf = vim.api.nvim_create_buf(false, true)
 
 	-- Set the buffer name
-	vim.api.nvim_buf_set_name(buf, "Quickfix.norg")
+	-- vim.api.nvim_buf_set_name(buf, "Quickfix.norg")
 
 	-- Prepare the lines to be written to the buffer
 	local buffer_lines = {}
@@ -107,6 +107,7 @@ function M.neorg_agenda()
 	vim.api.nvim_set_option_value("filetype", "norg", { buf = buf })
 	vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
 	vim.api.nvim_set_option_value("readonly", true, { buf = buf })
+	vim.api.nvim_set_option_value("wrap", false, { win = 0 })
 	vim.api.nvim_set_option_value("conceallevel", 2, { win = 0 })
 
 	-- Optional: Set filetype to norg for syntax highlighting (if available)
