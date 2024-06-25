@@ -1,16 +1,6 @@
 return {
     {
-        "vhyrro/luarocks.nvim",
-        lazy = true,
-        priority = 1000,
-        opts = {
-            rocks = { "magick" },
-        },
-    },
-    {
         "nvim-neorg/neorg",
-        version = "*",
-        dependencies = { "luarocks.nvim" },
         config = function()
             require("neorg").setup({
                 load = {
