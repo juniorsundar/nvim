@@ -89,10 +89,10 @@ return {
 			})
 		end,
 	},
+    { "https://github.com/leafo/magick" },
 	{
 		"3rd/image.nvim",
 		ft = { "markdown", "norg" },
-        dependencies = { "luarocks.nvim" },
 		config = function()
 			require("image").setup({
 				backend = "kitty",
