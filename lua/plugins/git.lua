@@ -94,17 +94,48 @@ return {
             )
         end,
     },
-    {
-        "tpope/vim-fugitive",
+     {
+    	"NeogitOrg/neogit",
         keys = {
-            {"<space>Gg", "<cmd>Git<cr>", desc = "Git" }
+            {"<space>Gg", "<cmd>Neogit<cr>", desc = "Neogit" }
         },
-        config = function()
-            vim.api.nvim_command("autocmd FileType fugitive setlocal nonumber norelativenumber")
-            vim.api.nvim_command("autocmd FileType git setlocal nonumber norelativenumber")
-            vim.api.nvim_command("autocmd FileType gitcommit setlocal nonumber norelativenumber")
-            vim.keymap.set("n", "<space>Gg", "<cmd>Git<cr>", { noremap = true, silent = false, desc = "Fugitive" })
-            vim.keymap.set("v", "gG", "<cmd>Git<cr>", { noremap = true, silent = false, desc = "Fugitive" })
-        end,
-    },
+    	branch = "master",
+    	dependencies = {
+    		"nvim-lua/plenary.nvim", -- required
+    		"sindrets/diffview.nvim", -- optional - Diff integration
+    	},
+    	config = function()
+    		local neogit = require("neogit")
+    		neogit.setup({
+                disable_hint = true,
+                graph_style = "unicode",
+                kind = "tab",
+    			disable_signs = false,
+    			signs = {
+    				hunk = { "", "" },
+    				item = { "", "" },
+    				section = { "", "" },
+    			},
+    			integrations = {
+    				diffview = true,
+    				fzf_lua = true,
+    			},
+    		})
+    		vim.keymap.set("n", "<space>Gg", "<cmd>Neogit<cr>", { noremap = true, silent = false, desc = "Neogit" })
+    		vim.keymap.set("v", "gG", "<cmd>Neogit<cr>", { noremap = true, silent = false, desc = "Neogit" })
+    	end,
+    }
+    -- {
+    --     "tpope/vim-fugitive",
+    --     keys = {
+    --         {"<space>Gg", "<cmd>Git<cr>", desc = "Git" }
+    --     },
+    --     config = function()
+    --         vim.api.nvim_command("autocmd FileType fugitive setlocal nonumber norelativenumber")
+    --         vim.api.nvim_command("autocmd FileType git setlocal nonumber norelativenumber")
+    --         vim.api.nvim_command("autocmd FileType gitcommit setlocal nonumber norelativenumber")
+    --         vim.keymap.set("n", "<space>Gg", "<cmd>Git<cr>", { noremap = true, silent = false, desc = "Fugitive" })
+    --         vim.keymap.set("v", "gG", "<cmd>Git<cr>", { noremap = true, silent = false, desc = "Fugitive" })
+    --     end,
+    -- },
 }
