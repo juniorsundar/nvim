@@ -88,8 +88,12 @@ function M.neorg_agenda()
 			end
             local file_metadata = extract_metadata(entry.filename)
             if file_metadata then
+                table.insert(buffer_lines, "===")
+                table.insert(buffer_lines, "")
                 table.insert(buffer_lines, "{:" .. entry.filename .. ":}[" .. file_metadata.title .. "]") -- Add the filename as a header
             else
+                table.insert(buffer_lines, "===")
+                table.insert(buffer_lines, "")
                 table.insert(buffer_lines, "{:" .. entry.filename .. ":}") -- Add the filename as a header
             end
 			current_file = entry.filename
@@ -109,6 +113,7 @@ function M.neorg_agenda()
 	vim.api.nvim_set_option_value("readonly", true, { buf = buf })
 	vim.api.nvim_set_option_value("wrap", false, { win = 0 })
 	vim.api.nvim_set_option_value("conceallevel", 2, { win = 0 })
+	vim.api.nvim_set_option_value("foldlevel", 999, { win = 0 })
 
 	-- Optional: Set filetype to norg for syntax highlighting (if available)
 	-- vim.api.nvim_buf_set_option(buf, "filetype", "norg")
