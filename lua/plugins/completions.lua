@@ -88,13 +88,12 @@ return {
 						require("luasnip").lsp_expand(args.body) -- For `luasnip` users.
 					end,
 				},
-
 				window = {
                     documentation = cmp.config.window.bordered({
-                        -- winhighlight = "FloatBorder:NormalFloat"
+                        winhighlight = "Normal:Normal,FloatBorder:Normal"
                     }),
                     completion = cmp.config.window.bordered({
-                        winhighlight = 'Normal:CmpPmenu,CursorLine:PmenuSel,Search:None'
+                        winhighlight = 'Normal:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal'
                     }),
 					-- completion = {
 					-- 	border = { "", "", "", "", "", "", "", "" },
