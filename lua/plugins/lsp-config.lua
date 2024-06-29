@@ -23,9 +23,51 @@ return {
 	},
 	{
 		"neovim/nvim-lspconfig",
+		-- lazy = false, -- REQUIRED: tell lazy.nvim to start this plugin at startup
+		-- dependencies = {
+		-- 	-- main one
+		-- 	{ "ms-jpq/coq_nvim", branch = "coq" },
+		--
+		-- 	-- 9000+ Snippets
+		-- 	{ "ms-jpq/coq.artifacts", branch = "artifacts" },
+		--
+		-- 	-- lua & third party sources -- See https://github.com/ms-jpq/coq.thirdparty
+		-- 	-- Need to **configure separately**
+		-- 	{ "ms-jpq/coq.thirdparty", branch = "3p" },
+		-- 	-- - shell repl
+		-- 	-- - nvim lua api
+		-- 	-- - scientific calculator
+		-- 	-- - comment banner
+		-- 	-- - etc
+		-- },
+		-- init = function()
+		-- 	vim.g.coq_settings = {
+		-- 		auto_start = true, -- if you want to start COQ at startup
+		-- 		-- Your COQ settings here
+		-- 		display = {
+		--                   mark_highlight_group = "NormalFloat",
+		-- 			preview = {
+		-- 				border = {
+		-- 					{ "╭", "Normal" },
+		-- 					{ "─", "Normal" },
+		-- 					{ "╮", "Normal" },
+		-- 					{ "│", "Normal" },
+		-- 					{ "╯", "Normal" },
+		-- 					{ "─", "Normal" },
+		-- 					{ "╰", "Normal" },
+		-- 					{ "│", "Normal" },
+		-- 				},
+		-- 			},
+		-- 			icons = {
+		-- 				mode = "short",
+		-- 			},
+		-- 		},
+		-- 	}
+		-- end,
 		config = function()
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
 			capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
+			-- capabilities = vim.tbl_deep_extend("force", capabilities, require("coq").lsp_ensure_capabilities())
 
 			capabilities.workspace = {
 				didChangeWatchedFiles = {
@@ -299,7 +341,7 @@ return {
 	},
 	{
 		"nvimtools/none-ls.nvim",
-        dependencies = {"nvim-lua/plenary.nvim"},
+		dependencies = { "nvim-lua/plenary.nvim" },
 		event = "LspAttach",
 		config = function()
 			local null_ls = require("null-ls")
@@ -324,7 +366,7 @@ return {
 				},
 				ui = {
 					-- currently only round theme
-                    border = 'rounded',
+					border = "rounded",
 					lines = { "└", "├", "│", "─", "┌" },
 					kind = require("catppuccin.groups.integrations.lsp_saga").custom_kind(),
 				},

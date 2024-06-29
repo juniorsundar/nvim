@@ -1,7 +1,7 @@
 return {
 	{
 		"hrsh7th/nvim-cmp",
-		lazy = true,
+		-- lazy = true,
 		version = false,
 		dependencies = {
 			{ "hrsh7th/cmp-nvim-lsp", lazy = true },
@@ -34,7 +34,6 @@ return {
 
 			local cmp = require("cmp")
 			local luasnip = require("luasnip")
-			local WIDE_HEIGHT = 40
 
 			local kind_icons = {
 				Text = "",
@@ -67,15 +66,13 @@ return {
 			require("luasnip.loaders.from_vscode").lazy_load()
 
 			cmp.setup({
-                view = {
-                    entries = "custom" -- can be "custom", "wildmenu" or "native"
-                },
+	               view = {
+	                   entries = "custom" -- can be "custom", "wildmenu" or "native"
+	               },
 				formatting = {
 					fields = { "kind", "abbr", "menu" },
 					format = function(entry, vim_item)
-						-- vim_item.menu = true and  "    (" .. vim_item.kind .. ")" or ""
 						vim_item.menu = true and  "    @" .. entry.source.name .. "" or ""
-						-- vim_item.menu = true and "    " or ""
 						vim_item.kind = " " .. kind_icons[vim_item.kind] .. " "
 						return vim_item
 					end,
@@ -89,26 +86,12 @@ return {
 					end,
 				},
 				window = {
-                    documentation = cmp.config.window.bordered({
-                        winhighlight = "Normal:Normal,FloatBorder:Normal"
-                    }),
-                    completion = cmp.config.window.bordered({
-                        winhighlight = 'Normal:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal'
-                    }),
-					-- completion = {
-					-- 	border = { "", "", "", "", "", "", "", "" },
-					-- 	winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
-					-- 	scrolloff = 0,
-					-- 	col_offset = -3,
-					-- 	side_padding = 0,
-					-- 	scrollbar = true,
-					-- },
-					-- documentation = {
-					-- 	max_height = math.floor(WIDE_HEIGHT * (WIDE_HEIGHT / vim.o.lines)),
-					-- 	max_width = math.floor((WIDE_HEIGHT * 2) * (vim.o.columns / (WIDE_HEIGHT * 2 * 16 / 9))),
-					-- 	border = { "", "", "", " ", "", "", "", " " },
-					-- 	winhighlight = "FloatBorder:NormalFloat",
-					-- },
+	                   documentation = cmp.config.window.bordered({
+	                       winhighlight = "Normal:Normal,FloatBorder:Normal"
+	                   }),
+	                   completion = cmp.config.window.bordered({
+	                       winhighlight = 'Normal:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal'
+	                   }),
 				},
 				mapping = cmp.mapping.preset.insert({
 					["<C-b>"] = cmp.mapping.scroll_docs(-4),
