@@ -11,10 +11,14 @@ return {
 			require("mason-lspconfig").setup({
 				ensure_installed = {
 					"lua_ls",
-					"pylsp",
+                    "stylua",
+					-- "pylsp",
+					"basedpyright",
+                    "black",
 					"clangd",
 					"rust_analyzer",
 					"gopls",
+                    "gofumpt",
 					"markdown_oxide",
 					"marksman",
 				},
@@ -128,30 +132,40 @@ return {
 				},
 			})
 
-			lspconfig.pylsp.setup({
+			lspconfig.basedpyright.setup({
 				capabilities = capabilities,
 				settings = {
-					pylsp = {
-						plugins = {
-							-- formatter options
-							black = { enabled = false },
-							autopep8 = { enabled = false },
-							yapf = { enabled = false },
-							-- linter options
-							pylint = { enabled = false, executable = "pylint" },
-							pyflakes = { enabled = true },
-							pycodestyle = { enabled = false },
-							mccabe = { enabled = false },
-							-- type checker
-							pylsp_mypy = { enabled = true },
-							-- auto-completion options
-							jedi_completion = { fuzzy = true },
-							-- import sorting
-							pyls_isort = { enabled = true },
+					basedpyright = {
+						analysis = {
+							typeCheckingMode = "standard",
 						},
 					},
 				},
 			})
+			-- lspconfig.pylsp.setup({
+			-- 	capabilities = capabilities,
+			-- 	settings = {
+			-- 		pylsp = {
+			-- 			plugins = {
+			-- 				-- formatter options
+			-- 				black = { enabled = false },
+			-- 				autopep8 = { enabled = false },
+			-- 				yapf = { enabled = false },
+			-- 				-- linter options
+			-- 				pylint = { enabled = false, executable = "pylint" },
+			-- 				pyflakes = { enabled = true },
+			-- 				pycodestyle = { enabled = false },
+			-- 				mccabe = { enabled = false },
+			-- 				-- type checker
+			-- 				pylsp_mypy = { enabled = true },
+			-- 				-- auto-completion options
+			-- 				jedi_completion = { fuzzy = true },
+			-- 				-- import sorting
+			-- 				pyls_isort = { enabled = true },
+			-- 			},
+			-- 		},
+			-- 	},
+			-- })
 
 			lspconfig.clangd.setup({
 				capabilities = capabilities,
