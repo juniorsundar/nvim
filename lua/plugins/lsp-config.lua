@@ -11,14 +11,11 @@ return {
 			require("mason-lspconfig").setup({
 				ensure_installed = {
 					"lua_ls",
-                    "stylua",
 					-- "pylsp",
 					"basedpyright",
-                    "black",
 					"clangd",
 					"rust_analyzer",
 					"gopls",
-                    "gofumpt",
 					"markdown_oxide",
 					"marksman",
 				},
