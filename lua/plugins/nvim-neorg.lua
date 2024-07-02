@@ -25,7 +25,7 @@ return {
                     },
                     ["core.concealer"] = {
                         config = {
-                            icon_preset = "diamond",
+                            -- icon_preset = "diamond",
                             icons = { list = { icons = { "󰧞", "", "", "", "", "" } } },
                         },
                     },
