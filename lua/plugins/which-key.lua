@@ -101,7 +101,7 @@ return {
 			u = { "<cmd>UndotreeToggle<cr>", "Undotree" },
 			c = { "<cmd>bdelete<cr>", "Close Buffer" },
 			b = { "<cmd>FzfLua buffers<cr>", "Buffers" },
-            ["/"] = { "<cmd>GrugFar<cr>", "GrugFar" },
+            ["/"] = { "<cmd>Grepper -tool rg -query<cr>", "Grepper" },
 			-- Autocompletion
 			A = {
 				name = "Autocompletion",
