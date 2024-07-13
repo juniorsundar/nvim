@@ -37,6 +37,12 @@ return {
         end,
     },
     {
+        "nyoom-engineering/oxocarbon.nvim"
+    },
+    {
+        "folke/tokyonight.nvim",
+    },
+    {
         "nvim-tree/nvim-web-devicons",
     },
 }
