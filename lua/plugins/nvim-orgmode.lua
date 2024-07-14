@@ -22,7 +22,7 @@ return {
             "chipsenkbeil/org-roam.nvim",
             config = function()
                 require("org-roam").setup({
-                    directory = "~/org/org-roam",
+                    directory = "~/Dropbox/neorg/org-roam",
                     bindings = {
                         prefix = "<Leader><Leader>n",
                     }
@@ -35,8 +35,8 @@ return {
     config = function()
         -- Setup orgmode
         require('orgmode').setup({
-            org_agenda_files = '~/org/**/*',
-            org_default_notes_file = '~/org/refile.org',
+            org_agenda_files = '~/Dropbox/neorg/org/**/*',
+            org_default_notes_file = '~/Dropbox/neorg/org/refile.org',
             mappings = {
                 prefix = '<Leader><Leader>o',
             },
