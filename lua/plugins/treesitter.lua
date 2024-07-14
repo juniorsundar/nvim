@@ -14,7 +14,7 @@ return {
 				-- enable syntax highlighting
 				highlight = { enable = true, additional_vim_regex_highlighting = false },
 				-- enable indentation
-				indent = { enable = true },
+				-- indent = { enable = true },
 				-- ensure these language parsers are installed
 				ensure_installed = {
 					"c",

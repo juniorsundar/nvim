@@ -48,7 +48,7 @@ return {
                     ["core.looking-glass"] = {},
                     ["core.presenter"] = { config = { zen_mode = "zen-mode" } },
                     ["core.tangle"] = { config = { report_on_empty = false } },
-                    ["core.ui.calendar"] = {},
+                    ["core.tempus"] = {},
                 },
             })
 
