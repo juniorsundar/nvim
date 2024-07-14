@@ -22,7 +22,7 @@ return {
             "chipsenkbeil/org-roam.nvim",
             config = function()
                 require("org-roam").setup({
-                    directory = "~/Dropbox/neorg/org-roam",
+                    directory = "~/Dropbox/neorg/org/org-roam",
                     bindings = {
                         prefix = "<Leader><Leader>n",
                     }
