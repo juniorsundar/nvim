@@ -11,11 +11,19 @@ return {
     config = function()
         require('telescope').setup {
             defaults = {
+                layout_config = {
+                    vertical = {
+                        preview_cutoff = 0
+                    },
+                },
+                mappings = {
+                    i = {
+                        ["<C-h>"] = "which_key",
+                        ['<C-d>'] = require('telescope.actions').delete_buffer,
+                    }
+                }
             },
             pickers = {
-                find_files = {
-                    layout_strategy = "vertical",
-                }
             },
             extensions = {
                 fzf = {
