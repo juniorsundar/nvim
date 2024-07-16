@@ -48,5 +48,5 @@
   "tokyonight.nvim": { "branch": "main", "commit": "6adfcde66e8af2f22dd5d76060980abd8daa0df8" },
   "undotree": { "branch": "master", "commit": "56c684a805fe948936cda0d1b19505b84ad7e065" },
   "vim-grepper": { "branch": "master", "commit": "485d349125d46f2788833ecb43df7a14c46706f6" },
-  "which-key.nvim": { "branch": "main", "commit": "a1770d266f58499ca03e0b83272f07003052dbed" }
+  "which-key.nvim": { "branch": "main", "commit": "bb4e82bdaff50a4a93867e4c90938d18e7615af6" }
 }
