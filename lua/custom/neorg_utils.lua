@@ -4,9 +4,18 @@ local M = {}
 
 local neorg_loaded, neorg = pcall(require, "neorg.core")
 assert(neorg_loaded, "Neorg is not loaded - please make sure to load Neorg first")
+
 local fzf_lua_loaded, fzf_lua = pcall(require, "fzf-lua")
 assert(fzf_lua_loaded, "fzf-lua is not loaded - please make sure to load fzf-lua first")
 local builtin = require("fzf-lua.previewer.builtin")
+
+local pickers = require("telescope.pickers")
+local finders = require("telescope.finders")
+local conf = require("telescope.config").values -- allows us to use the values from the users config
+local make_entry = require("telescope.make_entry")
+local actions = require("telescope.actions")
+local actions_set = require("telescope.actions.set")
+local state = require("telescope.actions.state")
 
 local function extract_metadata(norg_address)
 	-- Read the entire file content
@@ -132,7 +141,7 @@ function M.neorg_node_injector()
 	local current_workspace = neorg.modules.get_module("core.dirman").get_current_workspace()
 	local base_directory = current_workspace[2]
 
-	local norg_files_output = vim.fn.systemlist("fdfind -e norg --type f --base-directory " .. base_directory)
+	local norg_files_output = vim.fn.systemlist("fd -e norg --type f --base-directory " .. base_directory)
 	local norg_files = table.concat(norg_files_output, " ")
 	local rg_command = 'rg --multiline "(?s)@document\\.meta.*?title:\\s+(.*?)\\s+@end" '
 		.. norg_files
@@ -153,60 +162,81 @@ function M.neorg_node_injector()
 	for line in filtered_results:gmatch("[^\r\n]+") do
 		local file_path, title = line:match("^(.-):(.*)$")
 		_, title = title:match("^(.-): (.*)$")
-		title_path_pairs[title] = file_path
+		table.insert(title_path_pairs, {title, file_path})
 	end
 
-	local workspace_previewer = builtin.buffer_or_file:extend()
-	function workspace_previewer:new(o, opts, fzf_win)
-		workspace_previewer.super.new(self, o, opts, fzf_win)
-		setmetatable(self, workspace_previewer)
-		return self
-	end
+    local opts = {}
+    opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
+    pickers
+        .new(opts, {
+            prompt_title = "Find Norg Files",
+            finder = finders.new_table({
+                results = title_path_pairs,
+                entry_maker = function(entry)
+                return {
+                        value = entry[2],
+                        display = entry[1],
+                        ordinal = entry[1]
+                    }
+                end
+            }),
+            previewer = conf.file_previewer(opts),
+            sorter = conf.file_sorter(opts),
+            layout_strategy = "vertical"
+        })
+        :find()
 
-	function workspace_previewer:parse_entry(entry_str)
-		return {
-			path = title_path_pairs[entry_str],
-			line = 1,
-			col = 1,
-		}
-	end
-
-	local navigate_to = function(selected)
-		vim.notify("Navigating to --> " .. selected[1])
-		vim.cmd("e " .. title_path_pairs[selected[1]])
-	end
-
-	local paste_address = function(selected)
-		vim.notify("pasting address of --> " .. selected[1])
-		local escaped_prefix = base_directory:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
-		local relative_path = title_path_pairs[selected[1]]:gsub("^" .. escaped_prefix, "")
-		local cursor_pos = vim.api.nvim_win_get_cursor(0)
-		local hyperlink = "{:$"
-			.. relative_path:sub(relative_path:sub(1, 1) == "." and 2 or 1, -6)
-			.. ":}["
-			.. selected[1]
-			.. "]"
-		vim.api.nvim_put({ hyperlink }, "", true, true)
-		vim.api.nvim_win_set_cursor(0, cursor_pos)
-	end
-
-	local function table_keys(tbl)
-		local keys = {}
-		for key, _ in pairs(tbl) do
-			table.insert(keys, key)
-		end
-		return keys
-	end
-
-	local prompt = "Navigate to -> "
-	fzf_lua.fzf_exec(table_keys(title_path_pairs), {
-		previewer = workspace_previewer,
-		prompt = prompt,
-		actions = {
-			["default"] = navigate_to,
-			["ctrl-i"] = paste_address,
-		},
-	})
+	-- local workspace_previewer = builtin.buffer_or_file:extend()
+	-- function workspace_previewer:new(o, opts, fzf_win)
+	-- 	workspace_previewer.super.new(self, o, opts, fzf_win)
+	-- 	setmetatable(self, workspace_previewer)
+	-- 	return self
+	-- end
+	--
+	-- function workspace_previewer:parse_entry(entry_str)
+	-- 	return {
+	-- 		path = title_path_pairs[entry_str],
+	-- 		line = 1,
+	-- 		col = 1,
+	-- 	}
+	-- end
+	--
+	-- local navigate_to = function(selected)
+	-- 	vim.notify("Navigating to --> " .. selected[1])
+	-- 	vim.cmd("e " .. title_path_pairs[selected[1]])
+	-- end
+	--
+	-- local paste_address = function(selected)
+	-- 	vim.notify("pasting address of --> " .. selected[1])
+	-- 	local escaped_prefix = base_directory:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]", "%%%1")
+	-- 	local relative_path = title_path_pairs[selected[1]]:gsub("^" .. escaped_prefix, "")
+	-- 	local cursor_pos = vim.api.nvim_win_get_cursor(0)
+	-- 	local hyperlink = "{:$"
+	-- 		.. relative_path:sub(relative_path:sub(1, 1) == "." and 2 or 1, -6)
+	-- 		.. ":}["
+	-- 		.. selected[1]
+	-- 		.. "]"
+	-- 	vim.api.nvim_put({ hyperlink }, "", true, true)
+	-- 	vim.api.nvim_win_set_cursor(0, cursor_pos)
+	-- end
+	--
+	-- local function table_keys(tbl)
+	-- 	local keys = {}
+	-- 	for key, _ in pairs(tbl) do
+	-- 		table.insert(keys, key)
+	-- 	end
+	-- 	return keys
+	-- end
+	--
+	-- local prompt = "Navigate to -> "
+	-- fzf_lua.fzf_exec(table_keys(title_path_pairs), {
+	-- 	previewer = workspace_previewer,
+	-- 	prompt = prompt,
+	-- 	actions = {
+	-- 		["default"] = navigate_to,
+	-- 		["ctrl-i"] = paste_address,
+	-- 	},
+	-- })
 end
 
 function M.neorg_workspace_selector()

@@ -49,10 +49,13 @@ return {
                     ["core.presenter"] = { config = { zen_mode = "zen-mode" } },
                     ["core.tangle"] = { config = { report_on_empty = false } },
                     ["core.tempus"] = {},
+                    ["core.ui.calendar"] = {},
                 },
             })
 
             local neorg_utils = require("custom.neorg_utils")
+
+            vim.cmd([[Neorg workspace default]])
 
             vim.keymap.set("n", "<leader>Nb", neorg_utils.show_backlinks,
                 { noremap = true, silent = true, desc = "Backlinks" })

@@ -24,7 +24,7 @@ return {
                 require("org-roam").setup({
                     directory = "~/Dropbox/neorg/org/org-roam",
                     bindings = {
-                        prefix = "<Leader><Leader>n",
+                        prefix = "<Leader><Leader>r",
                     }
                 })
             end

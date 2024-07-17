@@ -96,9 +96,6 @@ return {
 	},
 	{
 		"NeogitOrg/neogit",
-		keys = {
-			{ "<space>Gg", "<cmd>Neogit<cr>", desc = "Neogit" },
-		},
 		branch = "master",
 		dependencies = {
 			"nvim-lua/plenary.nvim", -- required
