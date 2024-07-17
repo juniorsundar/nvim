@@ -26,7 +26,7 @@
   "mini.move": { "branch": "main", "commit": "cde3747eec9bb3941296e6fa1d874e0da5a10256" },
   "mini.pairs": { "branch": "main", "commit": "927d19cbdd0e752ab1c7eed87072e71d2cd6ff51" },
   "neogit": { "branch": "master", "commit": "af1d8d88f426a4da63c913f3b81a37350dbe8d02" },
-  "neorg": { "branch": "main", "commit": "7e7c668c31c3039a33cc4d6206dc8662c836fec8" },
+  "neorg": { "branch": "main", "commit": "b04570a1bbbe80d226e459ed5f27f30fa1e2cd11" },
   "noice.nvim": { "branch": "main", "commit": "daa5f6908e97c89ca3e9861e03bdf356ea48cc72" },
   "nui.nvim": { "branch": "main", "commit": "61574ce6e60c815b0a0c4b5655b8486ba58089a1" },
   "nvim-cmp": { "branch": "main", "commit": "d818fd0624205b34e14888358037fb6f5dc51234" },
