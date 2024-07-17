@@ -297,7 +297,7 @@ function M.show_backlinks()
             }),
             previewer = conf.grep_previewer(opts),
             sorter = conf.file_sorter(opts),
-            layout_strategy = "vertical",
+            layout_strategy = "bottom_pane",
         })
         :find()
 
