@@ -144,9 +144,9 @@ function M.neorg_node_injector()
     local norg_files_output = vim.fn.systemlist("fd -e norg --type f --base-directory " .. base_directory)
     local norg_files = table.concat(norg_files_output, " ")
     local rg_command = 'rg --multiline "(?s)@document\\.meta.*?title:\\s+(.*?)\\s+@end" '
-        .. norg_files
-        .. " "
-        .. base_directory
+    .. norg_files
+    .. " "
+    .. base_directory
     local rg_results = vim.fn.system(rg_command)
 
     local titles = {}
@@ -198,6 +198,64 @@ function M.neorg_node_injector()
         })
         :find()
 end
+
+function M.neorg_block_injector()
+    local current_workspace = neorg.modules.get_module("core.dirman").get_current_workspace()
+    local base_directory = current_workspace[2]
+
+    local search_path = [["^\* |^\*\* |^\*\*\* |^\*\*\*\* |^\*\*\*\*\* "]]
+
+    local rg_command = 'rg '
+    .. search_path
+    .. " "
+    .. "-g '*.norg' --with-filename --line-number "
+    .. base_directory
+    local rg_results = vim.fn.system(rg_command)
+
+    -- Split the results by lines
+    local matches = {}
+    for line in rg_results:gmatch("([^\n]+)") do
+        -- table.insert(lines, line)
+        local file = line:match("^[^:]+")
+        local lineno = line:match("^[^:]+:([^:]+):")
+        local text = line:match("[^:]+$")
+        local metadata = extract_metadata(file)
+        if metadata ~= nil then
+            table.insert(matches, {file, lineno, text, metadata["title"] } )
+        else
+            table.insert(matches, {file, lineno, text, "Untitled" } )
+        end
+    end
+
+    local opts = {}
+    opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
+    pickers
+        .new(opts, {
+            prompt_title = "Find Blocks",
+            finder = finders.new_table({
+                results = matches,
+                entry_maker = function(entry)
+                    local filename = entry[1]
+                    local line_number = tonumber(entry[2])
+                    local text = tostring(entry[3])
+                    local title = tostring(entry[4])
+
+                    return {
+                        value = filename,
+                        display = title .. " | " .. text,
+                        ordinal = text,
+                        filename = filename,
+                        lnum = line_number
+                    }
+                end
+            }),
+            previewer = conf.grep_previewer(opts),
+            sorter = conf.file_sorter(opts),
+            layout_strategy = "bottom_pane",
+        })
+        :find()
+end
+
 
 function M.neorg_workspace_selector()
     local workspaces = neorg.modules.get_module("core.dirman").get_workspaces()
@@ -282,18 +340,18 @@ function M.show_backlinks()
             finder = finders.new_table({
                 results = matches,
                 entry_maker = function(entry)
-                local filename = entry[1]
-                local line_number = tonumber(entry[2])
-                local title = entry[3]
+                    local filename = entry[1]
+                    local line_number = tonumber(entry[2])
+                    local title = entry[3]
 
-                return {
-                    value = filename,
-                    display = title .. "  @" .. line_number,
-                    ordinal = title,
-                    filename = filename,
-                    lnum = line_number
-                }
-            end
+                    return {
+                        value = filename,
+                        display = title .. "  @" .. line_number,
+                        ordinal = title,
+                        filename = filename,
+                        lnum = line_number
+                    }
+                end
             }),
             previewer = conf.grep_previewer(opts),
             sorter = conf.file_sorter(opts),

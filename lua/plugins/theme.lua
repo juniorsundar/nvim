@@ -31,6 +31,7 @@ return {
                         enabled = true,
                     },
                     mini = true,
+                    nvim_surround = true
                 },
             })
             vim.cmd.colorscheme("catppuccin-frappe")
