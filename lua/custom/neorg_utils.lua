@@ -1,13 +1,7 @@
--- ~/.config/nvim/lua/custom/neorg_utils.lua
-
 local M = {}
 
 local neorg_loaded, neorg = pcall(require, "neorg.core")
 assert(neorg_loaded, "Neorg is not loaded - please make sure to load Neorg first")
-
-local fzf_lua_loaded, fzf_lua = pcall(require, "fzf-lua")
-assert(fzf_lua_loaded, "fzf-lua is not loaded - please make sure to load fzf-lua first")
-local builtin = require("fzf-lua.previewer.builtin")
 
 local pickers = require("telescope.pickers")
 local finders = require("telescope.finders")
@@ -215,7 +209,6 @@ function M.neorg_block_injector()
     -- Split the results by lines
     local matches = {}
     for line in rg_results:gmatch("([^\n]+)") do
-        -- table.insert(lines, line)
         local file = line:match("^[^:]+")
         local lineno = line:match("^[^:]+:([^:]+):")
         local text = line:match("[^:]+$")
@@ -243,15 +236,28 @@ function M.neorg_block_injector()
                     return {
                         value = filename,
                         display = title .. " | " .. text,
-                        ordinal = text,
+                        ordinal = title .. " | " .. text,
                         filename = filename,
-                        lnum = line_number
+                        lnum = line_number,
+                        line = text
                     }
                 end
             }),
             previewer = conf.grep_previewer(opts),
             sorter = conf.file_sorter(opts),
             layout_strategy = "bottom_pane",
+            attach_mappings = function(prompt_bufnr, map)
+                map('i', '<C-i>', function()
+                    local entry = state.get_selected_entry()
+                    local filename = entry.filename
+                    local base_path = base_directory:gsub("([^%w])", "%%%1")
+                    local rel_path = filename:match("^" .. base_path .. "/(.+)%..+")
+                    -- Insert at location
+                    actions.close(prompt_bufnr)
+                    vim.api.nvim_put({ "{:$/" .. rel_path .. ":" .. entry.line .. "}[" .. entry.line .. "]" }, "", false, true)
+                end)
+                return true
+            end
         })
         :find()
 end
@@ -265,41 +271,43 @@ function M.neorg_workspace_selector()
         table.insert(workspace_names, name)
     end
 
-    local workspace_previewer = builtin.buffer_or_file:extend()
-    function workspace_previewer:new(o, opts, fzf_win)
-        workspace_previewer.super.new(self, o, opts, fzf_win)
-        setmetatable(self, workspace_previewer)
-        self.win.conceallevel = 2
-        return self
-    end
+    local opts = {}
+    opts.entry_maker = opts.entry_maker or make_entry.gen_from_file(opts)
+    pickers
+        .new(opts, {
+            prompt_title = "Select Neorg Workspace",
+            finder = finders.new_table({
+                results = workspace_names,
+                entry_maker = function(entry)
+                    local filename = workspaces[entry] .. "/index.norg"
 
-    function workspace_previewer:parse_entry(entry_str)
-        local path = workspaces[entry_str]
-        return {
-            path = path .. "/index.norg",
-            line = 1,
-            col = 1,
-        }
-    end
+                    return {
+                        value = filename,
+                        display = entry,
+                        ordinal = entry,
+                        filename = filename,
+                    }
+                end
+            }),
+            previewer = conf.file_previewer(opts),
+            sorter = conf.file_sorter(opts),
+            layout_strategy = "bottom_pane",
+            attach_mappings = function(prompt_bufnr, map)
+                map('i', '<CR>', function()
+                    local entry = state.get_selected_entry()
+                    actions.close(prompt_bufnr)
+                    vim.cmd("Neorg workspace " .. tostring(entry.display))
+                end)
+                map('n', '<CR>', function()
+                    local entry = state.get_selected_entry()
+                    actions.close(prompt_bufnr)
+                    vim.cmd("Neorg workspace " .. tostring(entry.display))
+                end)
 
-    local workspace_set = function(selected)
-        vim.cmd("Neorg workspace " .. selected[1])
-    end
-
-    local workspace_open = function(selected)
-        vim.cmd("Neorg workspace " .. selected[1])
-        vim.cmd("Neorg index")
-    end
-
-    local prompt = "Select Neorg Directory -> "
-    fzf_lua.fzf_exec(workspace_names, {
-        previewer = workspace_previewer,
-        prompt = prompt,
-        actions = {
-            ["default"] = workspace_set,
-            ["ctrl-i"] = workspace_open,
-        },
-    })
+                return true
+            end
+        })
+        :find()
 end
 
 function M.show_backlinks()
@@ -358,7 +366,6 @@ function M.show_backlinks()
             layout_strategy = "bottom_pane",
         })
         :find()
-
 end
 
 return M
