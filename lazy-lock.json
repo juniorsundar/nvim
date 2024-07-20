@@ -11,7 +11,7 @@
   "flash.nvim": { "branch": "main", "commit": "25ba3f4d1e0b080213b39518ebcfbb693a23c957" },
   "friendly-snippets": { "branch": "main", "commit": "00ebcaa159e817150bd83bfe2d51fa3b3377d5c4" },
   "gitsigns.nvim": { "branch": "main", "commit": "f4928ba14eb6c667786ac7d69927f6aee6719f1e" },
-  "grug-far.nvim": { "branch": "main", "commit": "e74767aae9d76741127ee02a060fc4f9108276f1" },
+  "grug-far.nvim": { "branch": "main", "commit": "009c5702be44468ab36dcc1bf22e4882eb69b5a6" },
   "heirline-components.nvim": { "branch": "main", "commit": "2cb2702fe05479390b7cbd5cf97f3c3388270d63" },
   "heirline.nvim": { "branch": "master", "commit": "0d797435e54645a5f98bad7ad6046aac1ef95c1e" },
   "image.nvim": { "branch": "master", "commit": "61c76515cfc3cdac8123ece9e9761b20c3dc1315" },
@@ -47,5 +47,5 @@
   "telescope.nvim": { "branch": "master", "commit": "a0bbec21143c7bc5f8bb02e0005fa0b982edc026" },
   "tokyonight.nvim": { "branch": "main", "commit": "1471dab694ad88351185758bb4275624d8b798ec" },
   "undotree": { "branch": "master", "commit": "56c684a805fe948936cda0d1b19505b84ad7e065" },
-  "which-key.nvim": { "branch": "main", "commit": "5ae87af42914afe8b478ad6cdb3cb179fb73a62b" }
+  "which-key.nvim": { "branch": "main", "commit": "bdcc429afaecc5896b462b0b07c2b3a9e9c1c60f" }
 }

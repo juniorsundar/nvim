@@ -317,6 +317,10 @@ function M.show_backlinks()
     local current_file_path = vim.fn.expand("%:p")
     local escaped_base_path = base_directory:gsub("([^%w])", "%%%1")
     local relative_path = current_file_path:match("^" .. escaped_base_path .. "/(.+)%..+")
+    if relative_path == nil then
+        vim.notify("Current Node isn't a part of the Current Neorg Workspace", vim.log.levels.ERROR)
+        return
+    end
     local search_path = "{:$/" .. relative_path .. ":"
 
     local rg_command = 'rg --fixed-strings '
@@ -335,8 +339,12 @@ function M.show_backlinks()
         -- table.insert(lines, line)
         local file, lineno = line:match("^(.-):(%d+):")
         local metadata = extract_metadata(file)
-        if metadata["title"] ~= self_title then
+        if metadata == nil then
+            table.insert(matches, {file, lineno, "Untitled"} )
+        elseif metadata["title"] ~= self_title then
             table.insert(matches, {file, lineno, metadata["title"]} )
+        else
+            table.insert(matches, {file, lineno, "Untitled"} )
         end
     end
 
