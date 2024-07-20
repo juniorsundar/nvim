@@ -40,7 +40,7 @@ return {
             { "<leader>c",   "<cmd>bdelete<cr>",                                                            desc = "Close Buffer" },
             -- { "<leader>b",         "<cmd>FzfLua buffers<cr>",                                                     desc = "Buffers" },
             { "<leader>b",   "<cmd>Telescope buffers layout_strategy=vertical<cr>",                         desc = "Buffers" },
-            { "<leader>/",   "<cmd>Grepper -tool rg -query<cr>",                                            desc = "Grepper" },
+            { "<leader>/",   "<cmd>GrugFar<cr>",                                            desc = "Grepper" },
 
             { "<leader>L",   group = "LSP" },
             { "<leader>LD",  group = "Document" },
