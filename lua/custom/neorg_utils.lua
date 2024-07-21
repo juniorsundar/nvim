@@ -138,9 +138,9 @@ function M.neorg_node_injector()
     local norg_files_output = vim.fn.systemlist("fd -e norg --type f --base-directory " .. base_directory)
     local norg_files = table.concat(norg_files_output, " ")
     local rg_command = 'rg --multiline "(?s)@document\\.meta.*?title:\\s+(.*?)\\s+@end" '
-    .. norg_files
-    .. " "
-    .. base_directory
+        .. norg_files
+        .. " "
+        .. base_directory
     local rg_results = vim.fn.system(rg_command)
 
     local titles = {}
@@ -178,8 +178,10 @@ function M.neorg_node_injector()
             sorter = conf.file_sorter(opts),
             layout_strategy = "vertical",
             attach_mappings = function(prompt_bufnr, map)
+                -- Insert currently selected node into the page
                 map('i', '<C-i>', function()
                     local entry = state.get_selected_entry()
+                    print(vim.inspect(entry))
                     local current_file_path = entry.value
                     local escaped_base_path = base_directory:gsub("([^%w])", "%%%1")
                     local relative_path = current_file_path:match("^" .. escaped_base_path .. "/(.+)%..+")
@@ -187,8 +189,42 @@ function M.neorg_node_injector()
                     actions.close(prompt_bufnr)
                     vim.api.nvim_put({ "{:$/" .. relative_path .. ":}[" .. entry.display .. "]" }, "", false, true)
                 end)
+                -- Create a new node with written title and add it to the default note vault
+                map('i', '<C-n>', function()
+                    local prompt = state.get_current_line()
+                    local title_token = prompt:gsub("%W", ""):lower()
+                    local n = #title_token
+                    if n > 5 then
+                        local step = math.max(1, math.floor(n / 5))
+                        local condensed = ""
+                        for i = 1, n, step do
+                            condensed = condensed .. title_token:sub(i, i)
+                        end
+                        title_token = condensed
+                    end
+                    actions.close(prompt_bufnr)
+                    -- File naming tempate
+                    vim.api.nvim_command(
+                        "edit " ..
+                        base_directory ..
+                        "/vault/" ..
+                        os.date("%Y%m%d%H%M%S-") ..
+                        title_token ..
+                        ".norg"
+                    )
+                    vim.cmd([[Neorg inject-metadata]])
+                    local buf = vim.api.nvim_get_current_buf()
+                    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+                    for i, line in ipairs(lines) do
+                        if line:match("^title:") then
+                            lines[i] = "title: " .. prompt
+                            break
+                        end
+                    end
+                    vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+                end)
                 return true
-            end
+            end,
         })
         :find()
 end
@@ -200,10 +236,10 @@ function M.neorg_block_injector()
     local search_path = [["^\* |^\*\* |^\*\*\* |^\*\*\*\* |^\*\*\*\*\* "]]
 
     local rg_command = 'rg '
-    .. search_path
-    .. " "
-    .. "-g '*.norg' --with-filename --line-number "
-    .. base_directory
+        .. search_path
+        .. " "
+        .. "-g '*.norg' --with-filename --line-number "
+        .. base_directory
     local rg_results = vim.fn.system(rg_command)
 
     -- Split the results by lines
@@ -214,9 +250,9 @@ function M.neorg_block_injector()
         local text = line:match("[^:]+$")
         local metadata = extract_metadata(file)
         if metadata ~= nil then
-            table.insert(matches, {file, lineno, text, metadata["title"] } )
+            table.insert(matches, { file, lineno, text, metadata["title"] })
         else
-            table.insert(matches, {file, lineno, text, "Untitled" } )
+            table.insert(matches, { file, lineno, text, "Untitled" })
         end
     end
 
@@ -254,14 +290,14 @@ function M.neorg_block_injector()
                     local rel_path = filename:match("^" .. base_path .. "/(.+)%..+")
                     -- Insert at location
                     actions.close(prompt_bufnr)
-                    vim.api.nvim_put({ "{:$/" .. rel_path .. ":" .. entry.line .. "}[" .. entry.line .. "]" }, "", false, true)
+                    vim.api.nvim_put({ "{:$/" .. rel_path .. ":" .. entry.line .. "}[" .. entry.line .. "]" }, "", false,
+                        true)
                 end)
                 return true
             end
         })
         :find()
 end
-
 
 function M.neorg_workspace_selector()
     local workspaces = neorg.modules.get_module("core.dirman").get_workspaces()
@@ -324,12 +360,12 @@ function M.show_backlinks()
     local search_path = "{:$/" .. relative_path .. ":"
 
     local rg_command = 'rg --fixed-strings '
-    .. "'"
-    .. search_path
-    .. "'"
-    .. " "
-    .. "-g '*.norg' --with-filename --line-number "
-    .. base_directory
+        .. "'"
+        .. search_path
+        .. "'"
+        .. " "
+        .. "-g '*.norg' --with-filename --line-number "
+        .. base_directory
     local rg_results = vim.fn.system(rg_command)
 
     -- Split the results by lines
@@ -340,11 +376,11 @@ function M.show_backlinks()
         local file, lineno = line:match("^(.-):(%d+):")
         local metadata = extract_metadata(file)
         if metadata == nil then
-            table.insert(matches, {file, lineno, "Untitled"} )
+            table.insert(matches, { file, lineno, "Untitled" })
         elseif metadata["title"] ~= self_title then
-            table.insert(matches, {file, lineno, metadata["title"]} )
+            table.insert(matches, { file, lineno, metadata["title"] })
         else
-            table.insert(matches, {file, lineno, "Untitled"} )
+            table.insert(matches, { file, lineno, "Untitled" })
         end
     end
 
