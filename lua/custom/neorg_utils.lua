@@ -136,27 +136,15 @@ function M.neorg_node_injector()
     local base_directory = current_workspace[2]
 
     local norg_files_output = vim.fn.systemlist("fd -e norg --type f --base-directory " .. base_directory)
-    local norg_files = table.concat(norg_files_output, " ")
-    local rg_command = 'rg --multiline "(?s)@document\\.meta.*?title:\\s+(.*?)\\s+@end" '
-        .. norg_files
-        .. " "
-        .. base_directory
-    local rg_results = vim.fn.system(rg_command)
-
-    local titles = {}
-    for line in rg_results:gmatch("[^\r\n]+") do
-        if line:find("title:") then
-            table.insert(titles, line)
-        end
-    end
-
-    local filtered_results = table.concat(titles, "\n")
 
     local title_path_pairs = {}
-    for line in filtered_results:gmatch("[^\r\n]+") do
-        local file_path, title = line:match("^(.-):(.*)$")
-        _, title = title:match("^(.-): (.*)$")
-        table.insert(title_path_pairs, { title, file_path })
+    for _, line in pairs(norg_files_output) do
+        local metadata = extract_metadata(line)
+        if metadata ~= nil then
+            table.insert(title_path_pairs, { metadata["title"], line })
+        else
+            table.insert(title_path_pairs, { "Untitled", line })
+        end
     end
 
     local opts = {}
@@ -354,7 +342,8 @@ function M.show_backlinks()
     local escaped_base_path = base_directory:gsub("([^%w])", "%%%1")
     local relative_path = current_file_path:match("^" .. escaped_base_path .. "/(.+)%..+")
     if relative_path == nil then
-        vim.notify("Current Node isn't a part of the Current Neorg Workspace", vim.log.levels.ERROR)
+        vim.notify("Current Node isn't a part of the Current Neorg Workspace",
+            vim.log.levels.ERROR)
         return
     end
     local search_path = "{:$/" .. relative_path .. ":"
