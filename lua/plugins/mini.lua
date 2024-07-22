@@ -20,5 +20,4 @@ return {
             require("mini.move").setup()
         end,
     },
-
 }
