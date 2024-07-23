@@ -139,11 +139,12 @@ function M.neorg_node_injector()
 
     local title_path_pairs = {}
     for _, line in pairs(norg_files_output) do
-        local metadata = extract_metadata(base_directory .. "/" .. line)
+        local full_path = base_directory .. "/" .. line
+        local metadata = extract_metadata(full_path)
         if metadata ~= nil then
-            table.insert(title_path_pairs, { metadata["title"], line })
+            table.insert(title_path_pairs, { metadata["title"], full_path })
         else
-            table.insert(title_path_pairs, { "Untitled", line })
+            table.insert(title_path_pairs, { "Untitled", full_path })
         end
     end
 
