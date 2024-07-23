@@ -1,8 +1,11 @@
+local neorg_loaded, neorg = pcall(require, "neorg.core")
+assert(neorg_loaded, "Neorg is not loaded - please make sure to load Neorg first")
+
 vim.api.nvim_create_autocmd("InsertEnter", {
 	pattern = "*.norg",
 	group = vim.api.nvim_create_augroup("NeorgWrapOn", { clear = true }),
 	callback = function(_)
-		vim.cmd("set wrap")
+        vim.cmd("set wrap")
 	end,
 })
 
@@ -10,7 +13,10 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 	pattern = "*.norg",
 	group = vim.api.nvim_create_augroup("NeorgWrapOff", { clear = true }),
 	callback = function(_)
-		vim.cmd("set nowrap")
+        local current_workspace = neorg.modules.get_module("core.dirman").get_current_workspace()
+        if current_workspace[1] == "default" then
+            vim.cmd("set nowrap")
+        end
 	end,
 })
 
@@ -18,7 +24,10 @@ vim.api.nvim_create_autocmd("BufEnter", {
 	pattern = "*.norg",
 	group = vim.api.nvim_create_augroup("NeorgWrapOffBuf", { clear = true }),
 	callback = function(_)
-		vim.cmd("set nowrap")
+        local current_workspace = neorg.modules.get_module("core.dirman").get_current_workspace()
+        if current_workspace[1] == "default" then
+            vim.cmd("set nowrap")
+        end
 	end,
 })
 
@@ -26,7 +35,7 @@ vim.api.nvim_create_autocmd("BufLeave", {
 	pattern = "*.norg",
 	group = vim.api.nvim_create_augroup("NeorgWrapOnBuf", { clear = true }),
 	callback = function(_)
-		vim.cmd("set wrap")
+        vim.cmd("set wrap")
 	end,
 })
 vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
