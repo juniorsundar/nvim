@@ -189,6 +189,7 @@ return {
             })
 
             lspconfig.ltex.setup({
+                autostart = false,
                 capabilities = capabilities,
                 filetypes = { "norg" },
                 settings = {
