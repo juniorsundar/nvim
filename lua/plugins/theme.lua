@@ -19,6 +19,7 @@ return {
                     flash = true,
                     markdown = true,
                     neogit = true,
+                    grug_far = true,
                     treesitter_context = true,
                     lsp_saga = true,
                     lsp_trouble = true,

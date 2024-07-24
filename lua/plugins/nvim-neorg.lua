@@ -1,6 +1,7 @@
 return {
     {
         "nvim-neorg/neorg",
+        dependencies = { { dir = "~/.config/nvim_plugins/neorg-utils" } },
         config = function()
             require("neorg").setup({
                 load = {
@@ -53,19 +54,19 @@ return {
                 },
             })
 
-            local neorg_utils = require("custom.neorg_utils")
+            local neorg_utils = require("neorg-utils")
 
             vim.cmd([[Neorg workspace default]])
 
-            vim.keymap.set("n", "<leader>Nb", neorg_utils.show_backlinks,
+            vim.keymap.set("n", "<leader>Nb", neorg_utils.telescopic.show_backlinks,
                 { noremap = true, silent = true, desc = "Backlinks" })
-            vim.keymap.set("n", "<leader>Nw", neorg_utils.neorg_workspace_selector,
+            vim.keymap.set("n", "<leader>Nw", neorg_utils.telescopic.neorg_workspace_selector,
                 { noremap = true, silent = true, desc = "Workspaces" })
-            vim.keymap.set("n", "<leader>Nf", neorg_utils.neorg_node_injector,
+            vim.keymap.set("n", "<leader>Nf", neorg_utils.telescopic.neorg_node_injector,
                 { noremap = true, silent = true, desc = "Node Injector" })
-            vim.keymap.set("n", "<leader>Na", neorg_utils.neorg_agenda,
+            vim.keymap.set("n", "<leader>Na", neorg_utils.agenda.neorg_agenda,
                 { noremap = true, silent = true, desc = "Neorg Agenda" })
-            vim.keymap.set("n", "<leader>NB", neorg_utils.neorg_block_injector,
+            vim.keymap.set("n", "<leader>NB", neorg_utils.telescopic.neorg_block_injector,
                 { noremap = true, silent = true, desc = "Neorg Block Injector" })
         end,
     },
