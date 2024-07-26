@@ -46,4 +46,6 @@ vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
 	end,
 })
 
+vim.keymap.set("n", "<tab>", "za", {noremap = false, silent = true, desc = "Expand folding"})
+
 vim.opt.scrolloff = 999
