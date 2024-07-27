@@ -7,10 +7,10 @@ return {
         local make_entry = require('telescope.make_entry')
         local conf = require('telescope.config').values
 
-        local dot_path = vim.env.HOME .. '/.dotfiles,' .. vim.env.HOME .. '/.config/nvim'
+        local config_path = vim.env.HOME .. '/.dotfiles,' .. vim.env.HOME .. '/.config/nvim'
 
-        local dotfiles_list = function()
-            local dirs = vim.split(dot_path, ',')
+        local config_file_list = function()
+            local dirs = vim.split(config_path, ',')
             local list = {}
             for _, dir in pairs(dirs) do
                 local p = io.popen('rg --files --hidden ' .. dir)
@@ -21,9 +21,9 @@ return {
             return list
         end
 
-        local dotfiles = function(opts)
+        local configs = function(opts)
             opts = opts or {}
-            local results = dotfiles_list()
+            local results = config_file_list()
 
             pickers
                 .new(opts, {
@@ -71,10 +71,10 @@ return {
                             key = 'f',
                         },
                         {
-                            desc = 'dotfiles',
+                            desc = 'Neovim Config',
                             group = 'Constant',
-                            action = dotfiles,
-                            key = 'd',
+                            action = configs,
+                            key = 'c',
                         },
                         {
                             desc = 'Quit',
