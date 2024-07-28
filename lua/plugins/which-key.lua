@@ -103,6 +103,7 @@ return {
             { "<leader>N",   group = "Neorg", },
             { "<leader>NJ",  group = "Journal", },
             { "<leader>NM",  group = "Metadata", },
+            { "<leader>NF",  group = "Find", },
             { "<leader>Ni",  "<cmd>Neorg index<cr>",                                                        desc = "Index" },
             { "<leader>NJt", "<cmd>Neorg journal today<cr>",                                                desc = "Today's Journal" },
             { "<leader>NJm", "<cmd>Neorg journal tomorrow<cr>",                                             desc = "Tomorrow's Journal" },

@@ -67,7 +67,7 @@ return {
             vim.keymap.set("n", "<leader>Na", neorg_utils.agenda.neorg_agenda,
                 { noremap = true, silent = true, desc = "Neorg Agenda" })
             vim.keymap.set("n", "<leader>NFb", neorg_utils.telescopic.neorg_block_injector,
-                { noremap = true, silent = true, desc = "Neorg Block Injector" })
+                { noremap = true, silent = true, desc = "Block Injector" })
         end,
     },
 }
