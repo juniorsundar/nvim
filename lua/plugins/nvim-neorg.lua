@@ -26,7 +26,7 @@ return {
                     },
                     ["core.concealer"] = {
                         config = {
-                            icon_preset = "diamond",
+                            -- icon_preset = "diamond",
                             icons = { list = { icons = { "󰧞", "", "", "", "", "" } } },
                         },
                     },
@@ -55,8 +55,10 @@ return {
             })
 
             local neorg_utils = require("neorg-utils")
+            local neorg = require("neorg.core")
+            neorg.modules.get_module("core.dirman").set_workspace("default")
 
-            vim.cmd([[Neorg workspace default]])
+            -- vim.cmd([[Neorg workspace default]])
 
             vim.keymap.set("n", "<leader>NFB", neorg_utils.telescopic.show_backlinks,
                 { noremap = true, silent = true, desc = "Backlinks" })
