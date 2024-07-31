@@ -35,8 +35,38 @@ return {
                     nvim_surround = true
                 },
             })
-            vim.cmd.colorscheme("catppuccin-frappe")
+            -- vim.cmd.colorscheme("catppuccin-frappe")
         end,
+    },
+    {
+        "scottmckendry/cyberdream.nvim",
+        config = function()
+            require("cyberdream").setup({
+                borderless_telescope = false,
+                theme = {
+                    variant = "default",
+                    colors = {},
+                    highlights = {},
+                },
+                extensions = {
+                    alpha = true,
+                    cmp = true,
+                    gitsigns = true,
+                    grugfar = true,
+                    heirline = true,
+                    hop = true,
+                    lazy = true,
+                    mini = true,
+                    noice = true,
+                    notify = true,
+                    telescope = true,
+                    treesitter = true,
+                    treesittercontext = true,
+                    whichkey = true,
+                },
+            })
+            vim.cmd.colorscheme("cyberdream")
+        end
     },
     {
         "nyoom-engineering/oxocarbon.nvim"
