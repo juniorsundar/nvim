@@ -46,7 +46,18 @@ return {
                 theme = {
                     variant = "default",
                     colors = {},
-                    highlights = {},
+                    highlights = {
+                        -- ["@org.headline.level1.org"] = { link = "PreProc" },
+                        -- ["@org.headline.level2.org"] = { link = "Label" },
+                        -- ["@org.headline.level3.org"] = { link = "Constant" },
+                    },
+                    -- overrides = function(colors)
+                    --     return {
+                    --         ["@org.headline.level1.org"] = { link = "PreProc" },
+                    --         ["@org.headline.level2.org"] = { link = "Label" },
+                    --         ["@org.headline.level3.org"] = { link = "Constant" },
+                    --     }
+                    -- end,
                 },
                 extensions = {
                     alpha = true,

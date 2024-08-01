@@ -1,5 +1,6 @@
 return {
-    'nvim-orgmode/orgmode',
+    -- 'nvim-orgmode/orgmode',
+    'juniorsundar/orgmode',
     dependencies = {
         {
             "akinsho/org-bullets.nvim",
