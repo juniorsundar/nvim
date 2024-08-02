@@ -29,8 +29,8 @@ return {
             align = "center",     -- align columns left, center or right
         },
         spec = {
-            { "<leader>a",   "<cmd>Dashboard<cr>",                                                              desc = "Dashboard" },
-            -- { "<leader>a",   "<cmd>Alpha<cr>",                                                              desc = "Alpha" },
+            -- { "<leader>a",   "<cmd>Dashboard<cr>",                                                              desc = "Dashboard" },
+            { "<leader>a",   "<cmd>Alpha<cr>",                                                              desc = "Alpha" },
             { "<leader>w",   "<cmd>w!<cr>",                                                                 desc = "Save" },
             { "<leader>q",   "<cmd>q<cr>",                                                                  desc = "Quit" },
             { "<leader>l",   "<cmd>Lazy<cr>",                                                               desc = "Lazy" },

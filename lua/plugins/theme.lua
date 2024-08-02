@@ -2,7 +2,6 @@ return {
     {
         "catppuccin/nvim",
         name = "catppuccin",
-        priority = 1000,
         config = function()
             require("catppuccin").setup({
                 custom_highlights = function(colors)
@@ -35,29 +34,18 @@ return {
                     nvim_surround = true
                 },
             })
-            -- vim.cmd.colorscheme("catppuccin-frappe")
         end,
     },
     {
         "scottmckendry/cyberdream.nvim",
+        priority = 1000,
         config = function()
             require("cyberdream").setup({
                 borderless_telescope = false,
                 theme = {
-                    variant = "default",
+                    variant = "dark",
                     colors = {},
-                    highlights = {
-                        -- ["@org.headline.level1.org"] = { link = "PreProc" },
-                        -- ["@org.headline.level2.org"] = { link = "Label" },
-                        -- ["@org.headline.level3.org"] = { link = "Constant" },
-                    },
-                    -- overrides = function(colors)
-                    --     return {
-                    --         ["@org.headline.level1.org"] = { link = "PreProc" },
-                    --         ["@org.headline.level2.org"] = { link = "Label" },
-                    --         ["@org.headline.level3.org"] = { link = "Constant" },
-                    --     }
-                    -- end,
+                    highlights = {},
                 },
                 extensions = {
                     alpha = true,
@@ -78,9 +66,6 @@ return {
             })
             vim.cmd.colorscheme("cyberdream")
         end
-    },
-    {
-        "nyoom-engineering/oxocarbon.nvim"
     },
     {
         "folke/tokyonight.nvim",
