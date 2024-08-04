@@ -4,6 +4,7 @@ return {
     init = function()
         vim.o.timeout = true
         vim.o.timeoutlen = 500
+        require("which-key.colors").Normal = "NormalFloat"
     end,
     opts = {
         preset = "modern",

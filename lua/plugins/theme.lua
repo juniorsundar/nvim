@@ -1,14 +1,61 @@
 return {
+    -- {
+    --     "catppuccin/nvim",
+    --     name = "catppuccin",
+    --     config = function()
+    --         require("catppuccin").setup({
+    --             custom_highlights = function(colors)
+    --                 return {
+    --                     WhichKeyFloat = { fg = colors.base, bg = colors.base },
+    --                 }
+    --             end,
+    --             integrations = {
+    --                 cmp = true,
+    --                 gitsigns = true,
+    --                 treesitter = true,
+    --                 alpha = true,
+    --                 barbar = true,
+    --                 flash = true,
+    --                 markdown = true,
+    --                 neogit = true,
+    --                 grug_far = true,
+    --                 treesitter_context = true,
+    --                 lsp_saga = true,
+    --                 lsp_trouble = true,
+    --                 diffview = true,
+    --                 which_key = true,
+    --                 mason = true,
+    --                 noice = true,
+    --                 notify = true,
+    --                 native_lsp = {
+    --                     enabled = true,
+    --                 },
+    --                 mini = true,
+    --                 nvim_surround = true
+    --             },
+    --         })
+    --     end,
+    -- },
     {
-        "catppuccin/nvim",
+        "juniorsundar/cyberdark",
         name = "catppuccin",
         config = function()
             require("catppuccin").setup({
                 custom_highlights = function(colors)
                     return {
-                        WhichKeyFloat = { fg = colors.base, bg = colors.base },
+                        NormalFloat = { fg = colors.text, bg = colors.mantle },
                     }
                 end,
+                highlight_overrides = {
+                    mocha = function(colors)
+                        return {
+                            WhichKey = { fg = colors.text, bg = colors.base },
+                            WhichKeyNormal = { fg = colors.text, bg = colors.base },
+                            Folded = { fg = colors.crust, bg = colors.none }
+                        }
+                    end,
+                },
+                transparent_background = false,
                 integrations = {
                     cmp = true,
                     gitsigns = true,
@@ -34,6 +81,7 @@ return {
                     nvim_surround = true
                 },
             })
+            vim.cmd.colorscheme("catppuccin-mocha")
         end,
     },
     {
@@ -64,11 +112,8 @@ return {
                     whichkey = true,
                 },
             })
-            vim.cmd.colorscheme("cyberdream")
+            -- vim.cmd.colorscheme("cyberdream")
         end
-    },
-    {
-        "folke/tokyonight.nvim",
     },
     {
         "nvim-tree/nvim-web-devicons",
