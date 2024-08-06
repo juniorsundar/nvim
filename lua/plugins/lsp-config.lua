@@ -76,6 +76,10 @@ return {
                     dynamicRegistration = true,
                 },
             }
+            capabilities.textDocument.foldingRange = {
+                dynamicRegistration = false,
+                lineFoldingOnly = true
+            }
 
             local lspconfig = require("lspconfig")
 

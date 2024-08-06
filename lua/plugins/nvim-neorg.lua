@@ -7,26 +7,26 @@ return {
                 load = {
                     ["core.defaults"] = {},
                     ["core.esupports.indent"] = {
-                        config = {
-                            tweaks = {
-                                unordered_list1 = 0,
-                                unordered_list2 = 3,
-                                unordered_list3 = 6,
-                                unordered_list4 = 9,
-                                unordered_list5 = 12,
-                                unordered_list6 = 15,
-                                ordered_list1 = 0,
-                                ordered_list2 = 3,
-                                ordered_list3 = 6,
-                                ordered_list4 = 9,
-                                ordered_list5 = 12,
-                                ordered_list6 = 15,
-                            },
-                        },
+                        -- config = {
+                        --     tweaks = {
+                        --         unordered_list1 = 0,
+                        --         unordered_list2 = 3,
+                        --         unordered_list3 = 6,
+                        --         unordered_list4 = 9,
+                        --         unordered_list5 = 12,
+                        --         unordered_list6 = 15,
+                        --         ordered_list1 = 0,
+                        --         ordered_list2 = 3,
+                        --         ordered_list3 = 6,
+                        --         ordered_list4 = 9,
+                        --         ordered_list5 = 12,
+                        --         ordered_list6 = 15,
+                        --     },
+                        -- },
                     },
                     ["core.concealer"] = {
                         config = {
-                            -- icon_preset = "diamond",
+                            icon_preset = "diamond",
                             icons = { list = { icons = { "󰧞", "", "", "", "", "" } } },
                         },
                     },
@@ -66,7 +66,9 @@ return {
                 { noremap = true, silent = true, desc = "Workspaces" })
             vim.keymap.set("n", "<leader>NFn", neorg_utils.telescopic.neorg_node_injector,
                 { noremap = true, silent = true, desc = "Node Injector" })
-            vim.keymap.set("n", "<leader>Na", neorg_utils.agenda.neorg_agenda,
+            -- vim.keymap.set("n", "<leader>Na", neorg_utils.agenda.neorg_agenda,
+            --     { noremap = true, silent = true, desc = "Neorg Agenda" })
+            vim.keymap.set("n", "<leader>Na", "<cmd>NeorgUtils Agenda undone pending<cr>",
                 { noremap = true, silent = true, desc = "Neorg Agenda" })
             vim.keymap.set("n", "<leader>NFb", neorg_utils.telescopic.neorg_block_injector,
                 { noremap = true, silent = true, desc = "Block Injector" })
