@@ -287,12 +287,12 @@ return {
                 end)
             end
             -- Map the peek_definition function to a key
-            vim.keymap.set(
-                "n",
-                "<Leader>Ld",
-                peek_definition,
-                { noremap = true, silent = true, desc = "Definition (Peek)" }
-            )
+            -- vim.keymap.set(
+            --     "n",
+            --     "<Leader>Ld",
+            --     peek_definition,
+            --     { noremap = true, silent = true, desc = "Definition (Peek)" }
+            -- )
 
             local function peek_declaration()
                 local params = vim.lsp.util.make_position_params()
