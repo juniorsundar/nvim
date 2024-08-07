@@ -36,18 +36,18 @@ return {
                 },
                 custom_highlights = function(colors)
                     return {
-                        NormalFloat = { fg = colors.text, bg = colors.mantle },
-                        Comment = { fg = colors.overlay1 },
-                        LineNr = { fg = colors.overlay1 },
-                        CursorLineNr = { fg = colors.text }
                     }
                 end,
                 highlight_overrides = {
                     macchiato = function(colors)
                         return {
+                            NormalFloat = { fg = colors.text, bg = colors.mantle },
+                            Comment = { fg = colors.overlay1 },
+                            LineNr = { fg = colors.overlay1 },
+                            CursorLineNr = { fg = colors.text },
                             WhichKey = { fg = colors.text, bg = colors.base },
                             WhichKeyNormal = { fg = colors.text, bg = colors.base },
-                            Folded = { fg = colors.crust, bg = colors.none }
+                            Folded = { fg = colors.crust, bg = colors.none },
                         }
                     end,
                 },
@@ -55,7 +55,7 @@ return {
                 integrations = {
                     cmp = true,
                     gitsigns = true,
-                    treesitter = true,
+                    treesitter = false,
                     alpha = true,
                     barbar = true,
                     flash = true,

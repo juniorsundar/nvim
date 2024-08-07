@@ -26,8 +26,13 @@ return {
                     },
                     ["core.concealer"] = {
                         config = {
-                            icon_preset = "diamond",
-                            icons = { list = { icons = { "󰧞", "", "", "", "", "" } } },
+                            icon_preset = "varied",
+                            icons = {
+                                list = { icons = { "󰧞", "", "", "", "", "" } },
+                                heading = {
+                                    icons = { "󰼏", "󰼐", "󰼑", "󰼒", "󰼓", "󰼔" },
+                                },
+                            },
                         },
                     },
                     ["core.dirman"] = {
@@ -40,6 +45,7 @@ return {
                         },
                     },
                     ["core.export"] = {},
+                    ["core.highlights"] = {},
                     ["core.export.markdown"] = {},
                     ["core.latex.renderer"] = {},
                     ["core.integrations.image"] = {},
