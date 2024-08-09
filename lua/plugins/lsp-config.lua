@@ -12,13 +12,13 @@ return {
                 ensure_installed = {
                     "lua_ls",
                     "basedpyright",
-                    "ruff_lsp",
+                    "ruff",
                     "clangd",
                     "rust_analyzer",
                     "gopls",
-                    "markdown_oxide",
+                    -- "markdown_oxide",
                     "marksman",
-                    "ltex"
+                    "harper_ls"
                 },
             })
         end,
@@ -145,8 +145,23 @@ return {
                 },
             })
 
-            lspconfig.ruff_lsp.setup({
+            lspconfig.ruff.setup({
                 capabilities = capabilities,
+            })
+
+            vim.api.nvim_create_autocmd("LspAttach", {
+                group = vim.api.nvim_create_augroup('lsp_attach_disable_ruff_hover', { clear = true }),
+                callback = function(args)
+                    local client = vim.lsp.get_client_by_id(args.data.client_id)
+                    if client == nil then
+                        return
+                    end
+                    if client.name == 'ruff' then
+                        -- Disable hover in favor of Pyright
+                        client.server_capabilities.hoverProvider = false
+                    end
+                end,
+                desc = 'LSP: Disable hover capability from Ruff',
             })
 
             lspconfig.clangd.setup({
@@ -175,57 +190,45 @@ return {
                 },
             })
 
-            lspconfig.markdown_oxide.setup({
-                capabilities = capabilities,
-                on_attach = function(_, bufnr)
-                    -- refresh codelens on TextChanged and InsertLeave as well
-                    vim.api.nvim_create_autocmd({ "TextChanged", "InsertLeave", "CursorHold", "LspAttach" }, {
-                        buffer = bufnr,
-                        callback = vim.lsp.codelens.refresh,
-                    })
-                    -- trigger codelens refresh
-                    vim.api.nvim_exec_autocmds("User", { pattern = "LspAttached" })
-                end,
-            })
+            -- lspconfig.markdown_oxide.setup({
+            --     capabilities = capabilities,
+            --     on_attach = function(_, bufnr)
+            --         -- refresh codelens on TextChanged and InsertLeave as well
+            --         vim.api.nvim_create_autocmd({ "TextChanged", "InsertLeave", "CursorHold", "LspAttach" }, {
+            --             buffer = bufnr,
+            --             callback = vim.lsp.codelens.refresh,
+            --         })
+            --         -- trigger codelens refresh
+            --         vim.api.nvim_exec_autocmds("User", { pattern = "LspAttached" })
+            --     end,
+            -- })
 
             lspconfig.marksman.setup({
                 single_file_support = false,
             })
 
-            lspconfig.ltex.setup({
-                autostart = false,
+            lspconfig.harper_ls.setup({
                 capabilities = capabilities,
-                filetypes = { "norg" },
+                filetypes = { "norg", "markdown" },
                 settings = {
-                    ltex = {
-                        enabled = { "norg" },
-                        language = "en-GB",
-                        checkFrequency = "save",
-                    },
-                    dictionary = (function()
-                        -- For dictionary, search for files in the runtime to have
-                        -- and include them as externals the format for them is
-                        -- dict/{LANG}.txt
-                        --
-                        -- Also add dict/default.txt to all of them
-                        local files = {}
-                        for _, file in ipairs(vim.api.nvim_get_runtime_file("dict/*", true)) do
-                            local lang = vim.fn.fnamemodify(file, ":t:r")
-                            local fullpath = vim.fs.normalize(file, ":p")
-                            files[lang] = { ":" .. fullpath }
-                        end
-
-                        if files.default then
-                            for lang, _ in pairs(files) do
-                                if lang ~= "default" then
-                                    vim.list_extend(files[lang], files.default)
-                                end
-                            end
-                            files.default = nil
-                        end
-                        return files
-                    end)(),
-                }
+                    ["harper-ls"] = {
+                        linters = {
+                            spell_check = true,
+                            spelled_numbers = false,
+                            an_a = true,
+                            sentence_capitalization = true,
+                            unclosed_quotes = true,
+                            wrong_quotes = false,
+                            long_sentences = true,
+                            repeated_words = true,
+                            spaces = true,
+                            matcher = true,
+                            correct_number_suffix = true,
+                            number_suffix_capitalization = true,
+                            multiple_sequential_pronouns = true
+                        }
+                    }
+                },
             })
 
             -- Use LspAttach autocommand to only map the following keys
@@ -377,12 +380,7 @@ return {
             formatters_by_ft = {
                 lua = { "stylua" },
                 -- Conform will run multiple formatters sequentially
-                python = {
-                    -- To fix lint errors.
-                    "ruff_fix",
-                    -- To run the Ruff formatter.
-                    "ruff_format",
-                },
+                python = { "ruff" },
                 go = { "gofumpt" },
             },
         },
