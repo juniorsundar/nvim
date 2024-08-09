@@ -12,7 +12,7 @@ return {
                 ensure_installed = {
                     "lua_ls",
                     "basedpyright",
-                    "ruff_lsp",
+                    "ruff",
                     "clangd",
                     "rust_analyzer",
                     "gopls",
@@ -145,8 +145,23 @@ return {
                 },
             })
 
-            lspconfig.ruff_lsp.setup({
+            lspconfig.ruff.setup({
                 capabilities = capabilities,
+            })
+
+            vim.api.nvim_create_autocmd("LspAttach", {
+                group = vim.api.nvim_create_augroup('lsp_attach_disable_ruff_hover', { clear = true }),
+                callback = function(args)
+                    local client = vim.lsp.get_client_by_id(args.data.client_id)
+                    if client == nil then
+                        return
+                    end
+                    if client.name == 'ruff' then
+                        -- Disable hover in favor of Pyright
+                        client.server_capabilities.hoverProvider = false
+                    end
+                end,
+                desc = 'LSP: Disable hover capability from Ruff',
             })
 
             lspconfig.clangd.setup({
@@ -377,12 +392,7 @@ return {
             formatters_by_ft = {
                 lua = { "stylua" },
                 -- Conform will run multiple formatters sequentially
-                python = {
-                    -- To fix lint errors.
-                    "ruff_fix",
-                    -- To run the Ruff formatter.
-                    "ruff_format",
-                },
+                python = { "ruff" },
                 go = { "gofumpt" },
             },
         },
