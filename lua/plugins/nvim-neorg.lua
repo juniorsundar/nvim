@@ -1,7 +1,7 @@
 return {
     {
         "nvim-neorg/neorg",
-        dependencies = { { dir = "~/.config/nvim_plugins/neorg_utils" } },
+        dependencies = { { dir = "~/.config/nvim_plugins/neorg_utils", opts = {} } },
         config = function()
             require("neorg").setup({
                 load = {
@@ -60,7 +60,7 @@ return {
                 },
             })
 
-            local neorg_utils = require("neorg-utils")
+            -- local neorg_utils = require("neorg-utils")
             local neorg = require("neorg.core")
             neorg.modules.get_module("core.dirman").set_workspace("default")
 
@@ -71,7 +71,7 @@ return {
                 { noremap = true, silent = true, desc = "Workspaces" })
             vim.keymap.set("n", "<leader>NFn", "<cmd>Telescope neorg_node_injector<cr>",
                 { noremap = true, silent = true, desc = "Node Injector" })
-            vim.keymap.set("n", "<leader>Na", "<cmd>NeorgUtils Agenda undone pending<cr>",
+            vim.keymap.set("n", "<leader>Na", "<cmd>NeorgUtils Page undone pending<cr>",
                 { noremap = true, silent = true, desc = "Neorg Agenda" })
             vim.keymap.set("n", "<leader>NFb", "<cmd>Telescope neorg_block_injector<cr>",
                 { noremap = true, silent = true, desc = "Block Injector" })
