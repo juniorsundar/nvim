@@ -60,11 +60,14 @@ return {
                 },
             })
 
-            -- local neorg_utils = require("neorg-utils")
+            local neorg_utils = require("neorg-utils")
             local neorg = require("neorg.core")
             neorg.modules.get_module("core.dirman").set_workspace("default")
 
 
+
+            vim.keymap.set("n", "<leader>N_", neorg_utils.utils.update_prop_metadata,
+                { noremap = true, silent = true, desc = "Demo" })
             vim.keymap.set("n", "<leader>NFB", "<cmd>Telescope neorg_show_backlinks<cr>",
                 { noremap = true, silent = true, desc = "Backlinks" })
             vim.keymap.set("n", "<leader>Nw", "<cmd>Telescope neorg_workspace_selector<cr>",
