@@ -1,7 +1,7 @@
 return {
     {
         "nvim-neorg/neorg",
-        dependencies = { { dir = "~/.config/nvim_plugins/neorg_utils", opts = {} } },
+        dependencies = { { dir = "~/.config/nvim_plugins/neorg_extras", opts = {} } },
         config = function()
             require("neorg").setup({
                 load = {
@@ -60,7 +60,7 @@ return {
                 },
             })
 
-            local neorg_utils = require("neorg-utils")
+            local neorg_utils = require("neorg-extras")
             local neorg = require("neorg.core")
             neorg.modules.get_module("core.dirman").set_workspace("default")
 
