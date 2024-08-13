@@ -66,7 +66,7 @@ return {
 
 
 
-            vim.keymap.set("n", "<leader>N_", "<cmd>NeorgExtras Metadata update",
+            vim.keymap.set("n", "<leader>N_", "<cmd>NeorgExtras Metadata update<CR>",
                 { noremap = true, silent = true, desc = "Demo" })
             vim.keymap.set("n", "<leader>NFB", "<cmd>Telescope neorg_show_backlinks<cr>",
                 { noremap = true, silent = true, desc = "Backlinks" })
