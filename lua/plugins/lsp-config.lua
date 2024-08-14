@@ -67,7 +67,11 @@ return {
                 require('ufo').setup({
                     fold_virt_text_handler = handler,
                     provider_selector = function(bufnr, filetype, buftype)
-                        return { 'treesitter', 'indent' }
+                        if filetype == 'norg' then
+                            return ''
+                        else
+                            return {'treesitter', 'indent'}
+                        end
                     end
                 })
             end
