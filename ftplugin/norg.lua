@@ -39,18 +39,18 @@ vim.api.nvim_create_autocmd("BufLeave", {
     end,
 })
 
--- local remember_folds = vim.api.nvim_create_augroup("remember_folds", { clear = true })
--- vim.api.nvim_create_autocmd("BufWinLeave", {
---     group = remember_folds,
---     pattern = "*.norg",
---     command = "mkview"
--- })
---
--- vim.api.nvim_create_autocmd("BufWinEnter", {
---     group = remember_folds,
---     pattern = "*.norg",
---     command = "silent! loadview"
--- })
+local remember_folds = vim.api.nvim_create_augroup("remember_folds", { clear = true })
+vim.api.nvim_create_autocmd("BufWinLeave", {
+    group = remember_folds,
+    pattern = "*.norg",
+    command = "mkview"
+})
+
+vim.api.nvim_create_autocmd("BufWinEnter", {
+    group = remember_folds,
+    pattern = "*.norg",
+    command = "silent! loadview"
+})
 
 vim.keymap.set("n", "<tab>", "za", { noremap = false, silent = true, desc = "Expand folding" })
 

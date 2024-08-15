@@ -16,7 +16,6 @@ return {
                     "clangd",
                     "rust_analyzer",
                     "gopls",
-                    -- "markdown_oxide",
                     "marksman",
                     "harper_ls"
                 },
@@ -25,57 +24,7 @@ return {
     },
     {
         "neovim/nvim-lspconfig",
-        dependencies = {
-            'kevinhwang91/nvim-ufo',
-            dependencies = { 'kevinhwang91/promise-async' },
-            config = function()
-                vim.o.foldenable = true
-                vim.o.foldlevel = 99
-                vim.o.foldlevelstart = 99
-                vim.o.foldcolumn = '0'
-                vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
-                vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
-
-                local handler = function(virtText, lnum, endLnum, width, truncate)
-                    local newVirtText = {}
-                    local suffix = (' 󰁂 %d '):format(endLnum - lnum)
-                    local sufWidth = vim.fn.strdisplaywidth(suffix)
-                    local targetWidth = width - sufWidth
-                    local curWidth = 0
-                    for _, chunk in ipairs(virtText) do
-                        local chunkText = chunk[1]
-                        local chunkWidth = vim.fn.strdisplaywidth(chunkText)
-                        if targetWidth > curWidth + chunkWidth then
-                            table.insert(newVirtText, chunk)
-                        else
-                            chunkText = truncate(chunkText, targetWidth - curWidth)
-                            local hlGroup = chunk[2]
-                            table.insert(newVirtText, { chunkText, hlGroup })
-                            chunkWidth = vim.fn.strdisplaywidth(chunkText)
-                            -- str width returned from truncate() may less than 2nd argument, need padding
-                            if curWidth + chunkWidth < targetWidth then
-                                suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
-                            end
-                            break
-                        end
-                        curWidth = curWidth + chunkWidth
-                    end
-                    table.insert(newVirtText, { suffix, 'MoreMsg' })
-                    return newVirtText
-                end
-
-                require('ufo').setup({
-                    fold_virt_text_handler = handler,
-                    provider_selector = function(bufnr, filetype, buftype)
-                        if filetype == 'norg' then
-                            return ''
-                        else
-                            return {'treesitter', 'indent'}
-                        end
-                    end
-                })
-            end
-        },
+        dependencies = { },
         -- lazy = false, -- REQUIRED: tell lazy.nvim to start this plugin at startup
         -- dependencies = {
         -- 	-- main one
@@ -278,8 +227,6 @@ return {
                     vim.bo[event.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
 
                     -- Buffer local mappings.
-                    -- See `:help vim.lsp.*` for documentation on any of the below functions
-                    -- local opts = { buffer = event.buf }
                     local client = vim.lsp.get_client_by_id(event.data.client_id)
                     if client and client.server_capabilities.documentHighlightProvider then
                         vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -378,7 +325,6 @@ return {
         opts = {
             formatters_by_ft = {
                 lua = { "stylua" },
-                -- Conform will run multiple formatters sequentially
                 python = { "ruff" },
                 go = { "gofumpt" },
             },
@@ -394,7 +340,6 @@ return {
                     sign = false,
                 },
                 ui = {
-                    -- currently only round theme
                     border = "rounded",
                     lines = { "└", "├", "│", "─", "┌" },
                     kind = require("catppuccin.groups.integrations.lsp_saga").custom_kind(),
