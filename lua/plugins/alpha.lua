@@ -7,7 +7,7 @@ return {
         local make_entry = require('telescope.make_entry')
         local conf = require('telescope.config').values
 
-        local config_path = vim.env.HOME .. '/.dotfiles,' .. vim.env.HOME .. '/.config/nvim'
+        local config_path = vim.env.HOME .. '/dotfiles/.config/nvim'
 
         local config_file_list = function()
             local dirs = vim.split(config_path, ',')
