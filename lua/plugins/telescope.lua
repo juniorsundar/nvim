@@ -11,17 +11,17 @@ return {
     config = function()
         require('telescope').setup {
             defaults = {
+                layout_strategy = 'bottom_pane',
                 layout_config = {
-                    vertical = {
-                        preview_cutoff = 0
-                    },
+                    prompt_position = "top",
+                    preview_cutoff = 0,
                 },
                 mappings = {
                     i = {
                         ["<C-h>"] = "which_key",
                         ['<C-d>'] = require('telescope.actions').delete_buffer,
                     }
-                }
+                },
             },
             pickers = {
             },
