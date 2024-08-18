@@ -94,63 +94,63 @@ return {
             )
         end,
     },
-    {
-        {
-            "kdheepak/lazygit.nvim",
-            cmd = {
-                "LazyGit",
-                "LazyGitConfig",
-                "LazyGitCurrentFile",
-                "LazyGitFilter",
-                "LazyGitFilterCurrentFile",
-            },
-            -- optional for floating window border decoration
-            dependencies = {
-                "nvim-lua/plenary.nvim",
-            },
-            -- setting the keybinding for LazyGit with 'keys' is recommended in
-            -- order to load the plugin when the command is run for the first time
-            keys = {
-                { "<leader>Gg", "<cmd>LazyGit<cr>", desc = "LazyGit" }
-            }
-        }
-    },
     -- {
-    --     "NeogitOrg/neogit",
-    --     branch = "master",
-    --     dependencies = {
-    --         "nvim-lua/plenary.nvim",  -- required
-    --         "sindrets/diffview.nvim", -- optional - Diff integration
-    --     },
-    --     config = function()
-    --         local neogit = require("neogit")
-    --         neogit.setup({
-    --             disable_hint = true,
-    --             graph_style = "unicode",
-    --             kind = "tab",
-    --             disable_signs = false,
-    --             signs = {
-    --                 hunk = { "", "" },
-    --                 item = { "", "" },
-    --                 section = { "", "" },
-    --             },
-    --             integrations = {
-    --                 diffview = true,
-    --                 fzf_lua = true,
-    --             },
-    --         })
-    --         vim.keymap.set(
-    --             "n",
-    --             "<space>Gg",
-    --             "<cmd>Neogit<cr>",
-    --             { noremap = true, silent = false, desc = "Neogit" }
-    --         )
-    --         vim.keymap.set(
-    --             "v",
-    --             "gG",
-    --             "<cmd>Neogit<cr>",
-    --             { noremap = true, silent = false, desc = "Neogit" }
-    --         )
-    --     end,
+    --     {
+    --         "kdheepak/lazygit.nvim",
+    --         cmd = {
+    --             "LazyGit",
+    --             "LazyGitConfig",
+    --             "LazyGitCurrentFile",
+    --             "LazyGitFilter",
+    --             "LazyGitFilterCurrentFile",
+    --         },
+    --         -- optional for floating window border decoration
+    --         dependencies = {
+    --             "nvim-lua/plenary.nvim",
+    --         },
+    --         -- setting the keybinding for LazyGit with 'keys' is recommended in
+    --         -- order to load the plugin when the command is run for the first time
+    --         keys = {
+    --             { "<leader>Gg", "<cmd>LazyGit<cr>", desc = "LazyGit" }
+    --         }
+    --     }
     -- },
+    {
+        "NeogitOrg/neogit",
+        branch = "master",
+        dependencies = {
+            "nvim-lua/plenary.nvim",  -- required
+            "sindrets/diffview.nvim", -- optional - Diff integration
+        },
+        config = function()
+            local neogit = require("neogit")
+            neogit.setup({
+                disable_hint = true,
+                graph_style = "unicode",
+                kind = "tab",
+                disable_signs = false,
+                signs = {
+                    hunk = { "", "" },
+                    item = { "", "" },
+                    section = { "", "" },
+                },
+                integrations = {
+                    diffview = true,
+                    fzf_lua = true,
+                },
+            })
+            vim.keymap.set(
+                "n",
+                "<space>Gg",
+                "<cmd>Neogit<cr>",
+                { noremap = true, silent = false, desc = "Neogit" }
+            )
+            vim.keymap.set(
+                "v",
+                "gG",
+                "<cmd>Neogit<cr>",
+                { noremap = true, silent = false, desc = "Neogit" }
+            )
+        end,
+    },
 }
