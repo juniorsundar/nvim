@@ -1,7 +1,11 @@
 return {
     {
         "nvim-neorg/neorg",
-        dependencies = { { dir = "~/.config/nvim_plugins/neorg_extras", opts = {} } },
+        dependencies = { {
+            dir = "~/.config/nvim_plugins/neorg_extras",
+            -- opts = {}
+        }
+        },
         config = function()
             require("neorg").setup({
                 load = {
@@ -57,6 +61,11 @@ return {
                     ["core.tangle"] = { config = { report_on_empty = false } },
                     ["core.tempus"] = {},
                     ["core.ui.calendar"] = {},
+                    ["external.agenda"] = {},
+                    ["external.roam"] = {},
+                    ["external.many-mans"] = {
+                        treesitter_fold = false,
+                    },
                 },
             })
 
@@ -64,18 +73,18 @@ return {
             local neorg = require("neorg.core")
             neorg.modules.get_module("core.dirman").set_workspace("default")
 
-            vim.keymap.set("n", "<leader>N_", "<cmd>NeorgExtras Metadata update<CR>",
+            vim.keymap.set("n", "<leader>N_", "<cmd>Neorg update_property_metadata<CR>",
                 { noremap = true, silent = true, desc = "Update property metadata" })
-            vim.keymap.set("n", "<leader>NFB", "<cmd>Telescope neorg_show_backlinks<cr>",
+            vim.keymap.set("n", "<leader>NFB", "<cmd>Neorg roam backlinks<cr>",
                 { noremap = true, silent = true, desc = "Backlinks" })
-            vim.keymap.set("n", "<leader>Nw", "<cmd>Telescope neorg_workspace_selector<cr>",
+            vim.keymap.set("n", "<leader>Nw", "<cmd>Neorg roam select_workspace<cr>",
                 { noremap = true, silent = true, desc = "Workspaces" })
-            vim.keymap.set("n", "<leader>NFn", "<cmd>Telescope neorg_node_injector<cr>",
-                { noremap = true, silent = true, desc = "Node Injector" })
-            vim.keymap.set("n", "<leader>Na", "<cmd>NeorgUtils Page undone pending<cr>",
-                { noremap = true, silent = true, desc = "Neorg Agenda" })
-            vim.keymap.set("n", "<leader>NFb", "<cmd>Telescope neorg_block_injector<cr>",
+            vim.keymap.set("n", "<leader>NFb", "<cmd>Neorg roam block<cr>",
                 { noremap = true, silent = true, desc = "Block Injector" })
+            vim.keymap.set("n", "<leader>NFn", "<cmd>Neorg roam node<cr>",
+                { noremap = true, silent = true, desc = "Node Injector" })
+            vim.keymap.set("n", "<leader>Na", "<cmd>Neorg agenda day<cr>",
+                { noremap = true, silent = true, desc = "Neorg Agenda" })
             vim.keymap.set("n", "<leader>Nt", "<cmd>Neorg toc<cr>",
                 { noremap = true, silent = true, desc = "Table of Contents" })
         end,
