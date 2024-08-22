@@ -3,6 +3,7 @@ return {
         "nvim-neorg/neorg",
         dependencies = { {
             dir = "~/.config/nvim_plugins/neorg_extras",
+            -- "juniorsundar/neorg-extras",
             -- opts = {}
         }
         },
@@ -64,7 +65,7 @@ return {
                     ["external.agenda"] = {},
                     ["external.roam"] = {},
                     ["external.many-mans"] = {
-                        treesitter_fold = false,
+                        -- treesitter_fold = false,
                     },
                 },
             })
