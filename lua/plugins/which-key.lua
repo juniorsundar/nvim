@@ -31,7 +31,6 @@ return {
         },
         spec = {
             { "<leader>a",         "<cmd>Dashboard<cr>",                                                          desc = "Dashboard" },
-            -- { "<leader>a",         "<cmd>Alpha<cr>",                                                              desc = "Alpha" },
             { "<leader>w",         "<cmd>w!<cr>",                                                                 desc = "Save" },
             { "<leader>q",         "<cmd>q<cr>",                                                                  desc = "Quit" },
             { "<leader>l",         "<cmd>Lazy<cr>",                                                               desc = "Lazy" },
@@ -40,7 +39,6 @@ return {
             { "<leader>t",         "<cmd>terminal<cr>",                                                           desc = "Terminal" },
             { "<leader>u",         "<cmd>UndotreeToggle<cr>",                                                     desc = "Undotree" },
             { "<leader>c",         "<cmd>bdelete<cr>",                                                            desc = "Close Buffer" },
-            -- { "<leader>b",         "<cmd>FzfLua buffers<cr>",                                                     desc = "Buffers" },
             { "<leader>b",         "<cmd>Telescope buffers <cr>",                                                 desc = "Buffers" },
             { "<leader>/",         "<cmd>GrugFar<cr>",                                                            desc = "Grepper" },
 
@@ -48,10 +46,12 @@ return {
             { "<leader>LD",        group = "Document" },
             { "<leader>LW",        group = "Workspace" },
             { "<leader>La",        "<cmd>Lspsaga code_action<cr>",                                                desc = "Code Action" },
+            { "<leader>Ld",        "<cmd>lua vim.lsp.buf.definition()<cr>",                                       desc = "Definition" },
+            { "<leader>Li",        "<cmd>lua vim.lsp.buf.implementation()<cr>",                                   desc = "Implementation" },
+            { "<leader>Lc",        "<cmd>lua vim.lsp.buf.declaration()<cr>",                                      desc = "Declaration" },
             { "<leader>Lf",        "<cmd>lua vim.lsp.buf.format{async=true}<cr>",                                 desc = "Format" },
             { "<leader>Ll",        "<cmd>lua vim.lsp.codelens.run()<cr>",                                         desc = "CodeLens Action" },
             { "<leader>Ln",        "<cmd>Lspsaga rename<cr>",                                                     desc = "Rename" },
-            { "<leader>Ld",        "<cmd>Lspsaga peek_definition<cr>",                                            desc = "Definition (Peek)" },
             { "<leader>Lr",        "<cmd>Lspsaga finder ref ++normal<cr>",                                        desc = "References" },
             { "<leader>Lk",        "<cmd>Lspsaga hover_doc<cr>",                                                  desc = "Hover" },
             { "<leader>Lt",        "<cmd>Lspsaga finder tyd ++normal<cr>",                                        desc = "Type Definition" },
@@ -100,8 +100,6 @@ return {
             { "<leader>NMu",       "<cmd>Neorg update-metadata<cr>",                                              desc = "Update" },
 
             { "<leader><leader>",  group = "LocalLeader", },
-            { "<leader><leader>r", group = "org-roam", },
-            { "<leader><leader>o", group = "org-mode", },
         },
     },
 }

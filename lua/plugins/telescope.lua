@@ -6,7 +6,8 @@ return {
         {
             'nvim-telescope/telescope-fzf-native.nvim',
             build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release'
-        }
+        },
+        { 'nvim-telescope/telescope-ui-select.nvim' }
     },
     config = function()
         require('telescope').setup {
@@ -31,11 +32,17 @@ return {
                     override_generic_sorter = true, -- override the generic sorter
                     override_file_sorter = true,    -- override the file sorter
                     case_mode = "smart_case",       -- or "ignore_case" or "respect_case"
+                },
+                ["ui-select"] = {
+                    require("telescope.themes").get_dropdown {
+                        -- even more opts
+                    }
                 }
             }
         }
         -- To get fzf loaded and working with telescope, you need to call
         -- load_extension, somewhere after setup function:
         require('telescope').load_extension('fzf')
+        require("telescope").load_extension("ui-select")
     end
 }

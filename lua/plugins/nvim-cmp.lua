@@ -19,7 +19,7 @@ return {
                 -- other filetypes
             },
             norg = {
-                { trigger = "h1", body = '* ${1:text}'}
+                { trigger = "h1", body = '* ${1:text}' }
             }
         }
 
@@ -102,7 +102,7 @@ return {
 
         cmp.setup({
             view = {
-                entries = "custom"     -- can be "custom", "wildmenu" or "native"
+                entries = "custom" -- can be "custom", "wildmenu" or "native"
             },
             formatting = {
                 fields = { "kind", "abbr", "menu" },
@@ -122,7 +122,7 @@ return {
             },
             window = {
                 documentation = cmp.config.window.bordered({
-                    winhighlight = "Normal:Normal,FloatBorder:Normal"
+                    winhighlight = 'Normal:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal'
                 }),
                 completion = cmp.config.window.bordered({
                     winhighlight = 'Normal:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal'
@@ -133,7 +133,7 @@ return {
                 ["<C-f>"] = cmp.mapping.scroll_docs(4),
                 ["<C-Space>"] = cmp.mapping.complete(),
                 ["<C-e>"] = cmp.mapping.abort(),
-                ["<CR>"] = cmp.mapping.confirm({ select = true }),     -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+                ["<CR>"] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
                 ["<Tab>"] = cmp.mapping(function(fallback)
                     -- Hint: if the completion menu is visible select next one
                     if cmp.visible() then
@@ -143,7 +143,7 @@ return {
                     else
                         fallback()
                     end
-                end, { "i", "s" }),     -- i - insert mode; s - select mode
+                end, { "i", "s" }), -- i - insert mode; s - select mode
                 ["<S-Tab>"] = cmp.mapping(function(fallback)
                     if cmp.visible() then
                         cmp.select_prev_item()

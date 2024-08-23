@@ -25,107 +25,67 @@ return {
     {
         "neovim/nvim-lspconfig",
         dependencies = {
-            'kevinhwang91/nvim-ufo',
-            dependencies = { 'kevinhwang91/promise-async' },
-            config = function()
-                vim.o.foldenable = true
-                -- vim.o.foldlevel = 99
-                vim.o.foldlevelstart = 99
-                vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
-                vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
+            {
+                'kevinhwang91/nvim-ufo',
+                dependencies = { 'kevinhwang91/promise-async' },
+                config = function()
+                    vim.o.foldenable = true
+                    -- vim.o.foldlevel = 99
+                    vim.o.foldlevelstart = 99
+                    vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
+                    vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
 
-                local handler = function(virtText, lnum, endLnum, width, truncate)
-                    local newVirtText = {}
-                    local suffix = (' 󰁂 %d '):format(endLnum - lnum)
-                    local sufWidth = vim.fn.strdisplaywidth(suffix)
-                    local targetWidth = width - sufWidth
-                    local curWidth = 0
-                    for _, chunk in ipairs(virtText) do
-                        local chunkText = chunk[1]
-                        local chunkWidth = vim.fn.strdisplaywidth(chunkText)
-                        if targetWidth > curWidth + chunkWidth then
-                            table.insert(newVirtText, chunk)
-                        else
-                            chunkText = truncate(chunkText, targetWidth - curWidth)
-                            local hlGroup = chunk[2]
-                            table.insert(newVirtText, { chunkText, hlGroup })
-                            chunkWidth = vim.fn.strdisplaywidth(chunkText)
-                            -- str width returned from truncate() may less than 2nd argument, need padding
-                            if curWidth + chunkWidth < targetWidth then
-                                suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
+                    local handler = function(virtText, lnum, endLnum, width, truncate)
+                        local newVirtText = {}
+                        local suffix = (' 󰁂 %d '):format(endLnum - lnum)
+                        local sufWidth = vim.fn.strdisplaywidth(suffix)
+                        local targetWidth = width - sufWidth
+                        local curWidth = 0
+                        for _, chunk in ipairs(virtText) do
+                            local chunkText = chunk[1]
+                            local chunkWidth = vim.fn.strdisplaywidth(chunkText)
+                            if targetWidth > curWidth + chunkWidth then
+                                table.insert(newVirtText, chunk)
+                            else
+                                chunkText = truncate(chunkText, targetWidth - curWidth)
+                                local hlGroup = chunk[2]
+                                table.insert(newVirtText, { chunkText, hlGroup })
+                                chunkWidth = vim.fn.strdisplaywidth(chunkText)
+                                -- str width returned from truncate() may less than 2nd argument, need padding
+                                if curWidth + chunkWidth < targetWidth then
+                                    suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
+                                end
+                                break
                             end
-                            break
+                            curWidth = curWidth + chunkWidth
                         end
-                        curWidth = curWidth + chunkWidth
+                        table.insert(newVirtText, { suffix, 'MoreMsg' })
+                        return newVirtText
                     end
-                    table.insert(newVirtText, { suffix, 'MoreMsg' })
-                    return newVirtText
+
+                    require('ufo').setup({
+                        fold_virt_text_handler = handler,
+                        provider_selector = function(bufnr, filetype, buftype)
+                            if filetype == 'norg' then
+                                return ''
+                            else
+                                return { 'treesitter', 'indent' }
+                            end
+                        end
+                    })
+
+                    vim.api.nvim_create_autocmd("FileType", {
+                        pattern = { "norg" },
+                        callback = function()
+                            require("ufo").detach()
+                        end
+                    })
                 end
-
-                require('ufo').setup({
-                    fold_virt_text_handler = handler,
-                    provider_selector = function(bufnr, filetype, buftype)
-                        if filetype == 'norg' then
-                            return ''
-                        else
-                            return { 'treesitter', 'indent' }
-                        end
-                    end
-                })
-
-                vim.api.nvim_create_autocmd("FileType", {
-                    pattern = { "norg" },
-                    callback = function()
-                        require("ufo").detach()
-                    end
-                })
-            end
+            },
         },
-        -- lazy = false, -- REQUIRED: tell lazy.nvim to start this plugin at startup
-        -- dependencies = {
-        -- 	-- main one
-        -- 	{ "ms-jpq/coq_nvim", branch = "coq" },
-        --
-        -- 	-- 9000+ Snippets
-        -- 	{ "ms-jpq/coq.artifacts", branch = "artifacts" },
-        --
-        -- 	-- lua & third party sources -- See https://github.com/ms-jpq/coq.thirdparty
-        -- 	-- Need to **configure separately**
-        -- 	{ "ms-jpq/coq.thirdparty", branch = "3p" },
-        -- 	-- - shell repl
-        -- 	-- - nvim lua api
-        -- 	-- - scientific calculator
-        -- 	-- - comment banner
-        -- 	-- - etc
-        -- },
-        -- init = function()
-        -- 	vim.g.coq_settings = {
-        -- 		auto_start = true, -- if you want to start COQ at startup
-        -- 		-- Your COQ settings here
-        -- 		display = {
-        --                   mark_highlight_group = "NormalFloat",
-        -- 			preview = {
-        -- 				border = {
-        -- 					{ "╭", "Normal" },
-        -- 					{ "─", "Normal" },
-        -- 					{ "╮", "Normal" },
-        -- 					{ "│", "Normal" },
-        -- 					{ "╯", "Normal" },
-        -- 					{ "─", "Normal" },
-        -- 					{ "╰", "Normal" },
-        -- 					{ "│", "Normal" },
-        -- 				},
-        -- 			},
-        -- 			icons = {
-        -- 				mode = "short",
-        -- 			},
-        -- 		},
-        -- 	}
-        -- end,
         config = function()
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
-            -- capabilities = vim.tbl_deep_extend("force", capabilities, require("coq").lsp_ensure_capabilities())
 
             capabilities.workspace = {
                 didChangeWatchedFiles = {
@@ -298,82 +258,6 @@ return {
                     end
                 end,
             })
-
-            local function peek_declaration()
-                local params = vim.lsp.util.make_position_params()
-                vim.lsp.buf_request(0, "textDocument/declaration", params, function(_, result, ctx, _)
-                    if not result or vim.tbl_isempty(result) then
-                        print("Declaration not found")
-                        return
-                    end
-
-                    -- Use the first result, can be enhanced to handle multiple results
-                    local location = result[1]
-                    local uri = location.uri or location.targetUri
-                    local range = location.range or location.targetRange
-
-                    local bufnr = vim.uri_to_bufnr(uri)
-                    vim.fn.bufload(bufnr)
-
-                    -- Open the definition in a horizontal split
-                    vim.cmd("split")
-                    vim.api.nvim_set_current_buf(bufnr)
-
-                    -- Move the cursor to the definition line
-                    vim.api.nvim_win_set_cursor(
-                        vim.api.nvim_get_current_win(),
-                        { range.start.line + 1, range.start.character }
-                    )
-
-                    -- Optionally, adjust the view to center the cursor line
-                    vim.cmd("normal! zz")
-                end)
-            end
-            -- Map the peek_definition function to a key
-            vim.keymap.set(
-                "n",
-                "<Leader>Lc",
-                peek_declaration,
-                { noremap = true, silent = true, desc = "Declaration (Peek)" }
-            )
-
-            local function peek_implementation()
-                local params = vim.lsp.util.make_position_params()
-                vim.lsp.buf_request(0, "textDocument/implementation", params, function(_, result, ctx, _)
-                    if not result or vim.tbl_isempty(result) then
-                        print("Implementation not found")
-                        return
-                    end
-
-                    -- Use the first result, can be enhanced to handle multiple results
-                    local location = result[1]
-                    local uri = location.uri or location.targetUri
-                    local range = location.range or location.targetRange
-
-                    local bufnr = vim.uri_to_bufnr(uri)
-                    vim.fn.bufload(bufnr)
-
-                    -- Open the definition in a horizontal split
-                    vim.cmd("split")
-                    vim.api.nvim_set_current_buf(bufnr)
-
-                    -- Move the cursor to the definition line
-                    vim.api.nvim_win_set_cursor(
-                        vim.api.nvim_get_current_win(),
-                        { range.start.line + 1, range.start.character }
-                    )
-
-                    -- Optionally, adjust the view to center the cursor line
-                    vim.cmd("normal! zz")
-                end)
-            end
-            -- Map the peek_definition function to a key
-            vim.keymap.set(
-                "n",
-                "<Leader>Li",
-                peek_implementation,
-                { noremap = true, silent = true, desc = "Implementation (Peek)" }
-            )
         end,
     },
     {
