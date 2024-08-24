@@ -39,7 +39,7 @@ return {
             { "<leader>t",         "<cmd>terminal<cr>",                                                           desc = "Terminal" },
             { "<leader>u",         "<cmd>UndotreeToggle<cr>",                                                     desc = "Undotree" },
             { "<leader>c",         "<cmd>bdelete<cr>",                                                            desc = "Close Buffer" },
-            { "<leader>b",         "<cmd>Telescope buffers <cr>",                                                 desc = "Buffers" },
+            { "<leader>b",         "<cmd>FzfLua buffers<cr>",                                                 desc = "Buffers" },
             { "<leader>/",         "<cmd>GrugFar<cr>",                                                            desc = "Grepper" },
 
             { "<leader>L",         group = "LSP" },
@@ -59,7 +59,7 @@ return {
             { "<leader>Lo",        "<cmd>Lspsaga outline<cr>",                                                    desc = "Outline" },
             { "<leader>LI",        "<cmd>LspInfo<cr>",                                                            desc = "LSP Info" },
             { "<leader>LDd",       "<cmd>Lspsaga show_buf_diagnostics ++normal<cr>",                              desc = "Document Diagnostics" },
-            { "<leader>LDs",       "<cmd>Telescope lsp_document_symbols <cr>",                                    desc = "Document Symbols" },
+            { "<leader>LDs",       "<cmd>FzfLua lsp_document_symbols <cr>",                                    desc = "Document Symbols" },
             { "<leader>LDj",       "<cmd>Lspsaga diagnostic_jump_next<CR>",                                       desc = "Next Diagnostic" },
             { "<leader>LWa",       "<cmd>lua vim.lsp.buf.add_workspace_folder()<cr>",                             desc = "Add Workspace Folder" },
             { "<leader>LWd",       "<cmd>Lspsaga show_workspace_diagnostics ++normal<cr>",                        desc = "Workspace Diagnostics" },
@@ -68,15 +68,15 @@ return {
             { "<leader>LWl",       "<cmd>lua vim.lsp.buf.list_workspace_folders()<cr>",                           desc = "List Workspace Folders" },
 
             { "<leader>F",         desc = "Find", },
-            { "<leader>Ff",        "<cmd>Telescope find_files<cr>",                                               desc = "Files" },
-            { "<leader>Ft",        "<cmd>Telescope live_grep <CR>",                                               desc = "Text" },
-            { "<leader>Fc",        "<cmd>Telescope colorscheme <cr>",                                             desc = "Colorscheme" },
-            { "<leader>Fh",        "<cmd>Telescope help_tags <cr>",                                               desc = "Find Help" },
-            { "<leader>Fk",        "<cmd>Telescope keymaps <cr>",                                                 desc = "Keymaps" },
-            { "<leader>Fr",        "<cmd>Telescope oldfiles <cr>",                                                desc = "Open Recent File" },
-            { "<leader>FM",        "<cmd>Telescope man_pages <cr>",                                               desc = "Man Pages" },
-            { "<leader>FR",        "<cmd>Telescope registers <cr>",                                               desc = "Registers" },
-            { "<leader>FC",        "<cmd>Telescope commands <cr>",                                                desc = "Commands" },
+            { "<leader>Ff",        "<cmd>FzfLua files<cr>",                                               desc = "Files" },
+            { "<leader>Ft",        "<cmd>FzfLua live_grep <CR>",                                               desc = "Text" },
+            { "<leader>Fc",        "<cmd>FzfLua colorschemes <cr>",                                             desc = "Colorscheme" },
+            { "<leader>Fh",        "<cmd>FzfLua helptags <cr>",                                               desc = "Find Help" },
+            { "<leader>Fk",        "<cmd>FzfLua keymaps <cr>",                                                 desc = "Keymaps" },
+            { "<leader>Fr",        "<cmd>FzfLua oldfiles <cr>",                                                desc = "Open Recent File" },
+            { "<leader>FM",        "<cmd>FzfLua manpages <cr>",                                               desc = "Man Pages" },
+            { "<leader>FR",        "<cmd>FzfLua registers <cr>",                                               desc = "Registers" },
+            { "<leader>FC",        "<cmd>FzfLua commands <cr>",                                                desc = "Commands" },
 
 
             { "<leader>A",         group = "Autocompletion", },
@@ -84,8 +84,8 @@ return {
             { "<leader>Ad",        "<cmd>lua require 'cmp'.setup{ enabled  false }<cr>",                          desc = "Disabled" },
 
             { "<leader>G",         group = "Git", },
-            { "<leader>Go",        "<cmd>Telescope git_status <cr>",                                              desc = "Open changed file" },
-            { "<leader>Gb",        "<cmd>Telescope git_branches <cr>",                                            desc = "Checkout branch" },
+            { "<leader>Go",        "<cmd>FzfLua git_status <cr>",                                              desc = "Open changed file" },
+            { "<leader>Gb",        "<cmd>FzfLua git_branches <cr>",                                            desc = "Checkout branch" },
             { "<leader>Gd",        "<cmd>Gitsigns diffthis HEAD<cr>",                                             desc = "Diff" },
 
             { "<leader>N",         group = "Neorg", },

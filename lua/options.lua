@@ -31,7 +31,7 @@ vim.opt.inccommand = "split" -- shows how certain commands apply in a separate w
 
 vim.opt.undofile = true
 vim.opt.signcolumn = "yes"
-vim.opt.scrolloff = 10
+vim.opt.scrolloff = 0
 
 vim.o.grepprg = "rg --vimgrep"
 vim.o.grepformat = "%f:%l:%c:%m"

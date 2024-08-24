@@ -123,7 +123,7 @@ return {
             local ExcludeStatusline = {
                 condition = function()
                     return conditions.buffer_matches({
-                        buftype = { "nofile", "prompt", "help", "quickfix" },
+                        buftype = { "nofile", "prompt", "help", "quickfix", "terminal" },
                         filetype = { "fugitive", "oil", "alpha" },
                     })
                 end,
