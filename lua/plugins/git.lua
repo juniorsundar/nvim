@@ -95,41 +95,58 @@ return {
         end,
     },
     {
-        "NeogitOrg/neogit",
-        branch = "master",
-        dependencies = {
-            "nvim-lua/plenary.nvim",  -- required
-            "sindrets/diffview.nvim", -- optional - Diff integration
-        },
+        "tpope/vim-fugitive",
         config = function()
-            local neogit = require("neogit")
-            neogit.setup({
-                disable_hint = true,
-                graph_style = "unicode",
-                kind = "tab",
-                disable_signs = false,
-                signs = {
-                    hunk = { "", "" },
-                    item = { "", "" },
-                    section = { "", "" },
-                },
-                integrations = {
-                    diffview = true,
-                    fzf_lua = true,
-                },
-            })
             vim.keymap.set(
                 "n",
                 "<space>Gg",
-                "<cmd>Neogit<cr>",
-                { noremap = true, silent = false, desc = "Neogit" }
+                "<cmd>Git<cr>",
+                { noremap = true, silent = false, desc = "fuGitive" }
             )
             vim.keymap.set(
                 "v",
                 "gG",
-                "<cmd>Neogit<cr>",
-                { noremap = true, silent = false, desc = "Neogit" }
+                "<cmd>Git<cr>",
+                { noremap = true, silent = false, desc = "fuGitive" }
             )
-        end,
-    },
+        end
+    }
+    -- {
+    --     "NeogitOrg/neogit",
+    --     branch = "master",
+    --     dependencies = {
+    --         "nvim-lua/plenary.nvim",  -- required
+    --         "sindrets/diffview.nvim", -- optional - Diff integration
+    --     },
+    --     config = function()
+    --         local neogit = require("neogit")
+    --         neogit.setup({
+    --             disable_hint = true,
+    --             graph_style = "unicode",
+    --             kind = "tab",
+    --             disable_signs = false,
+    --             signs = {
+    --                 hunk = { "", "" },
+    --                 item = { "", "" },
+    --                 section = { "", "" },
+    --             },
+    --             integrations = {
+    --                 diffview = true,
+    --                 fzf_lua = true,
+    --             },
+    --         })
+    --         vim.keymap.set(
+    --             "n",
+    --             "<space>Gg",
+    --             "<cmd>Neogit<cr>",
+    --             { noremap = true, silent = false, desc = "Neogit" }
+    --         )
+    --         vim.keymap.set(
+    --             "v",
+    --             "gG",
+    --             "<cmd>Neogit<cr>",
+    --             { noremap = true, silent = false, desc = "Neogit" }
+    --         )
+    --     end,
+    -- },
 }
