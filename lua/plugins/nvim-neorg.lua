@@ -52,8 +52,14 @@ return {
                     ["core.export"] = {},
                     ["core.highlights"] = {},
                     ["core.export.markdown"] = {},
+                    ["core.completion"] = {
+                        config = {
+                            engine = "nvim-cmp"
+                        }
+                    },
                     ["core.latex.renderer"] = {},
                     ["core.integrations.image"] = {},
+                    ["core.integrations.nvim-cmp"] = {},
                     ["core.summary"] = {},
                     ["core.qol.toc"] = {},
                     ["core.qol.todo_items"] = {},

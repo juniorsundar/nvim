@@ -18,9 +18,9 @@ return {
                 { trigger = 'fun', body = 'function ${1:name}(${2:args}) $0 end' }
                 -- other filetypes
             },
-            norg = {
-                { trigger = "h1", body = '* ${1:text}' }
-            }
+            -- norg = {
+            --     { trigger = "h1", body = '* ${1:text}' }
+            -- }
         }
 
         local function get_buf_snips()
@@ -153,17 +153,11 @@ return {
                 end, { "i", "s" }),
             }),
             sources = cmp.config.sources({
-                {
-                    name = "nvim_lsp",
-                    option = {
-                        markdown_oxide = {
-                            keyword_pattern = [[\(\k\| \|\/\|#\)\+]],
-                        },
-                    },
-                },
+                { name = "nvim_lsp" },
                 { name = "snips" },
                 { name = "path" },
                 { name = "nvim_lsp_signature_help" },
+                { name = "neorg" },
             }),
         })
     end,
