@@ -1,6 +1,6 @@
 return {
     'nvimdev/dashboard-nvim',
-    event = 'VimEnter',
+    -- event = 'VimEnter',
     config = function()
         local fzf = require('fzf-lua')
 

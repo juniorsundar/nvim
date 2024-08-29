@@ -1,6 +1,7 @@
 return {
     {
         "nvim-neorg/neorg",
+        event = "VeryLazy",
         dependencies = { {
             dir = "~/.config/nvim_plugins/neorg_extras",
             -- "juniorsundar/neorg-extras",
