@@ -81,6 +81,8 @@ return {
             local neorg = require("neorg.core")
             neorg.modules.get_module("core.dirman").set_workspace("default")
 
+            vim.keymap.set("n", "<leader>NT", "<cmd>Neorg cycle_task<CR>",
+                { noremap = true, silent = true, desc = "Cycle task" })
             vim.keymap.set("n", "<leader>N_", "<cmd>Neorg update_property_metadata<CR>",
                 { noremap = true, silent = true, desc = "Update property metadata" })
             vim.keymap.set("n", "<leader>NFB", "<cmd>Neorg roam backlinks<cr>",
@@ -91,8 +93,12 @@ return {
                 { noremap = true, silent = true, desc = "Block Injector" })
             vim.keymap.set("n", "<leader>NFn", "<cmd>Neorg roam node<cr>",
                 { noremap = true, silent = true, desc = "Node Injector" })
-            vim.keymap.set("n", "<leader>Na", "<cmd>Neorg agenda day<cr>",
-                { noremap = true, silent = true, desc = "Neorg Agenda" })
+            vim.keymap.set("n", "<leader>NAd", "<cmd>Neorg agenda day<cr>",
+                { noremap = true, silent = true, desc = "Neorg Agenda Day" })
+            vim.keymap.set("n", "<leader>NAp", "<cmd>Neorg agenda page undone pending hold<cr>",
+                { noremap = true, silent = true, desc = "Neorg Agenda Page" })
+            vim.keymap.set("n", "<leader>NAt", "<cmd>Neorg agenda tag<cr>",
+                { noremap = true, silent = true, desc = "Neorg Agenda Tag" })
             vim.keymap.set("n", "<leader>Nt", "<cmd>Neorg toc<cr>",
                 { noremap = true, silent = true, desc = "Table of Contents" })
         end,
