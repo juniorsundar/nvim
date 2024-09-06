@@ -5,36 +5,20 @@ return {
         dependencies = { {
             dir = "~/.config/nvim_plugins/neorg_extras",
             -- "juniorsundar/neorg-extras",
-            -- opts = {}
         }
         },
         config = function()
             require("neorg").setup({
                 load = {
                     ["core.defaults"] = {},
-                    ["core.esupports.indent"] = {
-                        -- config = {
-                        --     tweaks = {
-                        --         unordered_list1 = 0,
-                        --         unordered_list2 = 3,
-                        --         unordered_list3 = 6,
-                        --         unordered_list4 = 9,
-                        --         unordered_list5 = 12,
-                        --         unordered_list6 = 15,
-                        --         ordered_list1 = 0,
-                        --         ordered_list2 = 3,
-                        --         ordered_list3 = 6,
-                        --         ordered_list4 = 9,
-                        --         ordered_list5 = 12,
-                        --         ordered_list6 = 15,
-                        --     },
-                        -- },
-                    },
+                    ["core.esupports.indent"] = {},
                     ["core.concealer"] = {
                         config = {
                             icon_preset = "varied",
                             icons = {
-                                list = { icons = { "󰧞", "", "", "", "", "" } },
+                                list = { 
+                                    icons = { "󰧞", "", "", "", "", "" }
+                                },
                                 heading = {
                                     icons = { "󰼏", "󰼐", "󰼑", "󰼒", "󰼓", "󰼔" },
                                 },
@@ -55,7 +39,7 @@ return {
                     ["core.export.markdown"] = {},
                     ["core.completion"] = {
                         config = {
-                            engine = "nvim-cmp"
+                            engine = "nvim-cmp",
                         }
                     },
                     ["core.latex.renderer"] = {},
@@ -65,8 +49,16 @@ return {
                     ["core.qol.toc"] = {},
                     ["core.qol.todo_items"] = {},
                     ["core.looking-glass"] = {},
-                    ["core.presenter"] = { config = { zen_mode = "zen-mode" } },
-                    ["core.tangle"] = { config = { report_on_empty = false } },
+                    ["core.presenter"] = {
+                        config = {
+                            zen_mode = "zen-mode",
+                        }
+                    },
+                    ["core.tangle"] = {
+                        config = {
+                            report_on_empty = false,
+                        }
+                    },
                     ["core.tempus"] = {},
                     ["core.ui.calendar"] = {},
                     ["external.agenda"] = {},
