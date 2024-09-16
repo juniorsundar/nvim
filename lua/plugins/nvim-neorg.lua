@@ -3,7 +3,7 @@ return {
         "nvim-neorg/neorg",
         event = "VeryLazy",
         dependencies = { {
-            dir = "~/.config/nvim_plugins/neorg_extras",
+            dir = "~/.config/nvim_plugins/neorg-extras",
             -- "juniorsundar/neorg-extras",
         }
         },
@@ -35,6 +35,11 @@ return {
                         },
                     },
                     ["core.export"] = {},
+                    ["core.journal"] = {
+                        config = {
+                            strategy = "flat"
+                        }
+                    },
                     ["core.highlights"] = {},
                     ["core.export.markdown"] = {},
                     ["core.completion"] = {
