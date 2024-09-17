@@ -1,7 +1,5 @@
 return {
     {
-    },
-    {
         "folke/flash.nvim",
         event = "VeryLazy",
         opts = {},
@@ -127,7 +125,7 @@ return {
         end,
     },
     {
-        "3rd/diagram.nvim",
+        "juniorsundar/diagram.nvim",
         dependencies = {
             "3rd/image.nvim",
         },
