@@ -78,11 +78,6 @@ return {
             { "<leader>FC",       "<cmd>FzfLua commands<cr>",                                                    desc = "Commands" },
             { "<leader>Fl",       "<cmd>FzfLua grep_curbuf<cr>",                                                 desc = "Line" },
 
-
-            { "<leader>A",        group = "Autocompletion", },
-            { "<leader>Ae",       "<cmd>lua require 'cmp'.setup{ enabled = true }<cr>",                          desc = "Enabled" },
-            { "<leader>Ad",       "<cmd>lua require 'cmp'.setup{ enabled  false }<cr>",                          desc = "Disabled" },
-
             { "<leader>G",        group = "Git", },
             { "<leader>Go",       "<cmd>FzfLua git_status <cr>",                                                 desc = "Open changed file" },
             { "<leader>Gb",       "<cmd>FzfLua git_branches <cr>",                                               desc = "Checkout branch" },
