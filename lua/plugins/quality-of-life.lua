@@ -1,80 +1,12 @@
 return {
     {
-        "folke/flash.nvim",
-        event = "VeryLazy",
-        opts = {},
-        keys = {
-            {
-                "<C-s>",
-                mode = { "n", "x", "o" },
-                function()
-                    require("flash").jump()
-                end,
-                desc = "Flash",
-            },
-            {
-                "<C-S-s>",
-                mode = { "n", "x", "o" },
-                function()
-                    require("flash").treesitter()
-                end,
-                desc = "Flash Treesitter",
-            },
-            {
-                "r",
-                mode = "o",
-                function()
-                    require("flash").remote()
-                end,
-                desc = "Remote Flash",
-            },
-            {
-                "R",
-                mode = { "o", "x" },
-                function()
-                    require("flash").treesitter_search()
-                end,
-                desc = "Tresitter Search",
-            },
-            {
-                "<C-s>",
-                mode = { "c" },
-                function()
-                    require("flash").toggle()
-                end,
-                desc = "Toggle Flash Search",
-            },
-        },
-    },
-    {
-        "lukas-reineke/indent-blankline.nvim",
-        event = "VeryLazy",
-        opts = {
-            indent = {
-                char = "╎",
-                tab_char = "╎",
-            },
-            scope = { enabled = false },
-            exclude = {
-                filetypes = {
-                    "help",
-                    "alpha",
-                    "dashboard",
-                    "neo-tree",
-                    "Trouble",
-                    "trouble",
-                    "lazy",
-                    "mason",
-                    "notify",
-                    "toggleterm",
-                    "lazyterm",
-                    "norg",
-                    "git",
-                    "fugitive",
-                },
-            },
-        },
-        main = "ibl",
+        "ggandor/leap.nvim",
+        config = function ()
+            vim.keymap.set('n',        's', '<Plug>(leap)')
+            vim.keymap.set('n',        'S', '<Plug>(leap-from-window)')
+            vim.keymap.set({'x', 'o'}, 's', '<Plug>(leap-forward)')
+            vim.keymap.set({'x', 'o'}, 'S', '<Plug>(leap-backward)')
+        end
     },
     {
         "mbbill/undotree",
@@ -157,7 +89,6 @@ return {
     {
         "OXY2DEV/markview.nvim",
         lazy = false,
-
         dependencies = {
             "nvim-treesitter/nvim-treesitter",
             "nvim-tree/nvim-web-devicons"
@@ -166,7 +97,6 @@ return {
     {
         "OXY2DEV/helpview.nvim",
         lazy = false,
-
         dependencies = {
             "nvim-treesitter/nvim-treesitter"
         }

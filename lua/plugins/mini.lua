@@ -20,4 +20,11 @@ return {
             require("mini.move").setup()
         end,
     },
+    {
+        "echasnovski/mini.jump",
+        event = "VeryLazy",
+        config = function()
+            require("mini.jump").setup()
+        end,
+    },
 }

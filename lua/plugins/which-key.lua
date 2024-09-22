@@ -40,7 +40,6 @@ return {
             { "<leader>u",        "<cmd>UndotreeToggle<cr>",                                                     desc = "Undotree" },
             { "<leader>c",        "<cmd>bdelete<cr>",                                                            desc = "Close Buffer" },
             { "<leader>b",        "<cmd>FzfLua buffers<cr>",                                                     desc = "Buffers" },
-            { "<leader>/",        "<cmd>GrugFar<cr>",                                                            desc = "Grepper" },
 
             { "<leader>L",        group = "LSP" },
             { "<leader>LD",       group = "Document" },
