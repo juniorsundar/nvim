@@ -8,7 +8,7 @@ return {
             -- Color table for highlights
             -- stylua: ignore
             local colors = {
-                bg       = '#16181a',
+                bg       = '#1e2124',
                 fg       = '#ffffff',
                 yellow   = '#f1ff5e',
                 cyan     = '#64d8cb',
@@ -82,16 +82,16 @@ return {
 
             ins_left {
                 function()
-                    return '▊'
+                    return ''
                 end,
                 color = function()
                     -- auto change color according to neovims mode
                     local mode_color = {
-                        n = colors.red,
-                        i = colors.green,
-                        v = colors.blue,
-                        [''] = colors.blue,
-                        V = colors.blue,
+                        n = colors.blue,
+                        i = colors.red,
+                        v = colors.green,
+                        [''] = colors.green,
+                        V = colors.green,
                         c = colors.magenta,
                         no = colors.red,
                         s = colors.orange,
@@ -108,24 +108,25 @@ return {
                         ['!'] = colors.red,
                         t = colors.red,
                     }
-                    return { fg = mode_color[vim.fn.mode()] }
+                    return { bg = mode_color[vim.fn.mode()] }
                 end,
                 padding = { left = 0, right = 1 }, -- We don't need space before this
             }
 
             ins_left {
                 -- mode component
-                function()
-                    return ''
-                end,
+                -- function()
+                --     return ''
+                -- end,
+                "mode",
                 color = function()
                     -- auto change color according to neovims mode
                     local mode_color = {
-                        n = colors.red,
-                        i = colors.green,
-                        v = colors.blue,
-                        [''] = colors.blue,
-                        V = colors.blue,
+                        n = colors.blue,
+                        i = colors.red,
+                        v = colors.green,
+                        [''] = colors.green,
+                        V = colors.green,
                         c = colors.magenta,
                         no = colors.red,
                         s = colors.orange,
@@ -142,33 +143,16 @@ return {
                         ['!'] = colors.red,
                         t = colors.red,
                     }
-                    return { fg = mode_color[vim.fn.mode()] }
+                    return { bg = mode_color[vim.fn.mode()], fg = colors.bg }
                 end,
-                padding = { right = 1 },
+                padding = { left = 1, right = 1 },
             }
 
             ins_left {
                 'branch',
                 icon = '',
-                color = { fg = colors.blue, gui = 'bold' },
-            }
-
-            ins_left {
-                'diff',
-                -- Is it me or the symbol for modified us really weird
-                symbols = { added = ' ', modified = '󰝤 ', removed = ' ' },
-                diff_color = {
-                    added = { fg = colors.green },
-                    modified = { fg = colors.orange },
-                    removed = { fg = colors.red },
-                },
-                cond = conditions.hide_in_width,
-            }
-
-            ins_left {
-                'filename',
-                cond = conditions.buffer_not_empty,
-                color = { fg = colors.fg, gui = 'bold' },
+                color = { fg = colors.violet, gui = 'bold' },
+                padding = { left = 1, right = 1 },
             }
 
             ins_left {
@@ -182,6 +166,26 @@ return {
                 },
             }
 
+            -- ins_left {
+            --     'diff',
+            --     -- Is it me or the symbol for modified us really weird
+            --     symbols = { added = ' ', modified = '󰝤 ', removed = ' ' },
+            --     diff_color = {
+            --         added = { fg = colors.green },
+            --         modified = { fg = colors.orange },
+            --         removed = { fg = colors.red },
+            --     },
+            --     cond = conditions.hide_in_width,
+            --     padding = { right = 1 }
+            -- }
+
+            ins_left {
+                'filename',
+                cond = conditions.buffer_not_empty,
+                color = { fg = colors.fg, gui = 'bold' },
+            }
+
+
             -- Insert mid section. You can make any number of sections in neovim :)
             -- for lualine it's any number greater then 2
             ins_left {
@@ -194,7 +198,7 @@ return {
             ins_right {
                 'filetype',
                 icons_enabled = true, -- I think icons are cool but Eviline doesn't have them. sigh
-                color = { gui = 'italic'}
+                color = { gui = 'italic' }
             }
 
             ins_right { 'location' }
@@ -208,11 +212,11 @@ return {
                 color = function()
                     -- auto change color according to neovims mode
                     local mode_color = {
-                        n = colors.red,
-                        i = colors.green,
-                        v = colors.blue,
-                        [''] = colors.blue,
-                        V = colors.blue,
+                        n = colors.blue,
+                        i = colors.red,
+                        v = colors.green,
+                        [''] = colors.green,
+                        V = colors.green,
                         c = colors.magenta,
                         no = colors.red,
                         s = colors.orange,
