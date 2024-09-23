@@ -57,7 +57,7 @@ return {
         end,
     },
     {
-        "juniorsundar/diagram.nvim",
+        "3rd/diagram.nvim",
         dependencies = {
             "3rd/image.nvim",
         },
