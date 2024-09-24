@@ -75,8 +75,7 @@ return {
             })
 
             -- local neorg_utils = require("neorg-extras")
-            local neorg = require("neorg.core")
-            neorg.modules.get_module("core.dirman").set_workspace("default")
+            require("neorg.core").modules.get_module("core.dirman").set_workspace("default")
 
             vim.keymap.set("n", "<leader>NT", "<cmd>Neorg cycle_task<CR>",
                 { noremap = true, silent = true, desc = "Cycle task" })
