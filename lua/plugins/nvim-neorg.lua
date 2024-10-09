@@ -16,7 +16,7 @@ return {
                         config = {
                             icon_preset = "varied",
                             icons = {
-                                list = { 
+                                list = {
                                     icons = { "󰧞", "", "", "", "", "" }
                                 },
                                 heading = {
@@ -74,7 +74,6 @@ return {
                 },
             })
 
-            -- local neorg_utils = require("neorg-extras")
             require("neorg.core").modules.get_module("core.dirman").set_workspace("default")
 
             vim.keymap.set("n", "<leader>NT", "<cmd>Neorg cycle_task<CR>",
