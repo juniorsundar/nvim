@@ -59,7 +59,7 @@ return {
                     alpha = true,
                     barbar = true,
                     flash = true,
-                    markdown = true,
+                    -- markdown = true,
                     neogit = true,
                     grug_far = true,
                     treesitter_context = true,
