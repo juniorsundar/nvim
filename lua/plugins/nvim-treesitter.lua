@@ -32,6 +32,7 @@ return {
                     "query",
                     "norg",
                 },
+                ignore_install = { 'org' },
                 -- auto install above language parsers
                 auto_install = false,
                 incremental_selection = {

@@ -65,7 +65,7 @@ return {
                     require('ufo').setup({
                         fold_virt_text_handler = handler,
                         provider_selector = function(bufnr, filetype, buftype)
-                            if filetype == 'norg' then
+                            if filetype == 'norg' or filetype == 'org' then
                                 return ''
                             else
                                 return { 'treesitter', 'indent' }
@@ -74,7 +74,7 @@ return {
                     })
 
                     vim.api.nvim_create_autocmd("FileType", {
-                        pattern = { "norg" },
+                        pattern = { "norg", "org" },
                         callback = function()
                             require("ufo").detach()
                         end
