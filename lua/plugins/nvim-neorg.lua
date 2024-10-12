@@ -67,7 +67,11 @@ return {
                     ["core.tempus"] = {},
                     ["core.ui.calendar"] = {},
                     ["external.agenda"] = {},
-                    ["external.roam"] = {},
+                    ["external.roam"] = {
+                        config = {
+                            fuzzy_finder = "Fzf"
+                        }
+                    },
                     ["external.many-mans"] = {
                         -- treesitter_fold = false,
                     },
