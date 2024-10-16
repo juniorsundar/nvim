@@ -4,7 +4,10 @@ return {
         event = "VeryLazy",
         dependencies = { {
             dir = "~/.config/nvim_plugins/neorg-extras",
-            -- "juniorsundar/neorg-extras",
+            -- {
+            --     "juniorsundar/neorg-extras",
+            --     tag = "v0.5.0"
+            -- }
         }
         },
         config = function()
@@ -69,11 +72,15 @@ return {
                     ["external.agenda"] = {},
                     ["external.roam"] = {
                         config = {
-                            fuzzy_finder = "Fzf"
+                            fuzzy_finder = "Fzf",
+                            fuzzy_backlinks = false
                         }
                     },
                     ["external.many-mans"] = {
-                        -- treesitter_fold = false,
+                        config = {
+                            metadata_fold = true,
+                            code_fold = false,
+                        }
                     },
                 },
             })
