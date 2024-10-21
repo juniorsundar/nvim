@@ -7,19 +7,35 @@ return {
 
             -- Color table for highlights
             -- stylua: ignore
-            local colors = {
+            local cyberdream = {
                 bg       = '#1e2124',
-                fg       = '#ffffff',
-                yellow   = '#f1ff5e',
+                blue     = '#5ea1ff',
                 cyan     = '#64d8cb',
                 darkblue = '#081633',
+                fg       = '#ffffff',
                 green    = '#5eff6c',
-                orange   = '#ffbd5e',
-                violet   = '#bd5eff',
                 magenta  = '#ff5ef1',
-                blue     = '#5ea1ff',
+                orange   = '#ffbd5e',
                 red      = '#ff6e5e',
+                violet   = '#bd5eff',
+                yellow   = '#f1ff5e',
             }
+
+            local modus_operandi = {
+                bg       = '#1e1e1e',
+                blue     = '#5ea1ff',
+                cyan     = '#00d3d0',
+                darkblue = '#081633',
+                fg       = '#ffffff',
+                green    = '#44bc44',
+                magenta  = '#79a8ff',
+                orange   = '#fec43f',
+                red      = '#ff5f59',
+                violet   = '#b6a0ff',
+                yellow   = '#d0bc00',
+            }
+
+            local colors = cyberdream
 
             local conditions = {
                 buffer_not_empty = function()

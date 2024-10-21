@@ -101,4 +101,5 @@ return {
             "nvim-treesitter/nvim-treesitter"
         }
     },
+    {"ap/vim-css-color"}
 }
