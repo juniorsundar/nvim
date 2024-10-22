@@ -21,21 +21,21 @@ return {
                 yellow   = '#f1ff5e',
             }
 
-            local modus_operandi = {
-                bg       = '#1e1e1e',
-                blue     = '#5ea1ff',
-                cyan     = '#00d3d0',
+            local modus_vivendi = {
+                bg       = '#121212',
+                blue     = '#4f97d7',
+                cyan     = '#00bc7f',
                 darkblue = '#081633',
                 fg       = '#ffffff',
                 green    = '#44bc44',
-                magenta  = '#79a8ff',
-                orange   = '#fec43f',
-                red      = '#ff5f59',
-                violet   = '#b6a0ff',
-                yellow   = '#d0bc00',
+                magenta  = '#d7afff',
+                orange   = '#ffa94d',
+                red      = '#ff8059',
+                violet   = '#a899ff',
+                yellow   = '#e5c07b',
             }
 
-            local colors = cyberdream
+            local colors = modus_vivendi
 
             local conditions = {
                 buffer_not_empty = function()
