@@ -35,7 +35,7 @@ return {
                 yellow   = '#e5c07b',
             }
 
-            local colors = modus_vivendi
+            local colors = cyberdream
 
             local conditions = {
                 buffer_not_empty = function()

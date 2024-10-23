@@ -141,8 +141,8 @@ return {
                 },
             }
 
-            -- require("catppuccin").setup(cyberdream)
-            require("catppuccin").setup(modus_vivendi)
+            require("catppuccin").setup(cyberdream)
+            -- require("catppuccin").setup(modus_vivendi)
             vim.cmd.colorscheme("catppuccin-macchiato")
         end,
     },
