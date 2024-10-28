@@ -86,8 +86,8 @@ return {
                     lualine_b = {},
                     lualine_y = {},
                     lualine_z = {},
-                    lualine_c = {'filename'},
-                    lualine_x = {'location'},
+                    lualine_c = { 'filename' },
+                    lualine_x = { 'location' },
                 },
             }
 
