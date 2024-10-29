@@ -110,7 +110,7 @@ return {
                 highlight_overrides = {
                     macchiato = function(colors)
                         return {
-                            NormalFloat = { fg = colors.text, bg = colors.mantle },
+                            NormalFloat = { fg = colors.text, bg = colors.base },
                             Comment = { fg = colors.overlay1 },
                             LineNr = { fg = colors.overlay1 },
                             CursorLineNr = { fg = colors.text },

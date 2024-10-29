@@ -108,6 +108,11 @@ return {
             lspSymbol("Hint", "󰌵")
             lspSymbol("Warn", "")
 
+            vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
+                vim.lsp.handlers.hover, {
+                    border = "single"
+                }
+)
             vim.diagnostic.config({
                 virtual_text = {
                     prefix = "",
@@ -244,22 +249,5 @@ return {
                 go = { "gofumpt" },
             },
         },
-    },
-    {
-        "nvimdev/lspsaga.nvim",
-        event = "LspAttach",
-        config = function()
-            require("lspsaga").setup({
-                lightbulb = {
-                    enable = false,
-                    sign = false,
-                },
-                ui = {
-                    border = "rounded",
-                    lines = { "└", "├", "│", "─", "┌" },
-                    kind = require("catppuccin.groups.integrations.lsp_saga").custom_kind(),
-                },
-            })
-        end,
     },
 }
