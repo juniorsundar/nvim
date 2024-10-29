@@ -10,6 +10,7 @@ return {
             end
 
             -- configure treesitter
+            ---@diagnostic disable-next-line: missing-fields
             treesitter.setup({
                 playground = { enable = true },
                 -- enable syntax highlighting
