@@ -57,6 +57,7 @@ return {
                     disabled_filetypes = {
                         "NeogitStatus",
                         "oil",
+                        "ministarter",
                         "fzf",
                     },
                     -- Disable sections and component separators
