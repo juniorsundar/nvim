@@ -1,11 +1,5 @@
 return {
     {
-        'echasnovski/mini.starter',
-        config = function()
-            require("mini.starter").setup()
-        end,
-    },
-    {
         "echasnovski/mini.pairs",
         event = "VeryLazy",
         config = function()
