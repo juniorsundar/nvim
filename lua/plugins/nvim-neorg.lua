@@ -8,7 +8,7 @@ return {
             --     "juniorsundar/neorg-extras",
             --     tag = "v0.5.0"
             -- }
-        }
+        },
         },
         config = function()
             require("neorg").setup({
@@ -72,8 +72,10 @@ return {
                     ["external.agenda"] = {},
                     ["external.roam"] = {
                         config = {
-                            fuzzy_finder = "Fzf",
-                            fuzzy_backlinks = false
+                            -- fuzzy_finder = "Fzf",
+                            fuzzy_finder = "Telescope",
+                            fuzzy_backlinks = false,
+                            roam_base_directory = "vault"
                         }
                     },
                     ["external.many-mans"] = {
