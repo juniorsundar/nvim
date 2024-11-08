@@ -72,8 +72,7 @@ return {
                     ["external.agenda"] = {},
                     ["external.roam"] = {
                         config = {
-                            -- fuzzy_finder = "Fzf",
-                            fuzzy_finder = "Telescope",
+                            fuzzy_finder = "Fzf",
                             fuzzy_backlinks = false,
                             roam_base_directory = "vault"
                         }
