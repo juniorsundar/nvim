@@ -52,16 +52,19 @@ return {
             styles = {
                 notification = {
                     wo = { wrap = true } -- Wrap notifications
+                },
+                blame_line = {
+                    width = 0.8,
+                    height = 0.8
                 }
             }
         },
         keys = {
-            { "<leader>n",  function() Snacks.notifier.hide() end,           desc = "Dismiss All Notifications" },
-            { "<leader>Gg", function() Snacks.lazygit() end,                 desc = "Lazygit" },
-            { "<leader>gB", function() Snacks.gitbrowse() end,               desc = "Git Browse" },
-            { "<c-/>",      function() Snacks.terminal() end,                desc = "Toggle Terminal" },
-            { "]]",         function() Snacks.words.jump(vim.v.count1) end,  desc = "Next Reference",           mode = { "n", "t" } },
-            { "[[",         function() Snacks.words.jump(-vim.v.count1) end, desc = "Prev Reference",           mode = { "n", "t" } },
+            { "<leader>n",  function() Snacks.notifier.hide() end,      desc = "Dismiss All Notifications" },
+            { "<leader>Gg", function() Snacks.lazygit() end,            desc = "Lazygit" },
+            { "<leader>Gw", function() Snacks.gitbrowse() end,          desc = "Git Browse" },
+            { "<leader>Gl", function() Snacks.git.blame_line() end,     desc = "Git Blame Line" },
+            { "<c-/>",      function() Snacks.terminal() end,           desc = "Toggle Terminal" },
             {
                 "<leader>N",
                 desc = "Neovim News",
@@ -93,6 +96,19 @@ return {
                         Snacks.debug.backtrace()
                     end
                     vim.print = _G.dd -- Override print to use snacks for `:=` command
+                end,
+            })
+            vim.api.nvim_create_autocmd("LspProgress", {
+                callback = function(ev)
+                    local spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
+                    vim.notify(vim.lsp.status(), "info", {
+                        id = "lsp_progress",
+                        title = "LSP Progress",
+                        opts = function(notif)
+                            notif.icon = ev.data.params.value.kind == "end" and " "
+                                or spinner[math.floor(vim.uv.hrtime() / (1e6 * 80)) % #spinner + 1]
+                        end,
+                    })
                 end,
             })
         end,

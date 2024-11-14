@@ -88,7 +88,7 @@ return {
         vim.keymap.set(
             "n",
             "<space>GB",
-            "<cmd>lua require('gitsigns').blame_line()<cr>",
+            "<cmd>lua require('gitsigns').blame()<cr>",
             { noremap = true, silent = false, desc = "Blame" }
         )
     end,
