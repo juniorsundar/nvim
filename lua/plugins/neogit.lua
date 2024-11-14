@@ -36,29 +36,29 @@ return {
     --         )
     --     end,
     -- },
-    {
-        "kdheepak/lazygit.nvim",
-        lazy = true,
-        cmd = {
-            "LazyGit",
-            "LazyGitConfig",
-            "LazyGitCurrentFile",
-            "LazyGitFilter",
-            "LazyGitFilterCurrentFile",
-        },
-        dependencies = {
-            "nvim-lua/plenary.nvim",
-        },
-        keys = {
-            { "<leader>Gg", "<cmd>LazyGit<cr>", desc = "LazyGit" }
-        },
-        config = function()
-            vim.keymap.set(
-                "v",
-                "gG",
-                "<cmd>Neogit<cr>",
-                { noremap = true, silent = false, desc = "Neogit" }
-            )
-        end
-    }
+    -- {
+    --     "kdheepak/lazygit.nvim",
+    --     lazy = true,
+    --     cmd = {
+    --         "LazyGit",
+    --         "LazyGitConfig",
+    --         "LazyGitCurrentFile",
+    --         "LazyGitFilter",
+    --         "LazyGitFilterCurrentFile",
+    --     },
+    --     dependencies = {
+    --         "nvim-lua/plenary.nvim",
+    --     },
+    --     keys = {
+    --         { "<leader>Gg", "<cmd>LazyGit<cr>", desc = "LazyGit" }
+    --     },
+    --     config = function()
+    --         vim.keymap.set(
+    --             "v",
+    --             "gG",
+    --             "<cmd>Neogit<cr>",
+    --             { noremap = true, silent = false, desc = "Neogit" }
+    --         )
+    --     end
+    -- }
 }
