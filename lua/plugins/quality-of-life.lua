@@ -30,13 +30,6 @@ return {
         }
     },
     {
-        "OXY2DEV/helpview.nvim",
-        lazy = false,
-        dependencies = {
-            "nvim-treesitter/nvim-treesitter"
-        }
-    },
-    {
         "folke/snacks.nvim",
         priority = 1000,
         lazy = false,

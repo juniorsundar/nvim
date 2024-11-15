@@ -23,65 +23,7 @@ return {
     },
     {
         "neovim/nvim-lspconfig",
-        dependencies = {
-            {
-                'kevinhwang91/nvim-ufo',
-                dependencies = { 'kevinhwang91/promise-async' },
-                config = function()
-                    vim.o.foldenable = true
-                    -- vim.o.foldlevel = 99
-                    vim.o.foldlevelstart = 99
-                    vim.keymap.set('n', 'zR', require('ufo').openAllFolds)
-                    vim.keymap.set('n', 'zM', require('ufo').closeAllFolds)
-
-                    local handler = function(virtText, lnum, endLnum, width, truncate)
-                        local newVirtText = {}
-                        local suffix = (' 󰁂 %d '):format(endLnum - lnum)
-                        local sufWidth = vim.fn.strdisplaywidth(suffix)
-                        local targetWidth = width - sufWidth
-                        local curWidth = 0
-                        for _, chunk in ipairs(virtText) do
-                            local chunkText = chunk[1]
-                            local chunkWidth = vim.fn.strdisplaywidth(chunkText)
-                            if targetWidth > curWidth + chunkWidth then
-                                table.insert(newVirtText, chunk)
-                            else
-                                chunkText = truncate(chunkText, targetWidth - curWidth)
-                                local hlGroup = chunk[2]
-                                table.insert(newVirtText, { chunkText, hlGroup })
-                                chunkWidth = vim.fn.strdisplaywidth(chunkText)
-                                -- str width returned from truncate() may less than 2nd argument, need padding
-                                if curWidth + chunkWidth < targetWidth then
-                                    suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
-                                end
-                                break
-                            end
-                            curWidth = curWidth + chunkWidth
-                        end
-                        table.insert(newVirtText, { suffix, 'MoreMsg' })
-                        return newVirtText
-                    end
-
-                    require('ufo').setup({
-                        fold_virt_text_handler = handler,
-                        provider_selector = function(bufnr, filetype, buftype)
-                            if filetype == 'norg' or filetype == 'org' then
-                                return ''
-                            else
-                                return { 'treesitter', 'indent' }
-                            end
-                        end
-                    })
-
-                    vim.api.nvim_create_autocmd("FileType", {
-                        pattern = { "norg", "org" },
-                        callback = function()
-                            require("ufo").detach()
-                        end
-                    })
-                end
-            },
-        },
+        dependencies = {},
         config = function()
             local capabilities = vim.lsp.protocol.make_client_capabilities()
             capabilities = vim.tbl_deep_extend("force", capabilities, require("cmp_nvim_lsp").default_capabilities())
@@ -112,7 +54,7 @@ return {
                 vim.lsp.handlers.hover, {
                     border = "single"
                 }
-)
+            )
             vim.diagnostic.config({
                 virtual_text = {
                     prefix = "",
@@ -222,6 +164,22 @@ return {
                     -- Enable completion triggered by <c-x><c-o>
                     vim.bo[event.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
 
+                    -- Set the foldtext option to use the custom function
+                    vim.opt.foldmethod = "expr"
+                    vim.o.foldlevel = 99
+                    vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+
+                    function _G.custom_foldtext()
+                        local fold_start = vim.v.foldstart
+                        local first_line = vim.fn.getline(fold_start)
+                        return first_line
+                    end
+
+                    -- Assign the custom function to foldtext
+                    vim.opt.foldtext = "v:lua.custom_foldtext()"
+                    -- Optional: Remove fold column filler characters for a cleaner look
+                    vim.opt.fillchars:append({ fold = " " })
+                    --
                     -- Buffer local mappings.
                     local client = vim.lsp.get_client_by_id(event.data.client_id)
                     if client and client.server_capabilities.documentHighlightProvider then
