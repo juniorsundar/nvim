@@ -5,10 +5,10 @@ return {
         opts = {},
         -- stylua: ignore
         keys = {
-            { "<c-s>",     mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash" },
+            { "<c-s>",   mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash" },
             { "<c-S-S>", mode = { "n", "x", "o" }, function() require("flash").treesitter() end,        desc = "Flash Treesitter" },
-            { "r",     mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash" },
-            { "R",     mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+            { "r",       mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash" },
+            { "R",       mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
             -- { "<c-s>", mode = { "c" },           function() require("flash").toggle() end,            desc = "Toggle Flash Search" },
         },
     },
@@ -53,18 +53,18 @@ return {
             }
         },
         keys = {
-            { "<leader>n",  function() Snacks.notifier.hide() end,      desc = "Dismiss All Notifications" },
-            { "<leader>Gg", function() Snacks.lazygit() end,            desc = "Lazygit" },
-            { "<leader>Gw", function() Snacks.gitbrowse() end,          desc = "Git Browse" },
-            { "<leader>Gl", function() Snacks.git.blame_line() end,     desc = "Git Blame Line" },
+            { "<leader>n",  function() Snacks.notifier.hide() end,  desc = "Dismiss All Notifications" },
+            { "<leader>Gg", function() Snacks.lazygit() end,        desc = "Lazygit" },
+            { "<leader>Gw", function() Snacks.gitbrowse() end,      desc = "Git Browse" },
+            { "<leader>Gl", function() Snacks.git.blame_line() end, desc = "Git Blame Line" },
             {
                 "<localleader>N",
                 desc = "Neovim News",
                 function()
                     Snacks.win({
                         file = vim.api.nvim_get_runtime_file("doc/news.txt", false)[1],
-                        width = 0.6,
-                        height = 0.6,
+                        width = 0.8,
+                        height = 0.8,
                         wo = {
                             spell = false,
                             wrap = false,
