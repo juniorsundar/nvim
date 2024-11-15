@@ -57,9 +57,8 @@ return {
             { "<leader>Gg", function() Snacks.lazygit() end,            desc = "Lazygit" },
             { "<leader>Gw", function() Snacks.gitbrowse() end,          desc = "Git Browse" },
             { "<leader>Gl", function() Snacks.git.blame_line() end,     desc = "Git Blame Line" },
-            { "<c-/>",      function() Snacks.terminal() end,           desc = "Toggle Terminal" },
             {
-                "<leader>N",
+                "<localleader>N",
                 desc = "Neovim News",
                 function()
                     Snacks.win({

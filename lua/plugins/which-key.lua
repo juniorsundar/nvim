@@ -30,15 +30,13 @@ return {
             align = "center",     -- align columns left, center or right
         },
         spec = {
-            { "<leader>a",        "<cmd>Dashboard<cr>",                                                          desc = "Dashboard" },
             { "<leader>w",        "<cmd>w!<cr>",                                                                 desc = "Save" },
             { "<leader>q",        "<cmd>q<cr>",                                                                  desc = "Quit" },
             { "<leader>l",        "<cmd>Lazy<cr>",                                                               desc = "Lazy" },
             { "<leader>m",        "<cmd>Mason<cr>",                                                              desc = "Mason" },
             { "<leader>o",        "<cmd>Oil<cr>",                                                                desc = "Oil" },
-            { "<leader>t",        "<cmd>terminal<cr>",                                                           desc = "Terminal" },
-            { "<leader>u",        "<cmd>UndotreeToggle<cr>",                                                     desc = "Undotree" },
-            { "<leader>c",        "<cmd>bdelete<cr>",                                                            desc = "Close Buffer" },
+            { "<leader>t",        "<cmd>lua Snacks.terminal()<cr>",                                              desc = "Terminal" },
+            { "<leader>c",        "<cmd>lua Snacks.bufdelete.delete()<cr>",                                      desc = "Close Buffer" },
             { "<leader>b",        "<cmd>FzfLua buffers<cr>",                                                     desc = "Buffers" },
 
             { "<leader>L",        group = "LSP" },
