@@ -1,6 +1,7 @@
 return {
     {
         "williamboman/mason.nvim",
+        event = "LspAttach",
         config = function()
             require("mason").setup()
         end,
