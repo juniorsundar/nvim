@@ -23,11 +23,20 @@ return {
     },
     {
         "OXY2DEV/markview.nvim",
-        lazy = false,
+        -- lazy = false,
+        ft = "markdown",
         dependencies = {
             "nvim-treesitter/nvim-treesitter",
             "nvim-tree/nvim-web-devicons"
-        }
+        },
+        config = function ()
+            require("markview").setup({
+                list_items = {
+                    indent_size = 2,
+                    shift_width = 2,
+                }
+            })
+        end
     },
     {
         "folke/snacks.nvim",
