@@ -73,7 +73,8 @@ return {
                     config = {
                         fuzzy_finder = "Fzf",
                         fuzzy_backlinks = false,
-                        roam_base_directory = "vault"
+                        roam_base_directory = "vault",
+                        node_name_randomiser = true
                     }
                 },
                 ["external.many-mans"] = {
