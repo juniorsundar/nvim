@@ -1,11 +1,11 @@
 return {
-    -- "hrsh7th/nvim-cmp",
-    "iguanacucumber/magazine.nvim",
+    "hrsh7th/nvim-cmp",
+    -- "iguanacucumber/magazine.nvim",
     name = "nvim-cmp",
     -- lazy = true,
     version = false,
     dependencies = {
-        { "hrsh7th/cmp-nvim-lsp",                lazy = true },
+        { "iguanacucumber/mag-nvim-lsp", name = "cmp-nvim-lsp", opts = {} },
         { "hrsh7th/cmp-nvim-lsp-signature-help",            lazy = true },
         { "hrsh7th/cmp-path",                               lazy = true },
         -- { "iguanacucumber/mag-nvim-lsp",                    name = "cmp-nvim-lsp", lazy = true, opts = {} },

@@ -29,7 +29,7 @@ return {
             "nvim-treesitter/nvim-treesitter",
             "nvim-tree/nvim-web-devicons"
         },
-        config = function ()
+        config = function()
             require("markview").setup({
                 list_items = {
                     indent_size = 2,
@@ -44,6 +44,7 @@ return {
         lazy = false,
         opts = {
             bigfile = { enabled = true },
+            dashboard = { enabled = true },
             notifier = {
                 enabled = true,
                 timeout = 3000,

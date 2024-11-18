@@ -55,6 +55,7 @@ return {
             options = {
                 disabled_filetypes = {
                     "NeogitStatus",
+                    "snacks_dashboard",
                     "oil",
                     "ministarter",
                     "fzf",
