@@ -1,6 +1,6 @@
 return {
-    "hrsh7th/nvim-cmp",
-    -- "iguanacucumber/magazine.nvim",
+    -- "hrsh7th/nvim-cmp",
+    "iguanacucumber/magazine.nvim",
     name = "nvim-cmp",
     -- lazy = true,
     version = false,
