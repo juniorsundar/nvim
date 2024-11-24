@@ -127,6 +127,7 @@ return {
                     treesitter = false,
                     -- markdown = true,
                     neogit = true,
+                    snacks = true,
                     treesitter_context = true,
                     lsp_saga = true,
                     diffview = true,
