@@ -5,9 +5,9 @@ return {
     -- lazy = true,
     version = false,
     dependencies = {
-        { "iguanacucumber/mag-nvim-lsp", name = "cmp-nvim-lsp", opts = {} },
-        { "hrsh7th/cmp-nvim-lsp-signature-help",            lazy = true },
-        { "hrsh7th/cmp-path",                               lazy = true },
+        { "iguanacucumber/mag-nvim-lsp",         name = "cmp-nvim-lsp", opts = {} },
+        { "hrsh7th/cmp-nvim-lsp-signature-help", lazy = true },
+        { "hrsh7th/cmp-path",                    lazy = true },
         -- { "iguanacucumber/mag-nvim-lsp",                    name = "cmp-nvim-lsp", lazy = true, opts = {} },
     },
     config = function()

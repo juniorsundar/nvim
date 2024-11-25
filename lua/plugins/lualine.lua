@@ -132,7 +132,7 @@ return {
                 }
                 return { bg = mode_color[vim.fn.mode()] }
             end,
-            padding = { left = 0, right = 1 },     -- We don't need space before this
+            padding = { left = 0, right = 1 }, -- We don't need space before this
         }
 
         ins_left {
@@ -219,7 +219,7 @@ return {
         -- Add components to right sections
         ins_right {
             'filetype',
-            icons_enabled = true,     -- I think icons are cool but Eviline doesn't have them. sigh
+            icons_enabled = true, -- I think icons are cool but Eviline doesn't have them. sigh
             color = { gui = 'italic' }
         }
 
