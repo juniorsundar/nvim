@@ -1,31 +1,31 @@
-name: Linting and style checking
-
-on: [push]
-
-permissions:
-  contents: write
-  pull-requests: write
-
-jobs:
-  stylua:
-    name: stylua
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: JohnnyMorganz/stylua-action@v4
-      with:
-        token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
-        version: latest # NOTE: we recommend pinning to a specific version in case of formatting changes
-        # CLI arguments
-        args: -v --verify .
-        
-    - uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: "chore: autoformat with stylua"
-        branch: ${{ github.ref }}
-
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: ${{ github.ref }}
+# name: Linting and style checking
+#
+# on: [push]
+#
+# permissions:
+#   contents: write
+#   pull-requests: write
+#
+# jobs:
+#   stylua:
+#     name: stylua
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v4
+#     - uses: JohnnyMorganz/stylua-action@v4
+#       with:
+#         token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+#         version: latest # NOTE: we recommend pinning to a specific version in case of formatting changes
+#         # CLI arguments
+#         args: -v --verify .
+#
+#     - uses: stefanzweifel/git-auto-commit-action@v5
+#       with:
+#         commit_message: "chore: autoformat with stylua"
+#         branch: ${{ github.ref }}
+#
+#     - name: Push changes
+#       uses: ad-m/github-push-action@master
+#       with:
+#         github_token: ${{ secrets.GITHUB_TOKEN }}
+#         branch: ${{ github.ref }}
