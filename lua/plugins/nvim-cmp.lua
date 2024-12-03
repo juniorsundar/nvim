@@ -1,19 +1,19 @@
 return {
-    -- "hrsh7th/nvim-cmp",
-    "iguanacucumber/magazine.nvim",
-    name = "nvim-cmp",
-    -- lazy = true,
-    version = false,
-    dependencies = {
-        { "iguanacucumber/mag-nvim-lsp", name = "cmp-nvim-lsp", opts = {} },
-        { "hrsh7th/cmp-nvim-lsp-signature-help",            lazy = true },
-        { "hrsh7th/cmp-path",                               lazy = true },
-        -- { "iguanacucumber/mag-nvim-lsp",                    name = "cmp-nvim-lsp", lazy = true, opts = {} },
-    },
-    config = function()
-        local global_snippets = {
-            { trigger = 'shebang', body = '#!/usr/bin/bash' }
-        }
+  -- "hrsh7th/nvim-cmp",
+  "iguanacucumber/magazine.nvim",
+  name = "nvim-cmp",
+  -- lazy = true,
+  version = false,
+  dependencies = {
+    { "iguanacucumber/mag-nvim-lsp", name = "cmp-nvim-lsp", opts = {} },
+    { "hrsh7th/cmp-nvim-lsp-signature-help", lazy = true },
+    { "hrsh7th/cmp-path", lazy = true },
+    -- { "iguanacucumber/mag-nvim-lsp",                    name = "cmp-nvim-lsp", lazy = true, opts = {} },
+  },
+  config = function()
+    local global_snippets = {
+      { trigger = "shebang", body = "#!/usr/bin/bash" },
+    }
 
     local snippets_by_filetype = {
       lua = {
