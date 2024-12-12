@@ -52,7 +52,7 @@ return {
       quickfile = { enabled = true },
       statuscolumn = { enabled = true },
       input = { enabled = false },
-      indent = { enabled = false},
+      indent = { enabled = false },
       words = { enabled = true },
       styles = {
         notification = {
