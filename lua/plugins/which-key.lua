@@ -236,41 +236,41 @@ return {
         desc = "Diff",
       },
 
-      { "<leader>N", group = "Neorg" },
-      { "<leader>NJ", group = "Journal" },
-      { "<leader>NM", group = "Metadata" },
-      { "<leader>NA", group = "Agenda" },
-      { "<leader>NF", group = "Find" },
-      {
-        "<leader>Ni",
-        "<cmd>Neorg index<cr>",
-        desc = "Index",
-      },
-      {
-        "<leader>NJt",
-        "<cmd>Neorg journal today<cr>",
-        desc = "Today's Journal",
-      },
-      {
-        "<leader>NJm",
-        "<cmd>Neorg journal tomorrow<cr>",
-        desc = "Tomorrow's Journal",
-      },
-      {
-        "<leader>NJy",
-        "<cmd>Neorg journal yesterday<cr>",
-        desc = "Yesterday's Journal",
-      },
-      {
-        "<leader>NMi",
-        "<cmd>Neorg inject-metadata<cr>",
-        desc = "Inject",
-      },
-      {
-        "<leader>NMu",
-        "<cmd>Neorg update-metadata<cr>",
-        desc = "Update",
-      },
+      -- { "<leader>N", group = "Neorg" },
+      -- { "<leader>NJ", group = "Journal" },
+      -- { "<leader>NM", group = "Metadata" },
+      -- { "<leader>NA", group = "Agenda" },
+      -- { "<leader>NF", group = "Find" },
+      -- {
+      --   "<leader>Ni",
+      --   "<cmd>Neorg index<cr>",
+      --   desc = "Index",
+      -- },
+      -- {
+      --   "<leader>NJt",
+      --   "<cmd>Neorg journal today<cr>",
+      --   desc = "Today's Journal",
+      -- },
+      -- {
+      --   "<leader>NJm",
+      --   "<cmd>Neorg journal tomorrow<cr>",
+      --   desc = "Tomorrow's Journal",
+      -- },
+      -- {
+      --   "<leader>NJy",
+      --   "<cmd>Neorg journal yesterday<cr>",
+      --   desc = "Yesterday's Journal",
+      -- },
+      -- {
+      --   "<leader>NMi",
+      --   "<cmd>Neorg inject-metadata<cr>",
+      --   desc = "Inject",
+      -- },
+      -- {
+      --   "<leader>NMu",
+      --   "<cmd>Neorg update-metadata<cr>",
+      --   desc = "Update",
+      -- },
 
       { "<leader><leader>", group = "LocalLeader" },
     },
