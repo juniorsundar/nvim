@@ -268,7 +268,6 @@ return {
   },
   {
     "stevearc/oil.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require("oil").setup {
         columns = {
@@ -286,30 +285,6 @@ return {
     event = "VeryLazy",
     dependencies = {
       "sindrets/diffview.nvim",
-      {
-        "NeogitOrg/neogit",
-        dependencies = {
-          "nvim-lua/plenary.nvim", -- required
-        },
-        keys = {
-          {
-            "<leader>Gg",
-            "<cmd>Neogit<cr>",
-            desc = "Lazygit",
-          },
-        },
-        config = function()
-          require("neogit").setup {
-            signs = {
-              -- { CLOSED, OPENED }
-              hunk = { "", "" },
-              item = { "", "" },
-              section = { "", "" },
-            },
-            graph_style = "kitty",
-          }
-        end,
-      },
     },
     config = function()
       require("gitsigns").setup {
@@ -403,8 +378,31 @@ return {
     end,
   },
   {
+    "NeogitOrg/neogit",
+    dependencies = {
+      "nvim-lua/plenary.nvim", -- required
+    },
+    keys = {
+      {
+        "<leader>Gg",
+        "<cmd>Neogit<cr>",
+        desc = "Lazygit",
+      },
+    },
+    config = function()
+      require("neogit").setup {
+        signs = {
+          -- { CLOSED, OPENED }
+          hunk = { "", "" },
+          item = { "", "" },
+          section = { "", "" },
+        },
+        graph_style = "kitty",
+      }
+    end,
+  },
+  {
     "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       local lualine = require "lualine"
 
@@ -632,18 +630,12 @@ return {
         padding = { left = 1 },
       }
 
-      -- Now don't forget to initialize lualine
       lualine.setup(config)
     end,
   },
   {
     "OXY2DEV/markview.nvim",
-    -- lazy = false,
     ft = "markdown",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-      "nvim-tree/nvim-web-devicons",
-    },
     config = function()
       require("markview").setup {
         list_items = {
