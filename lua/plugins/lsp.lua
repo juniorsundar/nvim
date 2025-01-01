@@ -207,5 +207,4 @@ return {
       },
     },
   },
-  { "Olical/conjure" },
 }
