@@ -71,16 +71,20 @@ return {
         end,
         desc = "Git Blame Line",
       },
-        {
-            "<leader>t",
-            function() Snacks.terminal() end,
-            desc = "Terminal",
-        },
-        {
-            "<leader>c",
-            function() Snacks.bufdelete.delete() end,
-            desc = "Close Buffer",
-        },
+      {
+        "<leader>t",
+        function()
+          Snacks.terminal()
+        end,
+        desc = "Terminal",
+      },
+      {
+        "<leader>c",
+        function()
+          Snacks.bufdelete.delete()
+        end,
+        desc = "Close Buffer",
+      },
       {
         "<localleader>N",
         desc = "Neovim News",

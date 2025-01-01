@@ -287,29 +287,29 @@ return {
     dependencies = {
       "sindrets/diffview.nvim",
       {
-          "NeogitOrg/neogit",
-          dependencies = {
-              "nvim-lua/plenary.nvim", -- required
+        "NeogitOrg/neogit",
+        dependencies = {
+          "nvim-lua/plenary.nvim", -- required
+        },
+        keys = {
+          {
+            "<leader>Gg",
+            "<cmd>Neogit<cr>",
+            desc = "Lazygit",
           },
-                keys = {
-                    {
-                        "<leader>Gg",
-                        "<cmd>Neogit<cr>",
-                        desc = "Lazygit",
-                    },
-                },
-          config = function()
-              require("neogit").setup({
-                  signs = {
-                      -- { CLOSED, OPENED }
-                      hunk = { "", "" },
-                      item = { "", "" },
-                      section = { "", "" },
-                  },
-                  graph_style = "kitty"
-              })
-          end
-      }
+        },
+        config = function()
+          require("neogit").setup {
+            signs = {
+              -- { CLOSED, OPENED }
+              hunk = { "", "" },
+              item = { "", "" },
+              section = { "", "" },
+            },
+            graph_style = "kitty",
+          }
+        end,
+      },
     },
     config = function()
       require("gitsigns").setup {
