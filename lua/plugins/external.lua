@@ -50,13 +50,13 @@ return {
         end,
         desc = "Dismiss All Notifications",
       },
-      {
-        "<leader>Gg",
-        function()
-          Snacks.lazygit()
-        end,
-        desc = "Lazygit",
-      },
+      -- {
+      --   "<leader>Gg",
+      --   function()
+      --     Snacks.lazygit()
+      --   end,
+      --   desc = "Lazygit",
+      -- },
       {
         "<leader>Gw",
         function()
@@ -71,6 +71,16 @@ return {
         end,
         desc = "Git Blame Line",
       },
+        {
+            "<leader>t",
+            function() Snacks.terminal() end,
+            desc = "Terminal",
+        },
+        {
+            "<leader>c",
+            function() Snacks.bufdelete.delete() end,
+            desc = "Close Buffer",
+        },
       {
         "<localleader>N",
         desc = "Neovim News",

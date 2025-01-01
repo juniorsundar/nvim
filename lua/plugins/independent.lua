@@ -52,16 +52,6 @@ return {
           desc = "Oil",
         },
         {
-          "<leader>t",
-          "<cmd>lua Snacks.terminal()<cr>",
-          desc = "Terminal",
-        },
-        {
-          "<leader>c",
-          "<cmd>lua Snacks.bufdelete.delete()<cr>",
-          desc = "Close Buffer",
-        },
-        {
           "<leader>b",
           "<cmd>FzfLua buffers<cr>",
           desc = "Buffers",
@@ -296,23 +286,30 @@ return {
     event = "VeryLazy",
     dependencies = {
       "sindrets/diffview.nvim",
-      -- {
-      --     "NeogitOrg/neogit",
-      --     dependencies = {
-      --         "nvim-lua/plenary.nvim", -- required
-      --     },
-      --     config = function()
-      --         require("neogit").setup({
-      --             signs = {
-      --                 -- { CLOSED, OPENED }
-      --                 hunk = { "", "" },
-      --                 item = { "", "" },
-      --                 section = { "", "" },
-      --             },
-      --             graph_style = "kitty"
-      --         })
-      --     end
-      -- }
+      {
+          "NeogitOrg/neogit",
+          dependencies = {
+              "nvim-lua/plenary.nvim", -- required
+          },
+                keys = {
+                    {
+                        "<leader>Gg",
+                        "<cmd>Neogit<cr>",
+                        desc = "Lazygit",
+                    },
+                },
+          config = function()
+              require("neogit").setup({
+                  signs = {
+                      -- { CLOSED, OPENED }
+                      hunk = { "", "" },
+                      item = { "", "" },
+                      section = { "", "" },
+                  },
+                  graph_style = "kitty"
+              })
+          end
+      }
     },
     config = function()
       require("gitsigns").setup {
