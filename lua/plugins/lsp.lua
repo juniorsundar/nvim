@@ -8,6 +8,7 @@ return {
     },
     {
         "williamboman/mason-lspconfig.nvim",
+        event = "VeryLazy",
         config = function()
             require("mason-lspconfig").setup {
                 ensure_installed = {
@@ -24,6 +25,7 @@ return {
     },
     {
         "neovim/nvim-lspconfig",
+        event = "VeryLazy",
         dependencies = {},
         config = function()
             local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -199,6 +201,7 @@ return {
     },
     {
         "stevearc/conform.nvim",
+        event = "VeryLazy",
         opts = {
             formatters_by_ft = {
                 lua = { "stylua" },
