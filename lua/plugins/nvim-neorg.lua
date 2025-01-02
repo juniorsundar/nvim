@@ -5,7 +5,7 @@ return {
         dependencies = {
             {
                 { dir = "~/.config/nvim_plugins/neorg-extras" },
-                "juniorsundar/neorg-extras",
+                -- "juniorsundar/neorg-extras",
             },
         },
         config = function()
@@ -30,8 +30,6 @@ return {
                         config = {
                             workspaces = {
                                 default = "~/Dropbox/notes",
-                                the_good_teacher = "~/Dropbox/tgt",
-                                god_of_war = "~/Dropbox/gow",
                             },
                         },
                     },
