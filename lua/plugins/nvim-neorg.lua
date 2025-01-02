@@ -29,7 +29,7 @@ return {
                     ["core.dirman"] = {
                         config = {
                             workspaces = {
-                                default = "~/Dropbox/notes",
+                                default = "~/Dropbox/neorg",
                             },
                         },
                     },
@@ -71,7 +71,8 @@ return {
                             fuzzy_finder = "Fzf",
                             fuzzy_backlinks = false,
                             roam_base_directory = "vault",
-                            node_name_randomiser = true,
+                            node_name_randomiser = false,
+                            node_name_snake_case = true,
                         },
                     },
                     ["external.many-mans"] = {
