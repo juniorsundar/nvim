@@ -58,6 +58,7 @@ return {
                     -- markdown = true,
                     neogit = true,
                     snacks = true,
+                    blink_cmp = true,
                     treesitter_context = true,
                     lsp_saga = true,
                     diffview = true,

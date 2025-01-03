@@ -8,6 +8,24 @@ return {
                 -- "juniorsundar/neorg-extras",
             },
         },
+        keys = {
+            { "<leader>NT",  "<cmd>Neorg cycle_task<CR>",                      desc = "Cycle task" },
+            { "<leader>N_",  "<cmd>Neorg update_property_metadata<CR>",        desc = "Update property metadata" },
+            { "<leader>NFB", "<cmd>Neorg roam backlinks<cr>",                  desc = "Backlinks" },
+            { "<leader>Nw",  "<cmd>Neorg roam select_workspace<cr>",           desc = "Workspaces" },
+            { "<leader>NFb", "<cmd>Neorg roam block<cr>",                      desc = "Block Injector" },
+            { "<leader>NFn", "<cmd>Neorg roam node<cr>",                       desc = "Node Injector" },
+            { "<leader>NAd", "<cmd>Neorg agenda day<cr>",                      desc = "Neorg Agenda Day" },
+            { "<leader>NAp", "<cmd>Neorg agenda page undone pending hold<cr>", desc = "Neorg Agenda Page" },
+            { "<leader>NAt", "<cmd>Neorg agenda tag<cr>",                      desc = "Neorg Agenda Tag" },
+            { "<leader>Nt",  "<cmd>Neorg toc<cr>",                             desc = "Table of Contents" },
+            { "<leader>Ni",  "<cmd>Neorg index<cr>",                           desc = "Index" },
+            { "<leader>NJt", "<cmd>Neorg journal today<cr>",                   desc = "Today's Journal" },
+            { "<leader>NJm", "<cmd>Neorg journal tomorrow<cr>",                desc = "Tomorrow's Journal" },
+            { "<leader>NJy", "<cmd>Neorg journal yesterday<cr>",               desc = "Yesterday's Journal" },
+            { "<leader>NMi", "<cmd>Neorg inject-metadata<cr>",                 desc = "Inject" },
+            { "<leader>NMu", "<cmd>Neorg update-metadata<cr>",                 desc = "Update" },
+        },
         config = function()
             require("neorg").setup {
                 load = {
@@ -41,14 +59,14 @@ return {
                     },
                     ["core.highlights"] = {},
                     ["core.export.markdown"] = {},
-                    ["core.completion"] = {
-                        config = {
-                            engine = "nvim-cmp",
-                        },
-                    },
+                    -- ["core.completion"] = {
+                    --     config = {
+                    --         engine = "nvim-cmp",
+                    --     },
+                    -- },
                     ["core.latex.renderer"] = {},
                     ["core.integrations.image"] = {},
-                    ["core.integrations.nvim-cmp"] = {},
+                    -- ["core.integrations.nvim-cmp"] = {},
                     ["core.summary"] = {},
                     ["core.qol.toc"] = {},
                     ["core.qol.todo_items"] = {},
@@ -85,98 +103,6 @@ return {
             }
 
             require("neorg.core").modules.get_module("core.dirman").set_workspace "default"
-
-            vim.keymap.set(
-                "n",
-                "<leader>NT",
-                "<cmd>Neorg cycle_task<CR>",
-                { noremap = true, silent = true, desc = "Cycle task" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>N_",
-                "<cmd>Neorg update_property_metadata<CR>",
-                { noremap = true, silent = true, desc = "Update property metadata" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NFB",
-                "<cmd>Neorg roam backlinks<cr>",
-                { noremap = true, silent = true, desc = "Backlinks" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>Nw",
-                "<cmd>Neorg roam select_workspace<cr>",
-                { noremap = true, silent = true, desc = "Workspaces" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NFb",
-                "<cmd>Neorg roam block<cr>",
-                { noremap = true, silent = true, desc = "Block Injector" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NFn",
-                "<cmd>Neorg roam node<cr>",
-                { noremap = true, silent = true, desc = "Node Injector" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NAd",
-                "<cmd>Neorg agenda day<cr>",
-                { noremap = true, silent = true, desc = "Neorg Agenda Day" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NAp",
-                "<cmd>Neorg agenda page undone pending hold<cr>",
-                { noremap = true, silent = true, desc = "Neorg Agenda Page" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NAt",
-                "<cmd>Neorg agenda tag<cr>",
-                { noremap = true, silent = true, desc = "Neorg Agenda Tag" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>Nt",
-                "<cmd>Neorg toc<cr>",
-                { noremap = true, silent = true, desc = "Table of Contents" }
-            )
-            vim.keymap.set("n", "<leader>Ni", "<cmd>Neorg index<cr>", { noremap = true, silent = true, desc = "Index" })
-            vim.keymap.set(
-                "n",
-                "<leader>NJt",
-                "<cmd>Neorg journal today<cr>",
-                { noremap = true, silent = true, desc = "Today's Journal" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NJm",
-                "<cmd>Neorg journal tomorrow<cr>",
-                { noremap = true, silent = true, desc = "Tomorrow's Journal" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NJy",
-                "<cmd>Neorg journal yesterday<cr>",
-                { noremap = true, silent = true, desc = "Yesterday's Journal" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NMi",
-                "<cmd>Neorg inject-metadata<cr>",
-                { noremap = true, silent = true, desc = "Inject" }
-            )
-            vim.keymap.set(
-                "n",
-                "<leader>NMu",
-                "<cmd>Neorg update-metadata<cr>",
-                { noremap = true, silent = true, desc = "Update" }
-            )
         end,
     },
     ---------------------------------------------------------------------------------------
