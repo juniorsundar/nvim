@@ -64,6 +64,9 @@ return {
             },
             toggle = {},
             picker = {
+                matcher = {
+                    frecency = true
+                },
                 ui_select = true,
                 sources = {
                     lsp_symbols = {
