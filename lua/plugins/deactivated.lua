@@ -1,14 +1,30 @@
 return {
     {},
     -- {
-    --     "tpope/vim-fugitive",
-    --     cmd = {
-    --         "Git"
+    --     "NeogitOrg/neogit",
+    --     dependencies = {
+    --         "nvim-lua/plenary.nvim",
     --     },
     --     keys = {
-    --         { "<leader>Gg", "<cmd>Git<cr>", desc = "Fugitive" }
-    --     }
-    -- }
+    --         { "<leader>Gg", "<cmd>Neogit<cr>", desc = "Neogit" },
+    --     },
+    --     config = function()
+    --         require("neogit").setup {
+    --             signs = {
+    --                 hunk = { "", "" },
+    --                 item = { "", "" },
+    --                 section = { "", "" },
+    --             },
+    --             graph_style = "unicode",
+    --             integrations = {
+    --                 telescope = false,
+    --                 diffview = true,
+    --                 fzf_lua = false,
+    --                 mini_pick = false,
+    --             },
+    --         }
+    --     end,
+    -- },
     -- {
     --     "epwalsh/obsidian.nvim",
     --     version = "*", -- recommended, use latest release instead of latest commit
