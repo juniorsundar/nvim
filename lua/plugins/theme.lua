@@ -3,45 +3,44 @@ return {
         "catppuccin/nvim",
         name = "catppuccin",
         config = function()
-            require("catppuccin").setup({
+            local cyberdream = {
                 color_overrides = {
                     macchiato = {
-                        rosewater = "#ffd1dc",
-                        flamingo = "#ff9f9f",
-                        pink = "#ff5ea0",
-                        mauve = "#bd5eff",
-                        red = "#ff6e5e",
-                        maroon = "#d96666",
-                        peach = "#ffbd5e",
-                        yellow = "#f1ff5e",
-                        green = "#5eff6c",
-                        teal = "#64d8cb",
-                        sky = "#5ef1ff",
-                        sapphire = "#4a90e2",
-                        blue = "#5ea1ff",
-                        lavender = "#ff5ef1",
-                        text = "#ffffff",
-                        subtext1 = "#a0a4b8",
-                        subtext0 = "#8a8e99",
-                        overlay2 = "#6e7280",
-                        overlay1 = "#5a5e6b",
-                        overlay0 = "#474a55",
+                        base = "#16181A",
+                        blue = "#5EA1FF",
+                        crust = "#3C4048",
+                        flamingo = "#FF9F9F",
+                        green = "#5EFF6C",
+                        lavender = "#FF5EF1",
+                        mantle = "#1E2124",
+                        maroon = "#D96666",
+                        mauve = "#BD5EFF",
+                        overlay0 = "#474A55",
+                        overlay1 = "#5A5E6B",
+                        overlay2 = "#6E7280",
+                        peach = "#FFBD5E",
+                        pink = "#FF5EA0",
+                        red = "#FF6E5E",
+                        rosewater = "#FFD1DC",
+                        sapphire = "#4A90E2",
+                        sky = "#5EF1FF",
+                        subtext0 = "#8A8E99",
+                        subtext1 = "#A0A4B8",
+                        surface0 = "#26282E",
+                        surface1 = "#2E3138",
                         surface2 = "#363940",
-                        surface1 = "#2e3138",
-                        surface0 = "#26282e",
-                        base = "#16181a",
-                        mantle = "#1e2124",
-                        crust = "#3c4048",
+                        teal = "#64D8CB",
+                        text = "#FFFFFF",
+                        yellow = "#F1FF5E",
                     },
                 },
                 custom_highlights = function(colors)
-                    return {
-                    }
+                    return {}
                 end,
                 highlight_overrides = {
                     macchiato = function(colors)
                         return {
-                            NormalFloat = { fg = colors.text, bg = colors.mantle },
+                            NormalFloat = { fg = colors.text, bg = colors.base },
                             Comment = { fg = colors.overlay1 },
                             LineNr = { fg = colors.overlay1 },
                             CursorLineNr = { fg = colors.text },
@@ -56,60 +55,27 @@ return {
                     cmp = true,
                     gitsigns = true,
                     treesitter = false,
-                    alpha = true,
-                    barbar = true,
-                    flash = true,
-                    markdown = true,
+                    -- markdown = true,
                     neogit = true,
-                    grug_far = true,
+                    snacks = true,
+                    blink_cmp = true,
                     treesitter_context = true,
                     lsp_saga = true,
-                    lsp_trouble = true,
                     diffview = true,
                     which_key = true,
                     mason = true,
-                    noice = true,
                     notify = true,
                     native_lsp = {
                         enabled = true,
                     },
                     mini = true,
-                    nvim_surround = true
+                    nvim_surround = true,
                 },
-            })
-            vim.cmd.colorscheme("catppuccin-macchiato")
+            }
+
+            require("catppuccin").setup(cyberdream)
+            vim.cmd.colorscheme "catppuccin-macchiato"
         end,
-    },
-    {
-        "scottmckendry/cyberdream.nvim",
-        priority = 1000,
-        config = function()
-            require("cyberdream").setup({
-                borderless_telescope = false,
-                theme = {
-                    variant = "dark",
-                    colors = {},
-                    highlights = {},
-                },
-                extensions = {
-                    alpha = true,
-                    cmp = true,
-                    gitsigns = true,
-                    grugfar = true,
-                    heirline = true,
-                    hop = true,
-                    lazy = true,
-                    mini = true,
-                    noice = true,
-                    notify = true,
-                    telescope = true,
-                    treesitter = true,
-                    treesittercontext = true,
-                    whichkey = true,
-                },
-            })
-            -- vim.cmd.colorscheme("cyberdream")
-        end
     },
     {
         "nvim-tree/nvim-web-devicons",
