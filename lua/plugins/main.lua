@@ -39,6 +39,13 @@ return {
             quickfile = { enabled = true },
             statuscolumn = { enabled = true },
             input = { enabled = true },
+            image = {
+                doc = {
+                    enabled = true,
+                    inline = false,
+                    hover = true,
+                },
+            },
             scroll = { enabled = true },
             indent = { enabled = false },
             words = { enabled = true },
