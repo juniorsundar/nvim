@@ -1,6 +1,19 @@
 return {
     {},
     -- {
+    --     "folke/flash.nvim",
+    --     event = "VeryLazy",
+    --     keys = {
+    --         { "<C-s>",   mode = { "n", "x", "o" }, function() require("flash").jump() end,              desc = "Flash" },
+    --         { "<C-M-s>", mode = { "n", "x", "o" }, function() require("flash").treesitter() end,        desc = "Flash Treesitter" },
+    --         { "gr",      mode = "o",               function() require("flash").remote() end,            desc = "Remote Flash" },
+    --         { "gR",      mode = { "o", "x" },      function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+    --     },
+    --     config = function()
+    --         require("flash").setup()
+    --     end
+    -- },
+    -- {
     --     "OXY2DEV/markview.nvim",
     --     ft = "markdown",
     --     config = function()
@@ -13,15 +26,30 @@ return {
     --     end,
     -- },
     -- {
-    --     "tpope/vim-fugitive",
-    --     cmd = {
-    --         "Git",
-    --         "G"
+    --     "NeogitOrg/neogit",
+    --     dependencies = {
+    --         "nvim-lua/plenary.nvim",
     --     },
     --     keys = {
-    --         { "<leader>Gg", "<cmd>tab Git<cr>", desc = "Fugitive" }
-    --     }
-    -- },
+    --         { "<leader>Gg", "<cmd>Neogit cwd=%:p:h<cr>", desc = "Neogit" },
+    --     },
+    --     config = function()
+    --         require("neogit").setup {
+    --             signs = {
+    --                 hunk = { "", "" },
+    --                 item = { "", "" },
+    --                 section = { "", "" },
+    --             },
+    --             graph_style = "unicode",
+    --             integrations = {
+    --                 telescope = false,
+    --                 diffview = true,
+    --                 fzf_lua = false,
+    --                 mini_pick = false,
+    --             },
+    --         }
+    --     end,
+    -- }
     -- {
     --     "epwalsh/obsidian.nvim",
     --     version = "*", -- recommended, use latest release instead of latest commit
