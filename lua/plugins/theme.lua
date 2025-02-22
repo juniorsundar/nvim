@@ -55,7 +55,7 @@ return {
                     cmp = true,
                     gitsigns = true,
                     treesitter = false,
-                    -- markdown = true,
+                    markdown = true,
                     neogit = true,
                     snacks = true,
                     blink_cmp = true,
