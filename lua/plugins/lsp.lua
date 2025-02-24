@@ -13,11 +13,11 @@ return {
             require("mason-lspconfig").setup {
                 ensure_installed = {
                     "lua_ls",
-                    "basedpyright",
-                    "ruff",
-                    "clangd",
-                    "rust_analyzer",
-                    "gopls",
+                    -- "basedpyright",
+                    -- "ruff",
+                    -- "clangd",
+                    -- "rust_analyzer",
+                    -- "gopls",
                     "marksman",
                 },
             }
