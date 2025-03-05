@@ -8,7 +8,7 @@ return {
             enabled = true,
             preset = {
                 keys = {
-                    { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.dashboard.pick('files')" },
+                    { icon = " ", key = "f", desc = "Find File", action = ":lua Snacks.picker.files({hidden = true})" },
                     { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
                     { icon = " ", key = "t", desc = "Find Text", action = ":lua Snacks.dashboard.pick('live_grep')" },
                     { icon = " ", key = "r", desc = "Recent Files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
@@ -99,33 +99,33 @@ return {
         },
     },
     keys = {
-        { "<leader>n",      function() Snacks.notifier.hide() end,                desc = "Dismiss All Notifications" },
-        { "<leader>Gw",     function() Snacks.gitbrowse() end,                    desc = "Git Browse" },
-        { "<leader>Go",     function() Snacks.picker.git_status() end,            desc = "Open changed file" },
-        { "<leader>GL",     function() Snacks.lazygit() end,                      desc = "Lazygit" },
-        { "<leader>t",      function() Snacks.terminal() end,                     desc = "Terminal" },
-        { "<leader>b",      function() Snacks.picker.buffers() end,               desc = "Buffers" },
-        { "<leader>Fp",     function() Snacks.picker() end,                       desc = "Pickers" },
-        { "<leader>Ff",     function() Snacks.picker.files() end,                 desc = "Files" },
-        { "<leader>Ft",     function() Snacks.picker.grep() end,                  desc = "Text" },
-        { "<leader>Fl",     function() Snacks.picker.lines() end,                 desc = "Line" },
-        { "<leader>Fc",     function() Snacks.picker.colorschemes() end,          desc = "Colorscheme" },
-        { "<leader>Fh",     function() Snacks.picker.help() end,                  desc = "Find Help" },
-        { "<leader>Fk",     function() Snacks.picker.keymaps() end,               desc = "Keymaps" },
-        { "<leader>Fr",     function() Snacks.picker.recent() end,                desc = "Recent File" },
-        { "<leader>FM",     function() Snacks.picker.man() end,                   desc = "Man Pages" },
-        { "<leader>FR",     function() Snacks.picker.registers() end,             desc = "Registers" },
-        { "<leader>FC",     function() Snacks.picker.commands() end,              desc = "Commands" },
-        { "<leader>Fu",     function() Snacks.picker.undo() end,                  desc = "Undo" },
-        { "<leader>Fe",     function() Snacks.picker.explorer() end,              desc = "Explorer" },
-        { "<leader>Lr",     function() Snacks.picker.lsp_references() end,        desc = "References" },
-        { "<leader>Lt",     function() Snacks.picker.lsp_type_definitions() end,  desc = "Type Definition" },
-        { "<leader>LDs",    function() Snacks.picker.lsp_symbols() end,           desc = "Document Symbols" },
-        { "<leader>LDd",    function() Snacks.picker.diagnostics_buffer() end,    desc = "Document Diagnostics" },
-        { "<leader>LWs",    function() Snacks.picker.lsp_workspace_symbols() end, desc = "Workspace Symbols" },
-        { "<leader>LWd",    function() Snacks.picker.diagnostics() end,           desc = "Workspace Diagnostics" },
-        { "<localleader>s", function() Snacks.scratch() end,                      desc = "Scratch Toggle" },
-        { "<localleader>l", function() Snacks.scratch.select() end,               desc = "Scratch Select" },
+        { "<leader>n",      function() Snacks.notifier.hide() end,                    desc = "Dismiss All Notifications" },
+        { "<leader>Gw",     function() Snacks.gitbrowse() end,                        desc = "Git Browse" },
+        { "<leader>Go",     function() Snacks.picker.git_status() end,                desc = "Open changed file" },
+        { "<leader>GL",     function() Snacks.lazygit() end,                          desc = "Lazygit" },
+        { "<leader>t",      function() Snacks.terminal() end,                         desc = "Terminal" },
+        { "<leader>b",      function() Snacks.picker.buffers() end,                   desc = "Buffers" },
+        { "<leader>Fp",     function() Snacks.picker() end,                           desc = "Pickers" },
+        { "<leader>Ff",     function() Snacks.picker.files({ hidden = true }) end,    desc = "Files" },
+        { "<leader>Ft",     function() Snacks.picker.grep() end,                      desc = "Text" },
+        { "<leader>Fl",     function() Snacks.picker.lines() end,                     desc = "Line" },
+        { "<leader>Fc",     function() Snacks.picker.colorschemes() end,              desc = "Colorscheme" },
+        { "<leader>Fh",     function() Snacks.picker.help() end,                      desc = "Find Help" },
+        { "<leader>Fk",     function() Snacks.picker.keymaps() end,                   desc = "Keymaps" },
+        { "<leader>Fr",     function() Snacks.picker.recent() end,                    desc = "Recent File" },
+        { "<leader>FM",     function() Snacks.picker.man() end,                       desc = "Man Pages" },
+        { "<leader>FR",     function() Snacks.picker.registers() end,                 desc = "Registers" },
+        { "<leader>FC",     function() Snacks.picker.commands() end,                  desc = "Commands" },
+        { "<leader>Fu",     function() Snacks.picker.undo() end,                      desc = "Undo" },
+        { "<leader>Fe",     function() Snacks.picker.explorer({ hidden = true }) end, desc = "Explorer" },
+        { "<leader>Lr",     function() Snacks.picker.lsp_references() end,            desc = "References" },
+        { "<leader>Lt",     function() Snacks.picker.lsp_type_definitions() end,      desc = "Type Definition" },
+        { "<leader>LDs",    function() Snacks.picker.lsp_symbols() end,               desc = "Document Symbols" },
+        { "<leader>LDd",    function() Snacks.picker.diagnostics_buffer() end,        desc = "Document Diagnostics" },
+        { "<leader>LWs",    function() Snacks.picker.lsp_workspace_symbols() end,     desc = "Workspace Symbols" },
+        { "<leader>LWd",    function() Snacks.picker.diagnostics() end,               desc = "Workspace Diagnostics" },
+        { "<localleader>s", function() Snacks.scratch() end,                          desc = "Scratch Toggle" },
+        { "<localleader>l", function() Snacks.scratch.select() end,                   desc = "Scratch Select" },
         {
             "<localleader>N",
             desc = "Neovim News",
@@ -155,7 +155,7 @@ return {
                 _G.bt = function()
                     Snacks.debug.backtrace()
                 end
-                vim.print = _G.dd     -- Override print to use snacks for `:=` command
+                vim.print = _G.dd -- Override print to use snacks for `:=` command
                 Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader><leader>Ts")
                 Snacks.toggle.option("wrap", { name = "Wrap" }):map("<leader><leader>Tw")
                 Snacks.toggle.option("relativenumber", { name = "Relative Number" }):map("<leader><leader>TL")
