@@ -1,10 +1,30 @@
 return {
     {},
     -- {
-    --     "tpope/vim-fugitive",
-    --     lazy = false,
+    --     "NeogitOrg/neogit",
+    --     dependencies = {
+    --         "nvim-lua/plenary.nvim",
+    --     },
     --     keys = {
-    --         { "<leader>Gg", "<cmd>tab Git<cr>", desc = "Fugitive" }
+    --         { "<leader>Gg", "<cmd>Neogit cwd=%:p:h<cr>", desc = "Neogit" },
+    --     },
+    --     config = function()
+    --         require("neogit").setup {
+    --             disable_hint = true,
+    --             signs = {
+    --                 hunk = { "", "" },
+    --                 item = { "", "" },
+    --                 section = { "", "" },
+    --             },
+    --             graph_style = "unicode",
+    --             integrations = {
+    --                 telescope = false,
+    --                 diffview = true,
+    --                 fzf_lua = false,
+    --                 mini_pick = false,
+    --             },
+    --         }
+    --     end,
     -- },
     -- {
     --     "OXY2DEV/markview.nvim",

@@ -134,6 +134,7 @@ return {
             }
 
             lspconfig.ccls.setup {
+                filetypes = {'c'},
                 capabilities = capabilities,
                 root_dir = lspconfig.util.root_pattern("compile_commands.json", ".ccls"),
             }
