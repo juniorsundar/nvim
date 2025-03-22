@@ -103,6 +103,7 @@ return {
         { "<leader>Gw",     function() Snacks.gitbrowse() end,                        desc = "Git Browse" },
         { "<leader>Go",     function() Snacks.picker.git_status() end,                desc = "Open changed file" },
         { "<leader>GL",     function() Snacks.lazygit() end,                          desc = "Lazygit" },
+        { "<leader>Gf",     function() Snacks.lazygit.log_file() end,                 desc = "Log file" },
         { "<leader>t",      function() Snacks.terminal() end,                         desc = "Terminal" },
         { "<leader>b",      function() Snacks.picker.buffers() end,                   desc = "Buffers" },
         { "<leader>Fp",     function() Snacks.picker() end,                           desc = "Pickers" },
