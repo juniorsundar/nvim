@@ -119,6 +119,7 @@ return {
         { "<leader>FC",     function() Snacks.picker.commands() end,                  desc = "Commands" },
         { "<leader>Fu",     function() Snacks.picker.undo() end,                      desc = "Undo" },
         { "<leader>Fe",     function() Snacks.picker.explorer({ hidden = true }) end, desc = "Explorer" },
+        { "<leader>Fw",     function() Snacks.picker.grep_word() end,                 desc = "Word" },
         { "<leader>Lr",     function() Snacks.picker.lsp_references() end,            desc = "References" },
         { "<leader>Lt",     function() Snacks.picker.lsp_type_definitions() end,      desc = "Type Definition" },
         { "<leader>LDs",    function() Snacks.picker.lsp_symbols() end,               desc = "Document Symbols" },
