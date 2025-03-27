@@ -129,15 +129,8 @@ return {
             })
 
             lspconfig.clangd.setup {
-                filetypes = {'cpp'},
                 capabilities = capabilities,
-                root_dir = lspconfig.util.root_pattern(".clangd"),
-            }
-
-            lspconfig.ccls.setup {
-                filetypes = {'c'},
-                capabilities = capabilities,
-                root_dir = lspconfig.util.root_pattern(".ccls"),
+                root_dir = lspconfig.util.root_pattern("compile_commands.json", ".clangd"),
             }
 
             lspconfig.rust_analyzer.setup {
