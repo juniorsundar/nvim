@@ -133,6 +133,10 @@ return {
                 root_dir = lspconfig.util.root_pattern("compile_commands.json", ".clangd"),
             }
 
+            lspconfig.zls.setup {
+                capabilities = capabilities,
+            }
+
             lspconfig.rust_analyzer.setup {
                 capabilities = capabilities,
             }
