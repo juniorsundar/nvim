@@ -8,16 +8,10 @@ return {
     },
     {
         "williamboman/mason-lspconfig.nvim",
-        -- event = "VeryLazy",
         config = function()
             require("mason-lspconfig").setup {
                 ensure_installed = {
                     "lua_ls",
-                    -- "basedpyright",
-                    -- "ruff",
-                    -- "clangd",
-                    -- "rust_analyzer",
-                    -- "gopls",
                     "marksman",
                 },
             }
@@ -44,37 +38,39 @@ return {
 
             local lspconfig = require "lspconfig"
 
-            local function lspSymbol(name, icon)
+            local function signHl(name)
                 local hl = "DiagnosticSign" .. name
-                vim.fn.sign_define(hl, { text = icon, numhl = hl, texthl = hl })
+                return hl
             end
 
-            lspSymbol("Error", "󰅙")
-            lspSymbol("Info", "󰋼")
-            lspSymbol("Hint", "󰌵")
-            lspSymbol("Warn", "")
-
-            vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-                border = "single",
-            })
             vim.diagnostic.config {
-                virtual_text = {
-                    prefix = "",
+                virtual_lines = {
+                    current_line = true
                 },
-                signs = true,
+                signs = {
+                    text = {
+                        [vim.diagnostic.severity.ERROR] = "󰅙",
+                        [vim.diagnostic.severity.INFO] = "󰋼",
+                        [vim.diagnostic.severity.HINT] = "󰌵",
+                        [vim.diagnostic.severity.WARN] = "",
+                    },
+                    linehl = {
+                        [vim.diagnostic.severity.ERROR] = signHl("Error"),
+                        [vim.diagnostic.severity.INFO] = signHl("Info"),
+                        [vim.diagnostic.severity.HINT] = signHl("Hint"),
+                        [vim.diagnostic.severity.WARN] = signHl("Warn"),
+                    },
+                    numhl = {
+                        [vim.diagnostic.severity.ERROR] = signHl("Error"),
+                        [vim.diagnostic.severity.INFO] = signHl("Info"),
+                        [vim.diagnostic.severity.HINT] = signHl("Hint"),
+                        [vim.diagnostic.severity.WARN] = signHl("Warn"),
+                    },
+                },
                 underline = true,
                 update_in_insert = false,
             }
 
-            --  LspInfo window borders
-            local win = require "lspconfig.ui.windows"
-            local _default_opts = win.default_opts
-
-            win.default_opts = function(options)
-                local opts = _default_opts(options)
-                opts.border = "single"
-                return opts
-            end
 
             lspconfig.lua_ls.setup {
                 capabilities = capabilities,
@@ -198,8 +194,8 @@ return {
                             buffer = event.buf,
                             callback = vim.lsp.buf.clear_references,
                         })
-                        vim.keymap.del("n", "K", { buffer = event.buf })
                     end
+                    vim.keymap.del("n", "K", { buffer = event.buf })
                 end,
             })
         end,

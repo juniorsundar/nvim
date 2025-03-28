@@ -1,3 +1,4 @@
+---@diagnostic disable: missing-fields
 return {
     'saghen/blink.cmp',
     -- optional: provides snippets for the snippet source
@@ -17,7 +18,7 @@ return {
         -- 'super-tab' for mappings similar to vscode (tab to accept, arrow keys to navigate)
         -- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
         -- See the full "keymap" documentation for information on defining your own keymap.
-        fuzzy = { 
+        fuzzy = {
             implementation = 'prefer_rust_with_warning',
             prebuilt_binaries = {
                 download = true,
@@ -58,8 +59,8 @@ return {
         },
         completion = {
             menu = {
-                winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:Normal",
-                border = 'single',
+                winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
+                border = 'rounded',
             },
             documentation = {
                 auto_show = true,
