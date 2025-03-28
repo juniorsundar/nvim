@@ -22,7 +22,7 @@ vim.opt.splitbelow = true     -- open new vertical split bottom
 vim.opt.splitright = true     -- open new horizontal splits right
 vim.opt.termguicolors = true  -- enabl 24-bit RGB color in the TUI
 vim.opt.showmode = false      -- we are experienced, wo don't need the "-- INSERT --" mode hint
-vim.opt.winborder = "rounded"
+-- vim.opt.winborder = "rounded"
 
 -- Searching
 vim.opt.incsearch = true     -- search as characters are entered
@@ -68,7 +68,7 @@ vim.loader.enable()
 -- define common options
 local opts = {
     noremap = false, -- non-recursive
-    silent = true, -- do not show message
+    silent = true,   -- do not show message
 }
 
 -- Normal mode --
@@ -105,7 +105,10 @@ vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode"
 
 -- PLUGINS ==========================================================
 require "config.lazy"
+require "config.lsp"
 
+
+vim.lsp.enable({ "lua-language-server", 'marksman', 'basedpyright', 'ruff', 'clangd', 'zls', 'gopls' })
 
 -- Profile with `PROF=1 nvim` =======================================
 if vim.env.PROF then

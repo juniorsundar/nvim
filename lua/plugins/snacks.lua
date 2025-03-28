@@ -168,7 +168,7 @@ return {
                 Snacks.toggle.treesitter():map("<leader><leader>TT")
                 Snacks.toggle.option("background", { off = "light", on = "dark", name = "Dark Background" }):map(
                     "<leader><leader>Tb")
-                Snacks.toggle.inlay_hints():map("<leader><leader>Th")
+                Snacks.toggle.inlay_hints():map("<leader>Lh")
                 Snacks.toggle.indent():map("<leader><leader>Tg")
                 Snacks.toggle.dim():map("<leader><leader>TD")
             end,
