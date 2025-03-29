@@ -1,5 +1,5 @@
 return {
-    'akinsho/git-conflict.nvim',
+    'sindrets/diffview.nvim',
     version = "*",
     config = true
 }
