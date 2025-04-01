@@ -108,7 +108,7 @@ require "config.lazy"
 require "config.lsp"
 
 
-vim.lsp.enable({ "lua-language-server", 'basedpyright', 'ruff', 'clangd', 'zls', 'gopls' })
+vim.lsp.enable({ "lua-language-server", 'basedpyright', 'ruff', 'clangd', 'zls', 'gopls', 'rust-analyzer' })
 
 -- Profile with `PROF=1 nvim` =======================================
 if vim.env.PROF then
