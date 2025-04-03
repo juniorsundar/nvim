@@ -11,15 +11,11 @@ capabilities.textDocument.foldingRange = {
     lineFoldingOnly = true,
 }
 
--- Use LspAttach autocommand to only map the following keys
--- after the language server attaches to the current buffer
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("UserLspConfig", {}),
     callback = function(event)
-        -- Enable completion triggered by <c-x><c-o>
         vim.bo[event.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
 
-        -- Set the foldtext option to use the custom function
         vim.opt.foldmethod = "expr"
         vim.o.foldlevel = 99
         vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
@@ -30,12 +26,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
             return first_line
         end
 
-        -- Assign the custom function to foldtext
         vim.opt.foldtext = "v:lua.custom_foldtext()"
-        -- Optional: Remove fold column filler characters for a cleaner look
         vim.opt.fillchars:append { fold = " " }
-        --
-        -- Buffer local mappings.
         local client = vim.lsp.get_client_by_id(event.data.client_id)
         if client and client.server_capabilities.documentHighlightProvider then
             vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -52,13 +44,35 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end,
 })
 
+local momentary_virtual_lines_active = false
+vim.keymap.set('n', '<C-w>d', function()
+    vim.diagnostic.config({ virtual_lines = { current_line = true } })
+    momentary_virtual_lines_active = true
+end, { desc = 'Show momentary diagnostic virtual lines (current line)', remap = true })
+
+local augroup = vim.api.nvim_create_augroup('MomentaryVirtualLines', { clear = true })
+
+vim.api.nvim_create_autocmd('CursorMoved', {
+    group = augroup,
+    pattern = '*', -- Apply in all buffers
+    callback = function()
+        if momentary_virtual_lines_active then
+            local current_config = vim.diagnostic.config().virtual_lines
+            if type(current_config) == 'table' and current_config.current_line == true then
+                vim.diagnostic.config({ virtual_lines = false })
+            end
+            momentary_virtual_lines_active = false
+        end
+    end,
+})
+
+---- LSP SETUP ----
+
 local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
 vim.env.PATH = mason_bin .. ":" .. vim.env.PATH
 
 vim.diagnostic.config {
-    virtual_lines = {
-        current_line = true
-    },
+    virtual_lines = false,
     signs = {
         text = {
             [vim.diagnostic.severity.ERROR] = "󰅙",
@@ -81,7 +95,7 @@ vim.diagnostic.config {
     },
     underline = true,
     update_in_insert = false,
-    virtual_text = true,
+    virtual_text = false
 }
 
 
@@ -138,7 +152,7 @@ vim.lsp.config["basedpyright"] = {
 vim.lsp.config["ruff"] = {
     cmd = { 'ruff', 'server' },
     filetypes = { "python" },
-    root_markers = {'.git', 'pyproject.toml', 'ruff.toml', '.ruff.toml'},
+    root_markers = { '.git', 'pyproject.toml', 'ruff.toml', '.ruff.toml' },
     single_file_support = true,
     capabilities = capabilities,
 }
