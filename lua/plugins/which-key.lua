@@ -30,6 +30,7 @@ return {
             { "<leader>m",         "<cmd>Mason<cr>",                                       desc = "Mason" },
             { "<leader>o",         "<cmd>Oil<cr>",                                         desc = "Oil" },
             { "<leader>L",         group = "LSP" },
+            { "<leader>LA",        group = "DAP" },
             { "<leader>LD",        group = "Document" },
             { "<leader>LW",        group = "Workspace" },
             { "<leader>La",        "<cmd>lua vim.lsp.buf.code_action()<cr>",               desc = "Code Action" },
