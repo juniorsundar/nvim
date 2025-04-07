@@ -215,3 +215,11 @@ vim.lsp.config["rust-analyzer"] = {
     single_file_support = true,
     capabilities = capabilities,
 }
+
+vim.lsp.config["marksman"] = {
+    cmd = { "marksman" },
+    filetypes = { "markdown" },
+    root_markers = { '.marksman.toml', '.git' },
+    single_file_support = true,
+    capabilities = capabilities,
+}
