@@ -14,10 +14,10 @@ return {
     -- {
     --     'saghen/blink.cmp',
     --     -- optional: provides snippets for the snippet source
-    --     dependencies = 'rafamadriz/friendly-snippets',
+    --     -- dependencies = 'rafamadriz/friendly-snippets',
     --     event = "VeryLazy",
     --     -- use a release tag to download pre-built binaries
-    --     version = '0.14.0',
+    --     version = 'v1.1.1',
     --     -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
     --     -- build = 'cargo build --release',
     --     -- If you use nix, you can build from source using latest nightly rust with:
@@ -30,7 +30,13 @@ return {
     --         -- 'super-tab' for mappings similar to vscode (tab to accept, arrow keys to navigate)
     --         -- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
     --         -- See the full "keymap" documentation for information on defining your own keymap.
-    --         fuzzy = { implementation = 'lua' },
+    --         fuzzy = {
+    --             implementation = 'prefer_rust_with_warning',
+    --             prebuilt_binaries = {
+    --                 download = true,
+    --                 force_version = 'v1.1.1'
+    --             }
+    --         },
     --         keymap = {
     --             preset = 'enter',
     --             ["<Tab>"] = { 'select_next', 'fallback' },
@@ -66,14 +72,22 @@ return {
     --         },
     --         completion = {
     --             menu = {
-    --                 winhighlight = "Normal:BlinkCmpPmenu,CursorLine:CursorLine,Search:None,FloatBorder:Normal",
-    --                 border = 'single',
+    --                 winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
+    --                 border = 'rounded',
+    --                 draw = {
+    --                     treesitter = {'lsp'}
+    --                 }
     --             },
     --             documentation = {
     --                 auto_show = true,
     --                 auto_show_delay_ms = 50,
     --                 window = { border = 'single' }
     --             },
+    --             list = {
+    --                 selection = {
+    --                     auto_insert = false,
+    --                 }
+    --             }
     --         },
     --         signature = {
     --             enabled = true,
@@ -247,6 +261,13 @@ return {
     --             },
     --         }
     --     end,
+    -- },
+    -- {
+    --     "tpope/vim-fugitive",
+    --     lazy = false,
+    --     keys = {
+    --         { "<leader>Gg", "<cmd>tab Git<cr>", desc = "Fugitive" }
+    --     }
     -- },
     -- {
     --     "NeogitOrg/neogit",

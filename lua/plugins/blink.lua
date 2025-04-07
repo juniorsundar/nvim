@@ -2,10 +2,10 @@
 return {
     'saghen/blink.cmp',
     -- optional: provides snippets for the snippet source
-    dependencies = 'rafamadriz/friendly-snippets',
+    -- dependencies = 'rafamadriz/friendly-snippets',
     event = "VeryLazy",
     -- use a release tag to download pre-built binaries
-    version = 'v1.0.0',
+    version = 'v1.1.1',
     -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
     -- build = 'cargo build --release',
     -- If you use nix, you can build from source using latest nightly rust with:
@@ -22,6 +22,7 @@ return {
             implementation = 'prefer_rust_with_warning',
             prebuilt_binaries = {
                 download = true,
+                force_version = 'v1.1.1'
             }
         },
         keymap = {
@@ -61,12 +62,20 @@ return {
             menu = {
                 winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
                 border = 'rounded',
+                draw = {
+                    treesitter = { 'lsp' }
+                }
             },
             documentation = {
                 auto_show = true,
                 auto_show_delay_ms = 50,
                 window = { border = 'single' }
             },
+            list = {
+                selection = {
+                    auto_insert = false,
+                }
+            }
         },
         signature = {
             enabled = true,

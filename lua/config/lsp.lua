@@ -1,5 +1,6 @@
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = vim.tbl_deep_extend("force", capabilities, require('blink.cmp').get_lsp_capabilities(capabilities))
+-- capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 capabilities.workspace = {
     didChangeWatchedFiles = {
@@ -12,22 +13,34 @@ capabilities.textDocument.foldingRange = {
 }
 
 vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("FoldConfig", { clear = true }),
+    callback = function(event)
+        vim.o.foldmethod = "expr"
+        vim.o.foldcolumn = '1' -- '0' is not bad
+        vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+        vim.o.foldlevelstart = 99
+        vim.o.foldenable = true
+        vim.o.foldexpr = "nvim_treesitter#foldexpr()"
+
+        function custom_foldtext()
+            local fold_start = vim.v.foldstart
+            local fold_end = vim.v.foldend
+            local lines_count = fold_end - fold_start + 1
+            local first_line = vim.fn.getline(fold_start)
+            return string.format("%s <<< %d lines", first_line, lines_count)
+        end
+
+        vim.opt.foldtext = "v:lua.custom_foldtext()"
+        vim.opt.fillchars = { fold = " " }
+        vim.opt.cursorline = true
+    end
+})
+
+vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("UserLspConfig", {}),
     callback = function(event)
         vim.bo[event.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
 
-        vim.opt.foldmethod = "expr"
-        vim.o.foldlevel = 99
-        vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
-
-        function _G.custom_foldtext()
-            local fold_start = vim.v.foldstart
-            local first_line = vim.fn.getline(fold_start)
-            return first_line
-        end
-
-        vim.opt.foldtext = "v:lua.custom_foldtext()"
-        vim.opt.fillchars:append { fold = " " }
         local client = vim.lsp.get_client_by_id(event.data.client_id)
         if client and client.server_capabilities.documentHighlightProvider then
             vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -40,7 +53,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
                 callback = vim.lsp.buf.clear_references,
             })
         end
-        vim.keymap.del("n", "K", { buffer = event.buf })
+        local _, _ = pcall(function()
+            vim.keymap.del("n", "K", { buffer = event.buf })
+        end)
     end,
 })
 
@@ -212,6 +227,14 @@ vim.lsp.config["rust-analyzer"] = {
     cmd = { "rust-analyzer" },
     filetypes = { "rust" },
     root_markers = { 'Cargo.toml', '.git' },
+    single_file_support = true,
+    capabilities = capabilities,
+}
+
+vim.lsp.config["marksman"] = {
+    cmd = { "marksman" },
+    filetypes = { "markdown" },
+    root_markers = { '.marksman.toml', '.git' },
     single_file_support = true,
     capabilities = capabilities,
 }
