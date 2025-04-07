@@ -42,7 +42,7 @@ return {
             tabline = {},
             winbar = {},
             inactive_winbar = {},
-            extensions = {'fugitive', 'oil', 'quickfix'}
+            extensions = { 'fugitive', 'oil', 'quickfix' }
         }
     end
 }
