@@ -11,11 +11,9 @@ capabilities.textDocument.foldingRange = {
     lineFoldingOnly = true,
 }
 
-vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+vim.api.nvim_create_autocmd("BufEnter", {
+    group = vim.api.nvim_create_augroup("FoldConfig", {}),
     callback = function(event)
-        vim.bo[event.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
-
         vim.opt.foldmethod = "expr"
         vim.o.foldlevel = 99
         vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
@@ -28,6 +26,14 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
         vim.opt.foldtext = "v:lua.custom_foldtext()"
         vim.opt.fillchars:append { fold = " " }
+    end
+})
+
+vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+    callback = function(event)
+        vim.bo[event.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
+
         local client = vim.lsp.get_client_by_id(event.data.client_id)
         if client and client.server_capabilities.documentHighlightProvider then
             vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -40,7 +46,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
                 callback = vim.lsp.buf.clear_references,
             })
         end
-        vim.keymap.del("n", "K", { buffer = event.buf })
+        local _, _ = pcall(function()
+            vim.keymap.del("n", "K", { buffer = event.buf })
+        end)
     end,
 })
 
