@@ -7,8 +7,11 @@ return {
 
         vim.keymap.set('n', '<leader>LAc', function() dap.continue() end, { desc = "Continue" })
         vim.keymap.set('n', '<leader>LAb', function() dap.toggle_breakpoint() end, { desc = "Toggle Breakpoint" })
-        vim.keymap.set('n', '<leader>LAB', function() dap.set_breakpoint(nil, nil, vim.fn.input('Breakpoint condition: ')) end, { desc = "Set Conditional Breakpoint" }) -- Updated LAB for condition
-        vim.keymap.set('n', '<leader>LAp', function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end, { desc = "Set Log Point" })
+        vim.keymap.set('n', '<leader>LAB',
+            function() dap.set_breakpoint(nil, nil, vim.fn.input('Breakpoint condition: ')) end,
+            { desc = "Set Conditional Breakpoint" })
+        vim.keymap.set('n', '<leader>LAp',
+            function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end, { desc = "Set Log Point" })
         vim.keymap.set('n', '<leader>LAr', function() dap.repl.open() end, { desc = "Open REPL" })
         vim.keymap.set('n', '<leader>LAl', function() dap.run_last() end, { desc = "Run Last" })
         vim.keymap.set('n', '<leader>LAo', function() dap.step_over() end, { desc = "Step Over" })
@@ -47,7 +50,7 @@ return {
                 end,
                 cwd = '${workspaceFolder}',
                 stopOnEntry = false,
-                args = {},                 -- Add command line arguments if needed
+                args = {},                   -- Add command line arguments if needed
                 sourceLanguages = { "cpp" }, -- Often optional but can help
             },
         }
