@@ -1,6 +1,38 @@
 return {
     {},
     -- {
+    --     'nvim-orgmode/orgmode',
+    --     dependencies = {
+    --         "chipsenkbeil/org-roam.nvim",
+    --         config = function()
+    --             require("org-roam").setup({
+    --                 directory = "~/Dropbox/org/pages/",
+    --                 bindings = {
+    --                     prefix = "<leader><leader>on"
+    --                 },
+    --                 extensions = {
+    --                     dailies = {
+    --                         directory = "~/Dropbox/org/journals/"
+    --                     }
+    --                 },
+    --             })
+    --         end
+    --     },
+    --     event = 'VeryLazy',
+    --     config = function()
+    --         -- Setup orgmode
+    --         require('orgmode').setup({
+    --             org_agenda_files = '~/Dropbox/org/**/*',
+    --             org_todo_keywords = { 'TODO', 'DOING', '|', 'DONE', 'CANCELLED' },
+    --             org_hide_leading_stars = true,
+    --             org_log_done = "time",
+    --             mappings = {
+    --                 prefix = '<leader><leader>o'
+    --             }
+    --         })
+    --     end,
+    -- },
+    -- {
     --     "williamboman/mason-lspconfig.nvim",
     --     config = function()
     --         require("mason-lspconfig").setup {
@@ -75,7 +107,7 @@ return {
     --                 winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
     --                 border = 'rounded',
     --                 draw = {
-    --                     treesitter = {'lsp'}
+    --                     treesitter = { 'lsp' }
     --                 }
     --             },
     --             documentation = {
@@ -200,7 +232,7 @@ return {
     --
     --         cmp.setup {
     --             view = {
-    --                 entries = "custom",     -- can be "custom", "wildmenu" or "native"
+    --                 entries = "custom", -- can be "custom", "wildmenu" or "native"
     --             },
     --             formatting = {
     --                 fields = { "kind", "abbr", "menu" },
@@ -231,7 +263,7 @@ return {
     --                 ["<C-f>"] = cmp.mapping.scroll_docs(4),
     --                 ["<C-Space>"] = cmp.mapping.complete(),
     --                 ["<C-e>"] = cmp.mapping.abort(),
-    --                 ["<CR>"] = cmp.mapping.confirm { select = true },     -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+    --                 ["<CR>"] = cmp.mapping.confirm { select = true }, -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
     --                 ["<Tab>"] = cmp.mapping(function(fallback)
     --                     -- Hint: if the completion menu is visible select next one
     --                     if cmp.visible() then
@@ -241,7 +273,7 @@ return {
     --                     else
     --                         fallback()
     --                     end
-    --                 end, { "i", "s" }),     -- i - insert mode; s - select mode
+    --                 end, { "i", "s" }), -- i - insert mode; s - select mode
     --                 ["<S-Tab>"] = cmp.mapping(function(fallback)
     --                     if cmp.visible() then
     --                         cmp.select_prev_item()
@@ -621,25 +653,25 @@ return {
     -- {
     --     "ibhagwan/fzf-lua",
     --     keys = {
-    -- { "<leader>b",        "<cmd>FzfLua buffers<cr>",                                                     desc = "Buffers" },
-    -- { "<leader>Ff",       "<cmd>FzfLua files<cr>",                                                       desc = "Files" },
-    -- { "<leader>Ft",       "<cmd>FzfLua live_grep<CR>",                                                   desc = "Text" },
-    -- { "<leader>Fc",       "<cmd>FzfLua colorschemes<cr>",                                                desc = "Colorscheme" },
-    -- { "<leader>Fh",       "<cmd>FzfLua helptags<cr>",                                                    desc = "Find Help" },
-    -- { "<leader>Fk",       "<cmd>FzfLua keymaps<cr>",                                                     desc = "Keymaps" },
-    -- { "<leader>Fr",       "<cmd>FzfLua oldfiles<cr>",                                                    desc = "Open Recent File" },
-    -- { "<leader>FM",       "<cmd>FzfLua manpages<cr>",                                                    desc = "Man Pages" },
-    -- { "<leader>FR",       "<cmd>FzfLua registers<cr>",                                                   desc = "Registers" },
-    -- { "<leader>FC",       "<cmd>FzfLua commands<cr>",                                                    desc = "Commands" },
-    -- { "<leader>Fl",       "<cmd>FzfLua grep_curbuf<cr>",                                                 desc = "Line" },
-    -- { "<leader>Go",       "<cmd>FzfLua git_status <cr>",                                                 desc = "Open changed file" },
-    -- { "<leader>Gb",       "<cmd>FzfLua git_branches <cr>",                                               desc = "Checkout branch" },
-    -- { "<leader>Lr",       "<cmd>FzfLua lsp_references<cr>",                                              desc = "References" },
-    -- { "<leader>Lt",       "<cmd>FzfLua lsp_typedefs<cr>",                                                desc = "Type Definition" },
-    -- { "<leader>LDd",      "<cmd>FzfLua lsp_document_diagnostics<cr>",                                    desc = "Document Diagnostics" },
-    -- { "<leader>LDs",      "<cmd>FzfLua lsp_document_symbols <cr>",                                       desc = "Document Symbols" },
-    -- { "<leader>LWd",      "<cmd>FzfLua lsp_workspace_diagnostics<cr>",                                   desc = "Workspace Diagnostics" },
-    -- { "<leader>LWs",      "<cmd>FzfLua lsp_workspace_symbols <cr>",                                      desc = "Workspace Symbols" },
+    --         { "<leader>b",   "<cmd>FzfLua buffers<cr>",                   desc = "Buffers" },
+    --         { "<leader>Ff",  "<cmd>FzfLua files<cr>",                     desc = "Files" },
+    --         { "<leader>Ft",  "<cmd>FzfLua live_grep<CR>",                 desc = "Text" },
+    --         { "<leader>Fc",  "<cmd>FzfLua colorschemes<cr>",              desc = "Colorscheme" },
+    --         { "<leader>Fh",  "<cmd>FzfLua helptags<cr>",                  desc = "Find Help" },
+    --         { "<leader>Fk",  "<cmd>FzfLua keymaps<cr>",                   desc = "Keymaps" },
+    --         { "<leader>Fr",  "<cmd>FzfLua oldfiles<cr>",                  desc = "Open Recent File" },
+    --         { "<leader>FM",  "<cmd>FzfLua manpages<cr>",                  desc = "Man Pages" },
+    --         { "<leader>FR",  "<cmd>FzfLua registers<cr>",                 desc = "Registers" },
+    --         { "<leader>FC",  "<cmd>FzfLua commands<cr>",                  desc = "Commands" },
+    --         { "<leader>Fl",  "<cmd>FzfLua grep_curbuf<cr>",               desc = "Line" },
+    --         { "<leader>Go",  "<cmd>FzfLua git_status <cr>",               desc = "Open changed file" },
+    --         { "<leader>Gb",  "<cmd>FzfLua git_branches <cr>",             desc = "Checkout branch" },
+    --         { "<leader>Lr",  "<cmd>FzfLua lsp_references<cr>",            desc = "References" },
+    --         { "<leader>Lt",  "<cmd>FzfLua lsp_typedefs<cr>",              desc = "Type Definition" },
+    --         { "<leader>LDd", "<cmd>FzfLua lsp_document_diagnostics<cr>",  desc = "Document Diagnostics" },
+    --         { "<leader>LDs", "<cmd>FzfLua lsp_document_symbols <cr>",     desc = "Document Symbols" },
+    --         { "<leader>LWd", "<cmd>FzfLua lsp_workspace_diagnostics<cr>", desc = "Workspace Diagnostics" },
+    --         { "<leader>LWs", "<cmd>FzfLua lsp_workspace_symbols <cr>",    desc = "Workspace Symbols" },
     --     },
     --     config = function()
     --         -- calling `setup` is optional for customization
