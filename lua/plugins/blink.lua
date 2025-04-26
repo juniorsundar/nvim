@@ -6,10 +6,7 @@ return {
     event = "VeryLazy",
     -- use a release tag to download pre-built binaries
     -- version = 'v1.1.1',
-    -- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
-    -- build = 'cargo build --release',
-    -- If you use nix, you can build from source using latest nightly rust with:
-    -- build = 'nix run .#build-plugin',
+    build = (vim.fn.executable('nix') == 1) and 'nix run .#build-plugin' or 'cargo build --release',
 
     ---@module 'blink.cmp'
     -- stylua: ignore
@@ -19,10 +16,9 @@ return {
         -- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
         -- See the full "keymap" documentation for information on defining your own keymap.
         fuzzy = {
-            implementation = 'prefer_rust_with_warning',
+            implementation = 'prefer_rust',
             prebuilt_binaries = {
-                download = true,
-                force_version = 'v1.1.1'
+                download = false,
             }
         },
         keymap = {
