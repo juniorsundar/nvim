@@ -216,7 +216,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.lsp.config["clangd"] = {
     cmd = { "clangd" },
-    filetypes = { "cpp", "hpp", "h", "c" },
+    filetypes = { "cpp", "hpp", "h", "c", "cuda" },
     root_markers = { "compile_commands.json", ".clangd", ".git" },
     capabilities = capabilities,
 }
