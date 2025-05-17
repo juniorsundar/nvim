@@ -30,7 +30,6 @@ return {
                 "rust",
                 "vimdoc",
                 "query",
-                -- "norg",
             },
             ignore_install = { "org" },
             -- auto install above language parsers
