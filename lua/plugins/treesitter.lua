@@ -1,6 +1,7 @@
 return {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    branch = "main",
     config = function()
         -- import nvim-treesitter plugin safely
         local status, treesitter = pcall(require, "nvim-treesitter.configs")
@@ -32,17 +33,7 @@ return {
                 "query",
             },
             ignore_install = { "org" },
-            -- auto install above language parsers
             auto_install = false,
-            incremental_selection = {
-                enable = true,
-                keymaps = {
-                    init_selection = "gnn", -- set to `false` to disable one of the mappings
-                    node_incremental = "grM",
-                    scope_incremental = "grS",
-                    node_decremental = "grN",
-                },
-            },
         }
     end,
 }
