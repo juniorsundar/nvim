@@ -1,7 +1,8 @@
 return {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    branch = "main",
+    branch = "master",
+    -- branch = "main",
     config = function()
         -- import nvim-treesitter plugin safely
         local status, treesitter = pcall(require, "nvim-treesitter.configs")

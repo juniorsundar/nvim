@@ -33,7 +33,7 @@ return {
             { "<leader>LA",        group = "DAP" },
             { "<leader>LD",        group = "Document" },
             { "<leader>LW",        group = "Workspace" },
-            { "<leader>LI",        "checkhealth lsp",                                        desc = "LSP Info" },
+            { "<leader>LI",        "<cmd>checkhealth lsp<cr>",                                        desc = "LSP Info" },
             { "<leader>La",        function() vim.lsp.buf.code_action() end,                 desc = "Code Action" },
             { "<leader>Ld",        function() vim.lsp.buf.definition() end,                  desc = "Definition" },
             { "<leader>Li",        function() vim.lsp.buf.implementation() end,              desc = "Implementation" },
