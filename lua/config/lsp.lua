@@ -254,7 +254,7 @@ vim.lsp.config["rust-analyzer"] = {
     cmd = { "rust-analyzer" },
     filetypes = { "rust" },
     root_markers = { 'Cargo.toml', '.git' },
-    single_file_support = true,
+    -- single_file_support = true,
     capabilities = capabilities,
 }
 
