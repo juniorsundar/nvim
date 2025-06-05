@@ -1,6 +1,6 @@
 return {
     "NeogitOrg/neogit",
-    enabled = false,
+    enabled = true,
     dependencies = {
         "nvim-lua/plenary.nvim",
     },
@@ -18,6 +18,7 @@ return {
                 diffview = true,
                 fzf_lua = false,
                 mini_pick = false,
+                snacks = true,
             },
         }
 
