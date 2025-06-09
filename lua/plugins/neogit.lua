@@ -22,6 +22,6 @@ return {
             },
         }
 
-        vim.keymap.set('n', "<leader>Gg", "<cmd>Neogit cwd=%:p:h<cr>", { desc = "Neogit" })
+        vim.keymap.set('n', "<leader>Gg", "<cmd>Neogit<cr>", { desc = "Neogit" })
     end,
 }
