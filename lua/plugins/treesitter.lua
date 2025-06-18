@@ -4,7 +4,6 @@ return {
     branch = "master",
     -- branch = "main",
     config = function()
-        -- import nvim-treesitter plugin safely
         local status, treesitter = pcall(require, "nvim-treesitter.configs")
         if not status then
             return
@@ -14,11 +13,8 @@ return {
         ---@diagnostic disable-next-line: missing-fields
         treesitter.setup {
             playground = { enable = true },
-            -- enable syntax highlighting
             highlight = { enable = true, additional_vim_regex_highlighting = false },
-            -- enable indentation
             indent = { enable = true },
-            -- ensure these language parsers are installed
             ensure_installed = {
                 "c",
                 "cpp",
