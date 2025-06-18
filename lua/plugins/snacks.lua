@@ -12,7 +12,7 @@ return {
                     { icon = " ", key = "n", desc = "New File", action = function() vim.cmd(":ene | startinsert") end },
                     { icon = " ", key = "t", desc = "Find Text", action = function() Snacks.dashboard.pick('live_grep') end },
                     { icon = " ", key = "r", desc = "Recent Files", action = function() Snacks.dashboard.pick('oldfiles') end },
-                    { icon = " ", key = "c", desc = "Config", action = function() Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')}) end },
+                    { icon = " ", key = "c", desc = "Config", action = function() Snacks.dashboard.pick('files', { cwd = vim.fn.stdpath('config') }) end },
                     { icon = " ", key = "s", desc = "Restore Session", section = "session" },
                     { icon = "󰒲 ", key = "L", desc = "Lazy", action = ":Lazy", enabled = package.loaded.lazy ~= nil },
                     { icon = " ", key = "q", desc = "Quit", action = ":qa" },
