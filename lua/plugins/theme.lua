@@ -2,6 +2,7 @@ return {
     {
         "catppuccin/nvim",
         name = "catppuccin",
+        enabled = false,
         config = function()
             local cyberdream = {
                 base = "#16181a",
@@ -105,9 +106,16 @@ return {
 
             require("catppuccin").setup(config)
             vim.cmd.colorscheme "catppuccin-macchiato"
+            vim.cmd.colorscheme "vscode"
         end,
     },
     {
         "nvim-tree/nvim-web-devicons",
     },
+    {
+        'Mofiqul/vscode.nvim',
+        config = function()
+            vim.cmd.colorscheme "vscode"
+        end
+    }
 }
