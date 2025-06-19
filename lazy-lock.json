@@ -1,5 +1,5 @@
 {
-  "blink.cmp": { "branch": "main", "commit": "04b8325bfa97f99eb3aedde53c77af663746ceb5" },
+  "blink.cmp": { "branch": "main", "commit": "8c53f784b7ff75fb2104fb9418bab0743ef1539f" },
   "catppuccin": { "branch": "main", "commit": "fa42eb5e26819ef58884257d5ae95dd0552b9a66" },
   "conform.nvim": { "branch": "master", "commit": "8132ec733eed3bf415b97b76797ca41b59f51d7d" },
   "diffview.nvim": { "branch": "main", "commit": "4516612fe98ff56ae0415a259ff6361a89419b0a" },
@@ -13,7 +13,7 @@
   "mini.ai": { "branch": "main", "commit": "d172ada7b0281044a06cb9a625a862553c457b6f" },
   "mini.move": { "branch": "main", "commit": "f471ecb98395781827ef1dffee61afe1af0ace29" },
   "mini.pairs": { "branch": "main", "commit": "42407ccb80ec59c84e7c91d815f42ed90a8cc093" },
-  "neogit": { "branch": "master", "commit": "1b4f44374f97d9262caa680e41ecbebcaf1553bd" },
+  "neogit": { "branch": "master", "commit": "473486f7715dd5cc31906fe27ce6d6d12a249e84" },
   "nvim-dap": { "branch": "master", "commit": "2edd6375692d9ac1053d50acfe415c1eb2ba92d0" },
   "nvim-dap-ui": { "branch": "master", "commit": "73a26abf4941aa27da59820fd6b028ebcdbcf932" },
   "nvim-nio": { "branch": "master", "commit": "21f5324bfac14e22ba26553caf69ec76ae8a7662" },
@@ -29,5 +29,6 @@
   "snacks.nvim": { "branch": "main", "commit": "bc0630e43be5699bb94dadc302c0d21615421d93" },
   "telescope.nvim": { "branch": "master", "commit": "b4da76be54691e854d3e0e02c36b0245f945c2c7" },
   "vim-fugitive": { "branch": "master", "commit": "4a745ea72fa93bb15dd077109afbb3d1809383f2" },
+  "vscode.nvim": { "branch": "main", "commit": "4d1c3c64d1afddd7934fb0e687fd9557fc66be41" },
   "which-key.nvim": { "branch": "main", "commit": "370ec46f710e058c9c1646273e6b225acf47cbed" }
 }
