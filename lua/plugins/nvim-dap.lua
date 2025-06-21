@@ -1,9 +1,12 @@
 return {
     "mfussenegger/nvim-dap",
+    enabled = false,
+    dependencies = {
+        "igorlfs/nvim-dap-view",
+    },
     event = "LspAttach",
-    dependencies = { "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
     config = function()
-        local dap, dapui = require("dap"), require("dapui")
+        local dap = require("dap")
 
         vim.keymap.set('n', '<leader>LAc', function() dap.continue() end, { desc = "Continue" })
         vim.keymap.set('n', '<leader>LAb', function() dap.toggle_breakpoint() end, { desc = "Toggle Breakpoint" })
@@ -11,7 +14,8 @@ return {
             function() dap.set_breakpoint(nil, nil, vim.fn.input('Breakpoint condition: ')) end,
             { desc = "Set Conditional Breakpoint" })
         vim.keymap.set('n', '<leader>LAp',
-            function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end, { desc = "Set Log Point" })
+            function() dap.set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
+            { desc = "Set Log Point" })
         vim.keymap.set('n', '<leader>LAr', function() dap.repl.open() end, { desc = "Open REPL" })
         vim.keymap.set('n', '<leader>LAl', function() dap.run_last() end, { desc = "Run Last" })
         vim.keymap.set('n', '<leader>LAo', function() dap.step_over() end, { desc = "Step Over" })
@@ -19,19 +23,6 @@ return {
         vim.keymap.set('n', '<leader>LAu', function() dap.step_out() end, { desc = "Step Out" })
         vim.keymap.set('n', '<leader>LAt', function() dap.terminate() end, { desc = "Terminate" })
 
-        dapui.setup()
-        dap.listeners.before.attach.dapui_config = function()
-            dapui.open()
-        end
-        dap.listeners.before.launch.dapui_config = function()
-            dapui.open()
-        end
-        dap.listeners.before.event_terminated.dapui_config = function()
-            dapui.close()
-        end
-        dap.listeners.before.event_exited.dapui_config = function()
-            dapui.close()
-        end
 
         dap.adapters.codelldb = {
             type = "executable",
