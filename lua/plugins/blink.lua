@@ -71,11 +71,16 @@ return {
                 selection = {
                     auto_insert = false,
                 }
+            },
+            ghost_text = {
+                enabled = true
             }
         },
         signature = {
             enabled = true,
-            window = { border = 'single' }
+            window = {
+                border = 'single',
+            }
         },
     },
     opts_extend = { "sources.default" },

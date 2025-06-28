@@ -33,8 +33,7 @@ return {
         end,
     },
     {
-        -- "hrsh7th/nvim-cmp",
-        "iguanacucumber/magazine.nvim",
+        "hrsh7th/nvim-cmp",
         enabled = false,
         name = "nvim-cmp",
         version = false,
