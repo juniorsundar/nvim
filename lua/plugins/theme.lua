@@ -2,7 +2,7 @@ return {
     {
         "catppuccin/nvim",
         name = "catppuccin",
-        enabled = true,
+        enabled = false,
         config = function()
             local cyberdream = {
                 base = "#16181a",
@@ -134,6 +134,21 @@ return {
                 }
             })
             vim.cmd [[colorscheme tokyonight]]
+        end
+    },
+    {
+        "AstroNvim/astrotheme",
+        priority = 1000,
+        enabled = true,
+        lazy = false,
+        config = function()
+            require("astrotheme").setup({
+                style = {
+                    transparent = true,
+                }
+            })
+            vim.cmd [[set fillchars+=eob:\ ]]
+            vim.cmd [[colorscheme astrodark]]
         end
     }
 }
