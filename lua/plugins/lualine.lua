@@ -1,10 +1,11 @@
 return {
     "nvim-lualine/lualine.nvim",
+    enabled = true,
     config = function()
         require('lualine').setup {
             options = {
                 icons_enabled = true,
-                theme = 'auto',
+                theme = 'palenight',
                 component_separators = { left = ' ', right = ' ' },
                 section_separators = { left = ' ', right = ' ' },
                 disabled_filetypes = {
@@ -12,6 +13,7 @@ return {
                     "snacks_dashboard",
                     "ministarter",
                     "fzf",
+                    "neo-tree"
                 },
                 ignore_focus = {},
                 always_divide_middle = true,
