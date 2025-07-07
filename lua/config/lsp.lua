@@ -140,7 +140,6 @@ vim.diagnostic.config {
     virtual_text = false
 }
 
-
 vim.lsp.config["lua-language-server"] = {
     cmd = { "lua-language-server" },
     filetypes = { "lua" },
@@ -198,7 +197,6 @@ vim.lsp.config["ruff"] = {
     single_file_support = true,
     capabilities = capabilities,
 }
-
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("lsp_attach_disable_ruff_hover", { clear = true }),
     callback = function(args)

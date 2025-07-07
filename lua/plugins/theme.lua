@@ -117,5 +117,23 @@ return {
         config = function()
             vim.cmd.colorscheme "vscode"
         end
+    },
+    {
+        "folke/tokyonight.nvim",
+        enabled = false,
+        lazy = false,
+        priority = 1000,
+        config = function()
+            require("tokyonight").setup({
+                style = "storm",
+                transparent = true,
+                lualine_bold = true,
+                styles = {
+                    sidebars = "transparent",
+                    floats = "transparent"
+                }
+            })
+            vim.cmd [[colorscheme tokyonight]]
+        end
     }
 }
