@@ -142,9 +142,18 @@ return {
         enabled = true,
         lazy = false,
         config = function()
+            local c = require("astrotheme.palettes.astrodark")
             require("astrotheme").setup({
                 style = {
-                    transparent = true,
+                    transparent = false,
+                    float = false,
+                },
+                plugin_default = true,
+                highlights = {
+                    global = {
+                        ["BlinkCmpMenu"] = { fg = c.ui.text, bg = c.ui.base },
+                        ["BlinkCmpMenuBorder"] = { fg = c.ui.text, bg = c.ui.base },
+                    }
                 }
             })
             vim.cmd [[set fillchars+=eob:\ ]]
