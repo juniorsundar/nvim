@@ -1,5 +1,4 @@
 -- OPTIONS ==========================================================
-vim.g.mapleader = vim.api.nvim_replace_termcodes("<A-Space>", true, true, true)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "  "
 
@@ -88,12 +87,6 @@ vim.keymap.set("n", "<C-Left>", "b", opts)
 vim.keymap.set("n", "<C-Up>", "gk", opts)
 vim.keymap.set("n", "<C-Down>", "gj", opts)
 
-vim.keymap.set("n", "<S-A-Up>", "<cmd>m .-2<CR>==", opts)
-vim.keymap.set("n", "<S-A-Down>", "<cmd>m .+1<CR>==", opts)
-
-vim.keymap.set("n", "gb", "<cmd>bnext<CR>", { noremap = false, silent = true, desc = "Next buffer" })
-vim.keymap.set("n", "gB", "<cmd>bprevious<CR>", { noremap = false, silent = true, desc = "Previous buffer" })
-
 -- Visual mode --
 -- Hint: start visual mode with the same area as the previous area and the same mode
 vim.keymap.set("v", "<", "<gv", opts)
@@ -106,8 +99,17 @@ vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode"
 require "config.lazy"
 require "config.lsp"
 
-
-vim.lsp.enable({ "lua-language-server", 'basedpyright', 'ruff', 'clangd', 'zls', 'gopls', 'rust-analyzer', 'marksman' })
+-- LSPs ==========================================================
+vim.lsp.enable({
+    "lua-language-server",
+    "basedpyright",
+    "ruff",
+    "clangd",
+    "zls",
+    "gopls",
+    "rust-analyzer",
+    "marksman"
+})
 
 -- Profile with `PROF=1 nvim` =======================================
 if vim.env.PROF then
