@@ -56,7 +56,7 @@ return {
         },
         completion = {
             menu = {
-                winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
+                -- winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
                 border = 'rounded',
                 draw = {
                     treesitter = { 'lsp' }
