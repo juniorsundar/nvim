@@ -1,6 +1,6 @@
 {
   "astrotheme": { "branch": "main", "commit": "3d2e2c08344930606812f0934a0afcb522fa1c71" },
-  "blink.cmp": { "branch": "main", "commit": "f66e22e3003c9dfe2eb7cddb4d314a57e48ac752" },
+  "blink.cmp": { "branch": "main", "commit": "a68d3335277c56f0b5977a5f8e00996e84b0ce7c" },
   "catppuccin": { "branch": "main", "commit": "fa42eb5e26819ef58884257d5ae95dd0552b9a66" },
   "conform.nvim": { "branch": "master", "commit": "973f3cb73887d510321653044791d7937c7ec0fa" },
   "diffview.nvim": { "branch": "main", "commit": "4516612fe98ff56ae0415a259ff6361a89419b0a" },
