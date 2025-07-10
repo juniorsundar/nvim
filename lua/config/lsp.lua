@@ -80,6 +80,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
                 callback = vim.lsp.buf.clear_references,
             })
         end
+        client.server_capabilities.semanticTokensProvider = nil
         local _, _ = pcall(function()
             vim.keymap.del("n", "K", { buffer = event.buf })
         end)
