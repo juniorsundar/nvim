@@ -42,7 +42,7 @@ return {
                 hover = true,
             },
         },
-        scroll = { enabled = false },
+        scroll = { enabled = true },
         indent = { enabled = false },
         words = { enabled = true },
         styles = {
