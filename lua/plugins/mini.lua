@@ -33,10 +33,10 @@ return {
         config = function()
             require("mini.move").setup({
                 mappings = {
-                    left  = '<S-left>',
-                    right = '<S-right>',
-                    down  = '<S-down>',
-                    up    = '<S-up>',
+                    left       = '<S-left>',
+                    right      = '<S-right>',
+                    down       = '<S-down>',
+                    up         = '<S-up>',
 
                     line_left  = '<S-left>',
                     line_right = '<S-right>',
