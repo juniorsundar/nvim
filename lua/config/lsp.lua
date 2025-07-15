@@ -266,3 +266,17 @@ vim.lsp.config["marksman"] = {
     single_file_support = true,
     capabilities = capabilities,
 }
+
+vim.lsp.config["docker-compose"] = {
+    cmd = { 'docker-compose-langserver', '--stdio' },
+    filetypes = { 'yaml' },
+    root_markers = { 'docker-compose.yaml', 'docker-compose.yml', 'compose.yaml', 'compose.yml' },
+    capabilities = capabilities,
+}
+
+vim.lsp.config["dockerfile"] = {
+    cmd = { 'docker-langserver', '--stdio' },
+    filetypes = { 'dockerfile' },
+    root_markers = { 'Dockerfile' },
+    capabilities = capabilities,
+}

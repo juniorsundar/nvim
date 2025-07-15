@@ -108,7 +108,9 @@ vim.lsp.enable({
     "zls",
     "gopls",
     "rust-analyzer",
-    "marksman"
+    "marksman",
+    "docker-compose",
+    "dockerfile"
 })
 
 -- Profile with `PROF=1 nvim` =======================================
