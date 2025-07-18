@@ -5,28 +5,28 @@ vim.g.maplocalleader = "  "
 -- Hint: use `:h <option>` to figure out the meaning if needed
 vim.opt.clipboard = "unnamedplus" -- use system clipboard
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
-vim.opt.mouse = "a"               -- allow the mouse to be used in Nvim
+vim.opt.mouse = "a" -- allow the mouse to be used in Nvim
 
 -- Tab
-vim.opt.tabstop = 4      -- number of visual spaces per TAB
-vim.opt.softtabstop = 4  -- number of spacesin tab when editing
-vim.opt.shiftwidth = 4   -- insert 4 spaces on a tab
+vim.opt.tabstop = 4 -- number of visual spaces per TAB
+vim.opt.softtabstop = 4 -- number of spacesin tab when editing
+vim.opt.shiftwidth = 4 -- insert 4 spaces on a tab
 vim.opt.expandtab = true -- tabs are spaces, mainly because of python
 
 -- UI config
-vim.opt.number = true         -- show absolute number
+vim.opt.number = true -- show absolute number
 vim.opt.relativenumber = true -- add numbers to each line on the left side
-vim.opt.cursorline = true     -- highlight cursor line underneath the cursor horizontally
-vim.opt.splitbelow = true     -- open new vertical split bottom
-vim.opt.splitright = true     -- open new horizontal splits right
-vim.opt.termguicolors = true  -- enabl 24-bit RGB color in the TUI
-vim.opt.showmode = false      -- we are experienced, wo don't need the "-- INSERT --" mode hint
+vim.opt.cursorline = true -- highlight cursor line underneath the cursor horizontally
+vim.opt.splitbelow = true -- open new vertical split bottom
+vim.opt.splitright = true -- open new horizontal splits right
+vim.opt.termguicolors = true -- enabl 24-bit RGB color in the TUI
+vim.opt.showmode = false -- we are experienced, wo don't need the "-- INSERT --" mode hint
 
 -- Searching
-vim.opt.incsearch = true     -- search as characters are entered
-vim.opt.hlsearch = false     -- do not highlight matches
-vim.opt.ignorecase = true    -- ignore case in searches by default
-vim.opt.smartcase = true     -- but make it case sensitive if an uppercase is entered
+vim.opt.incsearch = true -- search as characters are entered
+vim.opt.hlsearch = false -- do not highlight matches
+vim.opt.ignorecase = true -- ignore case in searches by default
+vim.opt.smartcase = true -- but make it case sensitive if an uppercase is entered
 vim.opt.inccommand = "split" -- shows how certain commands apply in a separate window
 
 vim.opt.undofile = true
@@ -38,26 +38,26 @@ vim.o.grepformat = "%f:%l:%c:%m"
 vim.o.foldlevel = 0
 
 vim.api.nvim_create_autocmd("TextYankPost", {
-    desc = "Highlight when yanking (copying) text",
-    group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
-    callback = function()
-        vim.highlight.on_yank()
-    end,
+  desc = "Highlight when yanking (copying) text",
+  group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
+  callback = function()
+    vim.highlight.on_yank()
+  end,
 })
 
 vim.api.nvim_create_autocmd("BufReadPost", {
-    pattern = "*",
-    callback = function()
-        local line = vim.fn.line "'\""
-        if
-            line > 1
-            and line <= vim.fn.line "$"
-            and vim.bo.filetype ~= "commit"
-            and vim.fn.index({ "xxd", "gitrebase" }, vim.bo.filetype) == -1
-        then
-            vim.cmd 'normal! g`"'
-        end
-    end,
+  pattern = "*",
+  callback = function()
+    local line = vim.fn.line "'\""
+    if
+      line > 1
+      and line <= vim.fn.line "$"
+      and vim.bo.filetype ~= "commit"
+      and vim.fn.index({ "xxd", "gitrebase" }, vim.bo.filetype) == -1
+    then
+      vim.cmd 'normal! g`"'
+    end
+  end,
 })
 
 vim.loader.enable()
@@ -65,8 +65,8 @@ vim.loader.enable()
 -- KEYMAPS ==========================================================
 -- define common options
 local opts = {
-    noremap = false, -- non-recursive
-    silent = true,   -- do not show message
+  noremap = false, -- non-recursive
+  silent = true, -- do not show message
 }
 
 -- Normal mode --
@@ -100,30 +100,30 @@ require "config.lazy"
 require "config.lsp"
 
 -- LSPs ==========================================================
-vim.lsp.enable({
-    "lua-language-server",
-    "basedpyright",
-    "ruff",
-    "clangd",
-    "zls",
-    "gopls",
-    "rust-analyzer",
-    "marksman",
-    "docker-compose",
-    "dockerfile"
-})
+vim.lsp.enable {
+  "lua-language-server",
+  "basedpyright",
+  "ruff",
+  "clangd",
+  "zls",
+  "gopls",
+  "rust-analyzer",
+  "marksman",
+  "docker-compose",
+  "dockerfile",
+}
 
 -- Profile with `PROF=1 nvim` =======================================
 if vim.env.PROF then
-    -- example for lazy.nvim
-    -- change this to the correct path for your plugin manager
-    local snacks = vim.fn.stdpath("data") .. "/lazy/snacks.nvim"
-    vim.opt.rtp:append(snacks)
-    require("snacks.profiler").startup({
-        startup = {
-            event = "VimEnter", -- stop profiler on this event. Defaults to `VimEnter`
-            -- event = "UIEnter",
-            -- event = "VeryLazy",
-        },
-    })
+  -- example for lazy.nvim
+  -- change this to the correct path for your plugin manager
+  local snacks = vim.fn.stdpath "data" .. "/lazy/snacks.nvim"
+  vim.opt.rtp:append(snacks)
+  require("snacks.profiler").startup {
+    startup = {
+      event = "VimEnter", -- stop profiler on this event. Defaults to `VimEnter`
+      -- event = "UIEnter",
+      -- event = "VeryLazy",
+    },
+  }
 end
