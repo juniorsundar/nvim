@@ -12,7 +12,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
     end
 
     local bufnr = vim.api.nvim_get_current_buf()
-    local clients = vim.lsp.get_clients { bufnr = bufnr }
+    local clients = vim.lsp.get_clients({ bufnr = bufnr })
 
     local has_hover_provider = false
     for _, client in ipairs(clients) do
@@ -31,18 +31,20 @@ vim.api.nvim_create_autocmd("CursorHold", {
         return
       end
 
-      if vim.tbl_isempty(result.contents) then
+      local lines = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
+
+      if vim.tbl_isempty(lines) then
         return
       end
 
-      vim.lsp.buf.hover {
+      vim.lsp.util.open_floating_preview(lines, "markdown", {
         border = "rounded",
         relative = "editor",
         offset_x = vim.o.columns,
-      }
+      })
     end
 
-    local params = vim.lsp.util.make_position_params(0, "utf-32")
+    local params = vim.lsp.util.make_position_params(0, 'utf-32')
     vim.lsp.buf_request(bufnr, "textDocument/hover", params, handler)
   end,
   desc = "Show LSP hover documentation on CursorHold (silently ignores empty responses)",
