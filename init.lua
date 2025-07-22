@@ -111,6 +111,7 @@ vim.lsp.enable {
   "marksman",
   "docker-compose",
   "dockerfile",
+  "serve-d",
 }
 
 -- Profile with `PROF=1 nvim` =======================================
