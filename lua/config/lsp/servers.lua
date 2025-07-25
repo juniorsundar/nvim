@@ -288,4 +288,3 @@ vim.lsp.config["serve-d"] = {
   single_file_support = true,
   capabilities = capabilities,
 }
-
