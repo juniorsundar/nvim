@@ -99,21 +99,6 @@ vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode"
 require "config.lazy"
 require "config.lsp"
 
--- LSPs ==========================================================
-vim.lsp.enable {
-  "lua-language-server",
-  "basedpyright",
-  "ruff",
-  "clangd",
-  "zls",
-  "gopls",
-  "rust-analyzer",
-  "marksman",
-  "docker-compose",
-  "dockerfile",
-  "serve-d",
-}
-
 -- Profile with `PROF=1 nvim` =======================================
 if vim.env.PROF then
   -- example for lazy.nvim
