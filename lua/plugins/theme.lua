@@ -160,4 +160,13 @@ return {
       vim.cmd [[colorscheme astrodark]]
     end,
   },
+  {
+     "vague2k/vague.nvim",
+      enabled = false,
+      priority = 1000,
+      config = function()
+        require("vague").setup({
+        })
+      end
+  },
 }
