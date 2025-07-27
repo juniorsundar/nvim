@@ -270,6 +270,13 @@ return {
       desc = "Undo",
     },
     {
+      "<leader>FT",
+      function()
+        require("config.snacks.pickers.tabs").tabs_picker()
+      end,
+      desc = "Tabs"
+    },
+    {
       "<leader>e",
       function()
         Snacks.picker.explorer { hidden = true }
