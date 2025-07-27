@@ -1,6 +1,7 @@
 return {
   {
     "echasnovski/mini.pairs",
+    enabled = false,
     event = "VeryLazy",
     config = function()
       require("mini.pairs").setup {
@@ -46,4 +47,12 @@ return {
       }
     end,
   },
+  {
+     "echasnovski/mini.statusline",
+     enabled = false,
+     event = "VeryLazy",
+     config = function()
+       require("mini.statusline").setup({})
+     end
+  }
 }
