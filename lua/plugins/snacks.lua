@@ -277,6 +277,13 @@ return {
       desc = "Tabs"
     },
     {
+      '<leader>F"',
+      function()
+        Snacks.picker.registers()
+      end,
+      desc = "Registers"
+    },
+    {
       "<leader>e",
       function()
         Snacks.picker.explorer { hidden = true }
