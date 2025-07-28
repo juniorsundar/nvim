@@ -16,4 +16,3 @@ vim.lsp.enable {
   "dockerfile",
   "serve-d",
 }
-
