@@ -274,14 +274,14 @@ return {
       function()
         require("config.snacks.pickers.tabs").tabs_picker()
       end,
-      desc = "Tabs"
+      desc = "Tabs",
     },
     {
       '<leader>F"',
       function()
         Snacks.picker.registers()
       end,
-      desc = "Registers"
+      desc = "Registers",
     },
     {
       "<leader>e",

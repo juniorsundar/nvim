@@ -1,12 +1,13 @@
 ---@diagnostic disable: missing-fields
 return {
   "saghen/blink.cmp",
+  enabled = true,
   -- optional: provides snippets for the snippet source
   -- dependencies = 'rafamadriz/friendly-snippets',
   event = "VeryLazy",
   -- use a release tag to download pre-built binaries
-  -- version = 'v1.1.1',
-  build = (vim.fn.executable "nix" == 1) and "nix run .#build-plugin" or "cargo build --release",
+  version = "v1.*",
+    -- build = (vim.fn.executable "nix" == 1) and "nix run .#build-plugin" or "cargo build --release",
 
     ---@module 'blink.cmp'
     -- stylua: ignore
@@ -18,7 +19,7 @@ return {
         fuzzy = {
             implementation = 'prefer_rust',
             prebuilt_binaries = {
-                download = false,
+                download = true,
             }
         },
         keymap = {
@@ -41,7 +42,25 @@ return {
             nerd_font_variant = 'normal'
         },
 
-        cmdline = { enabled = false, sources = {} },
+        cmdline = {
+            enabled = true,
+            keymap = {
+                preset = 'inherit',
+            },
+            completion = {
+                menu = {
+                    auto_show = function(ctx)
+                        return vim.fn.getcmdtype() == ':'
+                    end,
+                },
+                list = {
+                    selection = {
+                        preselect = false,
+                        auto_insert = false,
+                    }
+                },
+            },
+        },
         -- Default list of enabled providers defined so that you can extend it
         -- elsewhere in your config, without redefining it, due to `opts_extend`
         sources = {
@@ -59,8 +78,8 @@ return {
                 -- winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
                 border = 'rounded',
                 draw = {
-                    treesitter = { 'lsp' }
-                }
+                    treesitter = { 'lsp', 'path', 'snippets', 'buffer', "lazydev" },
+                },
             },
             documentation = {
                 auto_show = true,
