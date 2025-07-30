@@ -7,6 +7,7 @@ return {
       lua = { "stylua" },
       python = { "ruff" },
       go = { "gofumpt" },
+      rust = { "rustfmt" },
     },
   },
 }
