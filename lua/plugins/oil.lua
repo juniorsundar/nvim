@@ -10,5 +10,9 @@ return {
         show_hidden = true,
       },
     }
+
+    require("which-key").add {
+      { "<leader>o", "<cmd>Oil<cr>", desc = "Oil" },
+    }
   end,
 }
