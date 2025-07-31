@@ -1,13 +1,14 @@
 return {
   "sindrets/diffview.nvim",
-  keys = {
-    { "<leader>GDo", mode = { "n", "x" }, "<cmd>DiffviewOpen<cr>", desc = "Open" },
-    { "<leader>GDc", mode = { "n", "x" }, "<cmd>DiffviewClose<cr>", desc = "Close" },
-    { "<leader>GDh", mode = { "n", "x" }, "<cmd>DiffviewFileHistory<cr>", desc = "File History" },
-  },
   config = function()
-    -- Lua
     local actions = require "diffview.actions"
+
+    require("which-key").add {
+      { "<leader>GD", group = "Diffview" },
+      { "<leader>GDo", mode = { "n", "x" }, "<cmd>DiffviewOpen<cr>", desc = "Open" },
+      { "<leader>GDc", mode = { "n", "x" }, "<cmd>DiffviewClose<cr>", desc = "Close" },
+      { "<leader>GDh", mode = { "n", "x" }, "<cmd>DiffviewFileHistory<cr>", desc = "File History" },
+    }
 
     require("diffview").setup {
       diff_binaries = false, -- Show diffs for binaries
