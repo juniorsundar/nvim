@@ -153,6 +153,7 @@ return {
           global = {
             ["BlinkCmpMenu"] = { fg = c.ui.text, bg = c.ui.base },
             ["BlinkCmpMenuBorder"] = { fg = c.ui.text, bg = c.ui.base },
+            ["Folded"] = { fg = c.ui.text, bg = c.ui.base },
           },
         },
       }

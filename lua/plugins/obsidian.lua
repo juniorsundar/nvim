@@ -68,6 +68,7 @@ return {
       { "<localleader>Ot", "<cmd>Obsidian tags<cr>", desc = "Tags" },
       { "<localleader>Ol", "<cmd>Obsidian links<cr>", desc = "Links" },
       { "<localleader>Ot", "<cmd>Obsidian tags<cr>", desc = "Tags" },
+      { "<localleader>Ob", "<cmd>Obsidian backlinks<cr>", desc = "Backlinks" },
       { "<localleader>ODt", "<cmd>Obsidian today<cr>", desc = "Today" },
       { "<localleader>ODT", "<cmd>Obsidian tomorrow<cr>", desc = "Tomorrow" },
       { "<localleader>ODy", "<cmd>Obsidian yesterday<cr>", desc = "Yesterday" },
