@@ -1,5 +1,8 @@
 return {
   {
+    "nvim-tree/nvim-web-devicons",
+  },
+  {
     "catppuccin/nvim",
     name = "catppuccin",
     enabled = false,
@@ -32,34 +35,6 @@ return {
         text = "#ffffff",
         yellow = "#f1ff5e",
       }
-      local kanagawa = {
-        rosewater = "#c4746e",
-        flamingo = "#a292a3",
-        pink = "#d27e99",
-        mauve = "#8992a7",
-        red = "#E82424",
-        maroon = "#c4746e",
-        peach = "#b6927b",
-        yellow = "#c4b28a",
-        green = "#8a9a7b",
-        teal = "#87a987",
-        sky = "#8ea4a2",
-        sapphire = "#949fb5",
-        blue = "#8ba4b0",
-        lavender = "#957FB8",
-        text = "#c5c9c5",
-        subtext1 = "#C8C093",
-        subtext0 = "#a6a69c",
-        overlay2 = "#9e9b93",
-        overlay1 = "#7a8382",
-        overlay0 = "#737c73",
-        surface2 = "#625e5a",
-        surface1 = "#393836",
-        surface0 = "#282727",
-        base = "#181616",
-        mantle = "#1D1C19",
-        crust = "#0d0c0c",
-      }
       local config = {
         color_overrides = {
           macchiato = cyberdream,
@@ -81,35 +56,11 @@ return {
           end,
         },
         transparent_background = false,
-        integrations = {
-          blink_cmp = true,
-          cmp = true,
-          dap = true,
-          dap_ui = true,
-          diffview = true,
-          flash = true,
-          gitsigns = true,
-          lsp_saga = true,
-          markdown = true,
-          mason = true,
-          mini = { enabled = true },
-          native_lsp = { enabled = true },
-          neogit = true,
-          notify = true,
-          nvim_surround = true,
-          snacks = true,
-          treesitter = false,
-          treesitter_context = true,
-          which_key = true,
-        },
+        auto_integrations = true,
       }
-
       require("catppuccin").setup(config)
       vim.cmd.colorscheme "catppuccin-macchiato"
     end,
-  },
-  {
-    "nvim-tree/nvim-web-devicons",
   },
   {
     "Mofiqul/vscode.nvim",
@@ -133,7 +84,7 @@ return {
           floats = "transparent",
         },
       }
-      vim.cmd [[colorscheme tokyonight]]
+      vim.cmd.colorscheme "tokyonight"
     end,
   },
   {
@@ -158,7 +109,24 @@ return {
         },
       }
       vim.cmd [[set fillchars+=eob:\ ]]
-      vim.cmd [[colorscheme astrodark]]
+      vim.cmd.colorscheme "astrodark"
+    end,
+  },
+  {
+    "NTBBloodbath/doom-one.nvim",
+    enabled = false,
+    config = function()
+      vim.g.doom_one_cursor_coloring = false
+      vim.g.doom_one_terminal_colors = true
+      vim.g.doom_one_italic_comments = true
+      vim.g.doom_one_enable_treesitter = true
+      vim.g.doom_one_diagnostics_text_color = false
+      vim.g.doom_one_transparent_background = false
+
+      vim.g.doom_one_pumblend_enable = true
+      vim.g.doom_one_pumblend_transparency = 20
+      vim.cmd [[set fillchars+=eob:\ ]]
+      vim.cmd.colorscheme "doom-one"
     end,
   },
   {
@@ -167,6 +135,49 @@ return {
     priority = 1000,
     config = function()
       require("vague").setup {}
+    end,
+  },
+  {
+    "dgox16/oldworld.nvim",
+    lazy = false,
+    enabled = false,
+    priority = 1000,
+    config = function()
+      require("oldworld").setup {
+        terminal_colors = true,
+        variant = "default",
+        styles = {
+          comments = {},
+          keywords = {},
+          identifiers = {},
+          functions = {},
+          variables = {},
+          booleans = {},
+        },
+        integrations = {
+          alpha = true,
+          cmp = true,
+          flash = true,
+          gitsigns = true,
+          hop = false,
+          indent_blankline = true,
+          lazy = true,
+          lsp = true,
+          markdown = true,
+          mason = true,
+          navic = false,
+          neo_tree = false,
+          neogit = false,
+          neorg = false,
+          noice = true,
+          notify = true,
+          rainbow_delimiters = true,
+          telescope = true,
+          treesitter = true,
+        },
+        highlight_overrides = {},
+      }
+      vim.cmd.colorscheme "oldworld"
     end,
   },
 }

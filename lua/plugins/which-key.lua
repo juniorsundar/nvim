@@ -24,8 +24,6 @@ return {
       align = "center",
     },
     spec = {
-      { "<leader>w", "<cmd>w!<cr>", desc = "Save" },
-      { "<leader>q", "<cmd>q<cr>", desc = "Quit" },
       { "<leader>l", "<cmd>Lazy<cr>", desc = "Lazy" },
       { "<leader>F", desc = "Find" },
       { "<leader>G", group = "Git" },
