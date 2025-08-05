@@ -31,7 +31,7 @@ return {
         lualine_c = { "filename" },
         lualine_x = { "filetype" },
         lualine_y = { "location" },
-        lualine_z = { "progress" },
+        lualine_z = { { "tabs", use_mode_colors = true } },
       },
       inactive_sections = {
         lualine_a = {},
