@@ -1,5 +1,9 @@
 local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = vim.tbl_deep_extend("force", capabilities, require("blink.cmp").get_lsp_capabilities(capabilities))
+
+local blink_loaded, blink = pcall(require, "blink.cmp")
+if blink_loaded then
+  capabilities = vim.tbl_deep_extend("force", capabilities, blink.get_lsp_capabilities(capabilities))
+end
 -- capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 capabilities.workspace = {
