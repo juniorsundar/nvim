@@ -3,32 +3,32 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = "  "
 
 -- Hint: use `:h <option>` to figure out the meaning if needed
-vim.opt.clipboard = "unnamedplus" -- use system clipboard
+vim.opt.clipboard = "unnamedplus"
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
-vim.opt.mouse = "a" -- allow the mouse to be used in Nvim
+vim.opt.mouse = "a"
 
 -- Tab
-vim.opt.tabstop = 4 -- number of visual spaces per TAB
-vim.opt.softtabstop = 4 -- number of spacesin tab when editing
-vim.opt.shiftwidth = 4 -- insert 4 spaces on a tab
-vim.opt.expandtab = true -- tabs are spaces, mainly because of python
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
 
 -- UI config
-vim.opt.number = true -- show absolute number
-vim.opt.relativenumber = true -- add numbers to each line on the left side
-vim.opt.cursorline = true -- highlight cursor line underneath the cursor horizontally
-vim.opt.splitbelow = true -- open new vertical split bottom
-vim.opt.splitright = true -- open new horizontal splits right
-vim.opt.termguicolors = true -- enabl 24-bit RGB color in the TUI
-vim.opt.showmode = false -- we are experienced, wo don't need the "-- INSERT --" mode hint
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.cursorline = true
+vim.opt.splitbelow = true
+vim.opt.splitright = true
+vim.opt.termguicolors = true
+vim.opt.showmode = false
 vim.opt.showtabline = 0
 
 -- Searching
-vim.opt.incsearch = true -- search as characters are entered
-vim.opt.hlsearch = false -- do not highlight matches
-vim.opt.ignorecase = true -- ignore case in searches by default
-vim.opt.smartcase = true -- but make it case sensitive if an uppercase is entered
-vim.opt.inccommand = "split" -- shows how certain commands apply in a separate window
+vim.opt.incsearch = true
+vim.opt.hlsearch = false
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.inccommand = "split"
 
 vim.opt.undofile = true
 vim.opt.signcolumn = "yes"
@@ -42,7 +42,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   desc = "Highlight when yanking (copying) text",
   group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
   callback = function()
-    vim.highlight.on_yank()
+    vim.hl.on_yank()
   end,
 })
 
