@@ -59,6 +59,4 @@ local function toggle_auto_hover()
   end
 end
 
-require("which-key").add {
-  { "<leader><leader>Th", toggle_auto_hover, desc = "Toggle LSP auto hover" },
-}
+vim.keymap.set("n", "<leader><leader>Th", toggle_auto_hover, { desc = "Toggle LSP auto hover", noremap = false, silent = true })

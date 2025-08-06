@@ -2,8 +2,6 @@ return {
   "mason-org/mason.nvim",
   config = function()
     require("mason").setup()
-    require("which-key").add {
-      { "<leader>m", "<cmd>Mason<cr>", desc = "Mason" },
-    }
+    vim.keymap.set("n", "<leader>m", "<cmd>Mason<cr>", { desc = "Mason", noremap = false, silent = true })
   end,
 }

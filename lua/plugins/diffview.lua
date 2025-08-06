@@ -3,12 +3,11 @@ return {
   config = function()
     local actions = require "diffview.actions"
 
-    require("which-key").add {
-      { "<leader>GD", group = "Diffview" },
-      { "<leader>GDo", mode = { "n", "x" }, "<cmd>DiffviewOpen<cr>", desc = "Open" },
-      { "<leader>GDc", mode = { "n", "x" }, "<cmd>DiffviewClose<cr>", desc = "Close" },
-      { "<leader>GDh", mode = { "n", "x" }, "<cmd>DiffviewFileHistory<cr>", desc = "File History" },
-    }
+    vim.keymap.set("n", "<leader>GD", "", { desc = "Diffview", noremap = false, silent = true })
+    vim.keymap.set({ "n", "x" }, "<leader>GDo", "<cmd>DiffviewOpen<cr>", { desc = "Open", noremap = false, silent = true })
+    vim.keymap.set({ "n", "x" }, "<leader>GDc", "<cmd>DiffviewClose<cr>", { desc = "Close", noremap = false, silent = true })
+    vim.keymap.set({ "n", "x" }, "<leader>GDh", "<cmd>DiffviewFileHistory<cr>", { desc = "File History", noremap = false, silent = true })
+
 
     require("diffview").setup {
       diff_binaries = false, -- Show diffs for binaries
