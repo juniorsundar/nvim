@@ -1,5 +1,6 @@
 return {
   "stevearc/quicker.nvim",
+  enabled = true,
   config = function()
     require("quicker").setup {
       keys = {
