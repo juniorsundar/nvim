@@ -11,8 +11,6 @@ return {
       },
     }
 
-    require("which-key").add {
-      { "<leader>o", "<cmd>Oil<cr>", desc = "Oil" },
-    }
+    vim.keymap.set( "n", "<leader>o", "<cmd>Oil<cr>", { desc = "Oil", noremap = false, silent = true })
   end,
 }
