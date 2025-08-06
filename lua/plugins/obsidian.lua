@@ -1,6 +1,19 @@
 return {
   "obsidian-nvim/obsidian.nvim",
   enabled = true,
+  keys = {
+    { "<localleader>O", group = "Obsidian" },
+    { "<localleader>OD", group = "Dailies" },
+    { "<localleader>Oo", "<cmd>Obsidian quick_switch<cr>", desc = "Quick Switch" },
+    { "<localleader>Of", "<cmd>Obsidian search<cr>", desc = "Search" },
+    { "<localleader>Ot", "<cmd>Obsidian tags<cr>", desc = "Tags" },
+    { "<localleader>Ol", "<cmd>Obsidian links<cr>", desc = "Links" },
+    { "<localleader>Ot", "<cmd>Obsidian tags<cr>", desc = "Tags" },
+    { "<localleader>Ob", "<cmd>Obsidian backlinks<cr>", desc = "Backlinks" },
+    { "<localleader>ODt", "<cmd>Obsidian today<cr>", desc = "Today" },
+    { "<localleader>ODT", "<cmd>Obsidian tomorrow<cr>", desc = "Tomorrow" },
+    { "<localleader>ODy", "<cmd>Obsidian yesterday<cr>", desc = "Yesterday" },
+  },
   version = "*",
   config = function()
     require("obsidian").setup {
@@ -61,17 +74,6 @@ return {
       },
     }
     require("which-key").add {
-      { "<localleader>O", group = "Obsidian" },
-      { "<localleader>OD", group = "Dailies" },
-      { "<localleader>Oo", "<cmd>Obsidian quick_switch<cr>", desc = "Quick Switch" },
-      { "<localleader>Of", "<cmd>Obsidian search<cr>", desc = "Search" },
-      { "<localleader>Ot", "<cmd>Obsidian tags<cr>", desc = "Tags" },
-      { "<localleader>Ol", "<cmd>Obsidian links<cr>", desc = "Links" },
-      { "<localleader>Ot", "<cmd>Obsidian tags<cr>", desc = "Tags" },
-      { "<localleader>Ob", "<cmd>Obsidian backlinks<cr>", desc = "Backlinks" },
-      { "<localleader>ODt", "<cmd>Obsidian today<cr>", desc = "Today" },
-      { "<localleader>ODT", "<cmd>Obsidian tomorrow<cr>", desc = "Tomorrow" },
-      { "<localleader>ODy", "<cmd>Obsidian yesterday<cr>", desc = "Yesterday" },
     }
   end,
 }
