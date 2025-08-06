@@ -3,25 +3,10 @@ return {
   enabled = false,
   dependencies = { "nvim-lua/plenary.nvim" },
   config = function()
-    require("telescope").setup {
+    local opts = {
       defaults = {
-        sorting_strategy = "ascending",
-
-        -- layout_strategy = "bottom_pane",
-        -- layout_config = {
-        --     height = 0.5,
-        -- },
-
-        layout_strategy = "vertical",
-        layout_config = {
-          height = 0.85,
-        },
-        border = true,
-        -- borderchars = {
-        --     prompt = { "─", " ", " ", " ", "─", "─", " ", " " },
-        --     results = { " " },
-        --     preview = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
-        -- },
+        -- Default configuration for telescope goes here:
+        -- config_key = value,
         mappings = {
           i = {
             -- map actions.which_key to <C-h> (default: <C-/>)
@@ -48,5 +33,7 @@ return {
         -- please take a look at the readme of the extension you want to configure
       },
     }
+    opts.defaults = require("telescope.themes").get_ivy()
+    require("telescope").setup(opts)
   end,
 }

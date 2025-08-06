@@ -73,7 +73,5 @@ return {
         end,
       },
     }
-    require("which-key").add {
-    }
   end,
 }
