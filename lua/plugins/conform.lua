@@ -1,7 +1,7 @@
 return {
   "stevearc/conform.nvim",
   enabled = true,
-  event = "VeryLazy",
+  event = "LspAttach",
   opts = {
     formatters_by_ft = {
       lua = { "stylua" },

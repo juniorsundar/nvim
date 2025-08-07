@@ -1,17 +1,18 @@
-local capabilities = vim.lsp.protocol.make_client_capabilities()
+M = {
+    capabilities = vim.lsp.protocol.make_client_capabilities()
+}
 
 local blink_loaded, blink = pcall(require, "blink.cmp")
 if blink_loaded then
-  capabilities = vim.tbl_deep_extend("force", capabilities, blink.get_lsp_capabilities(capabilities))
+  M.capabilities = vim.tbl_deep_extend("force", M.capabilities, blink.get_lsp_capabilities(M.capabilities))
 end
--- capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-capabilities.workspace = {
+M.capabilities.workspace = {
   didChangeWatchedFiles = {
     dynamicRegistration = true,
   },
 }
-capabilities.textDocument.foldingRange = {
+M.capabilities.textDocument.foldingRange = {
   dynamicRegistration = false,
   lineFoldingOnly = true,
 }
@@ -115,11 +116,6 @@ vim.api.nvim_create_autocmd("CursorMoved", {
   end,
 })
 
----- LSP SETUP ----
-
-local mason_bin = vim.fn.stdpath "data" .. "/mason/bin"
-vim.env.PATH = mason_bin .. ":" .. vim.env.PATH
-
 vim.diagnostic.config {
   virtual_lines = false,
   signs = {
@@ -147,148 +143,4 @@ vim.diagnostic.config {
   virtual_text = false,
 }
 
-vim.lsp.config["lua-language-server"] = {
-  cmd = { "lua-language-server" },
-  filetypes = { "lua" },
-  capabilities = capabilities,
-  settings = {
-    Lua = {
-      runtime = { version = "LuaJIT" },
-      workspace = {
-        checkThirdParty = false,
-        library = {
-          "${3rd}/luv/library",
-          unpack(vim.api.nvim_get_runtime_file("", true)),
-        },
-      },
-      completion = {
-        callSnippet = "Replace",
-      },
-      hint = {
-        enable = true,
-      },
-    },
-  },
-}
-
-vim.lsp.config["basedpyright"] = {
-  cmd = { "basedpyright-langserver", "--stdio" },
-  filetypes = { "python" },
-  capabilities = capabilities,
-  settings = {
-    basedpyright = {
-      analysis = {
-        typeCheckingMode = "standard",
-        autoSearchPaths = true,
-        useLibraryCodeForTypes = true,
-        diagnosticMode = "openFilesOnly",
-      },
-    },
-  },
-  single_file_support = true,
-  root_markers = {
-    "pyproject.toml",
-    "setup.py",
-    "setup.cfg",
-    "requirements.txt",
-    "Pipfile",
-    "pyrightconfig.json",
-    ".git",
-  },
-}
-
-vim.lsp.config["ruff"] = {
-  cmd = { "ruff", "server" },
-  filetypes = { "python" },
-  root_markers = { ".git", "pyproject.toml", "ruff.toml", ".ruff.toml" },
-  single_file_support = true,
-  capabilities = capabilities,
-}
-vim.api.nvim_create_autocmd("LspAttach", {
-  group = vim.api.nvim_create_augroup("lsp_attach_disable_ruff_hover", { clear = true }),
-  callback = function(args)
-    local client = vim.lsp.get_client_by_id(args.data.client_id)
-    if client == nil then
-      return
-    end
-    if client.name == "ruff" then
-      -- Disable hover in favor of Pyright
-      client.server_capabilities.hoverProvider = false
-    end
-  end,
-  desc = "LSP: Disable hover capability from Ruff",
-})
-
-vim.lsp.config["clangd"] = {
-  cmd = { "clangd" },
-  filetypes = { "cpp", "hpp", "h", "c", "cuda" },
-  root_markers = { "compile_commands.json", ".clangd", ".git" },
-  capabilities = capabilities,
-}
-
-vim.lsp.config["zls"] = {
-  cmd = { "zls" },
-  filetypes = { "zig" },
-  root_markers = { "zls.json", "build.zig", ".git" },
-  single_file_support = true,
-  capabilities = capabilities,
-}
-
-vim.lsp.config["gopls"] = {
-  cmd = { "gopls" },
-  filetypes = { "go", "gomod" },
-  root_markers = { "go.mod", "go.sum", ".git" },
-  single_file_support = true,
-  capabilities = capabilities,
-  settings = {
-    gopls = {
-      ["ui.inlayhint.hints"] = {
-        assignVariableTypes = true,
-        compositeLiteralFields = true,
-        compositeLiteralTypes = true,
-        constantValues = true,
-        functionTypeParameters = true,
-        parameterNames = true,
-        rangeVariableTypes = true,
-      },
-    },
-  },
-}
-
-vim.lsp.config["rust-analyzer"] = {
-  cmd = { "rust-analyzer" },
-  filetypes = { "rust" },
-  root_markers = { "Cargo.toml", ".git" },
-  -- single_file_support = true,
-  capabilities = capabilities,
-}
-
-vim.lsp.config["marksman"] = {
-  cmd = { "marksman" },
-  filetypes = { "markdown" },
-  root_markers = { ".marksman.toml", ".git" },
-  single_file_support = true,
-  capabilities = capabilities,
-}
-
-vim.lsp.config["docker-compose"] = {
-  cmd = { "docker-compose-langserver", "--stdio" },
-  filetypes = { "yaml" },
-  root_markers = { "docker-compose.yaml", "docker-compose.yml", "compose.yaml", "compose.yml" },
-  capabilities = capabilities,
-}
-
-vim.lsp.config["dockerfile"] = {
-  cmd = { "docker-langserver", "--stdio" },
-  filetypes = { "dockerfile" },
-  root_markers = { "Dockerfile" },
-  capabilities = capabilities,
-}
-
-vim.lsp.config["serve-d"] = {
-  cmd = { "serve-d" },
-  filetypes = { "d" },
-  root_markers = { "dub.json", "dub.sdl", ".git" },
-  single_file_support = true,
-  capabilities = capabilities,
-}
+return M
