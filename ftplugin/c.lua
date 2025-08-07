@@ -2,14 +2,13 @@ vim.keymap.set("n", "<tab>", "za", { noremap = false, silent = true, desc = "Exp
 
 local capabilities = require "config.lsp.serve_capabilities"
 
-vim.lsp.config["rust-analyzer"] = {
-  cmd = { "rust-analyzer" },
-  filetypes = { "rust" },
-  root_markers = { "Cargo.toml", ".git" },
-  -- single_file_support = true,
+vim.lsp.config["clangd"] = {
+  cmd = { "clangd" },
+  filetypes = { "cpp", "hpp", "h", "c", "cuda" },
+  root_markers = { "compile_commands.json", ".clangd", ".git" },
   capabilities = capabilities,
 }
 
 vim.lsp.enable {
-  "rust-analyzer"
+  "clangd",
 }

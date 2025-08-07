@@ -4,7 +4,8 @@ return {
   enabled = true,
   -- optional: provides snippets for the snippet source
   -- dependencies = 'rafamadriz/friendly-snippets',
-  event = "VeryLazy",
+  lazy = true,
+  -- event = "VeryLazy",
   -- use a release tag to download pre-built binaries
   version = "v1.*",
     -- build = (vim.fn.executable "nix" == 1) and "nix run .#build-plugin" or "cargo build --release",
