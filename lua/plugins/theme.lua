@@ -4,8 +4,8 @@ return {
   },
   {
     "AstroNvim/astrotheme",
-    priority = 1000,
     enabled = true,
+    event = "VeryLazy",
     lazy = false,
     config = function()
       local c = require "astrotheme.palettes.astrodark"
