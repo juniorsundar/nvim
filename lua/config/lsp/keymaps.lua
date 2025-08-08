@@ -8,12 +8,20 @@ local function lsp_function(handler)
         if #result > 1 then
             vim.cmd("lua Snacks.picker.lsp_" .. handler .. "s()")
         else
-            local win_width = vim.o.columns
-            local threshold = 120
-            if win_width > threshold then
-                vim.cmd("vsplit | lua vim.lsp.buf." .. handler .. "()")
-            else
+            local win_width = vim.api.nvim_win_get_width(0)
+            local win_height = vim.api.nvim_win_get_height(0)
+            local width_threshold = 100
+            local height_threshold = 30
+            local width_bound = win_width > width_threshold
+            local height_bound = win_height > height_threshold
+            if width_bound and height_bound then
                 vim.cmd("split | lua vim.lsp.buf." .. handler .. "()")
+            elseif width_bound and not height_bound then
+                vim.cmd("vsplit | lua vim.lsp.buf." .. handler .. "()")
+            elseif not width_bound and height_bound then
+                vim.cmd("split | lua vim.lsp.buf." .. handler .. "()")
+            else
+                vim.cmd("tab sb | lua vim.lsp.buf." .. handler .. "()")
             end
         end
     end)
