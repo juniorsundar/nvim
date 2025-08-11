@@ -1,5 +1,6 @@
-vim.o.updatetime = 2000
+---@type boolean
 local auto_hover_enabled = true
+vim.o.updatetime = 2000
 
 local lsp_hover_augroup = vim.api.nvim_create_augroup("LspHoverOnHold", { clear = true })
 
@@ -14,6 +15,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
     local bufnr = vim.api.nvim_get_current_buf()
     local clients = vim.lsp.get_clients { bufnr = bufnr }
 
+    ---@type boolean
     local has_hover_provider = false
     for _, client in ipairs(clients) do
       if client and client.server_capabilities and client.server_capabilities.hoverProvider then
