@@ -2,6 +2,8 @@ M = {
     capabilities = vim.lsp.protocol.make_client_capabilities()
 }
 
+---@alias blink_loaded boolean
+---@alias blink blink.cmp.API
 local blink_loaded, blink = pcall(require, "blink.cmp")
 if blink_loaded then
   M.capabilities = vim.tbl_deep_extend("force", M.capabilities, blink.get_lsp_capabilities(M.capabilities))
@@ -19,7 +21,7 @@ M.capabilities.textDocument.foldingRange = {
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("FoldConfig", { clear = true }),
-  callback = function(event)
+  callback = function(_)
     vim.o.foldmethod = "expr"
     vim.o.foldcolumn = "0" -- '0' is not bad
     vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value

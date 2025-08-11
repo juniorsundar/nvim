@@ -1,3 +1,6 @@
+---Open definition, declaration and implementation as a split/vsplit/or tab
+---depending on amount of space available.
+---@param handler string
 local function lsp_function(handler)
     local params = vim.lsp.util.make_position_params(0, "utf-32")
     vim.lsp.buf_request(0, "textDocument/" .. handler, params, function(err, result, _, _)
