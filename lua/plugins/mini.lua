@@ -55,4 +55,12 @@ return {
       require("mini.statusline").setup {}
     end,
   },
+  {
+    "echasnovski/mini.surround",
+    enabled = false,
+    event = "VeryLazy",
+    config = function()
+      require "mini.surround".setup()
+    end,
+  }
 }
