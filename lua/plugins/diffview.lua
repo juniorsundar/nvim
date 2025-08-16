@@ -1,13 +1,14 @@
 return {
   "sindrets/diffview.nvim",
+  enabled = true,
+  keys = {
+    { "<leader>GD", "", desc = "Diffview" },
+    { "<leader>GDo", "<cmd>DiffviewOpen<cr>", desc = "Open" },
+    { "<leader>GDc", "<cmd>DiffviewClose<cr>", desc = "Close" },
+    { "<leader>GDh", "<cmd>DiffviewFileHistory<cr>", desc = "File History" }
+  },
   config = function()
     local actions = require "diffview.actions"
-
-    vim.keymap.set("n", "<leader>GD", "", { desc = "Diffview", noremap = false, silent = true })
-    vim.keymap.set({ "n", "x" }, "<leader>GDo", "<cmd>DiffviewOpen<cr>", { desc = "Open", noremap = false, silent = true })
-    vim.keymap.set({ "n", "x" }, "<leader>GDc", "<cmd>DiffviewClose<cr>", { desc = "Close", noremap = false, silent = true })
-    vim.keymap.set({ "n", "x" }, "<leader>GDh", "<cmd>DiffviewFileHistory<cr>", { desc = "File History", noremap = false, silent = true })
-
 
     require("diffview").setup {
       diff_binaries = false, -- Show diffs for binaries
