@@ -22,7 +22,7 @@
   "obsidian.nvim": { "branch": "main", "commit": "705cc9b4f66eca1e54040ac819102e80a32896d3" },
   "oil.nvim": { "branch": "master", "commit": "bbad9a76b2617ce1221d49619e4e4b659b3c61fc" },
   "quicker.nvim": { "branch": "master", "commit": "51d3926f183c2d98fbc237cc237ae0926839af3a" },
-  "render-markdown.nvim": { "branch": "main", "commit": "3da7bb459f6cff03980dd1e106c46f3e62ff4d9f" },
+  "render-markdown.nvim": { "branch": "main", "commit": "06ed0089de45fc4836f3865f9b59410a132ed1e6" },
   "snacks.nvim": { "branch": "main", "commit": "bc0630e43be5699bb94dadc302c0d21615421d93" },
   "vim-fugitive": { "branch": "master", "commit": "61b51c09b7c9ce04e821f6cf76ea4f6f903e3cf4" },
   "which-key.nvim": { "branch": "main", "commit": "370ec46f710e058c9c1646273e6b225acf47cbed" }
