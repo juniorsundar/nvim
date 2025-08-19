@@ -1,36 +1,51 @@
+-- return {
+--   "nvim-treesitter/nvim-treesitter",
+--   build = ":TSUpdate",
+--   branch = "master",
+--   -- branch = "main",
+--   config = function()
+--     local status, treesitter = pcall(require, "nvim-treesitter.configs")
+--     if not status then
+--       return
+--     end
+--
+--     -- configure treesitter
+--     ---@diagnostic disable-next-line: missing-fields
+--     treesitter.setup {
+--       playground = { enable = true },
+--       highlight = { enable = true, additional_vim_regex_highlighting = false },
+--       indent = { enable = true },
+--       ensure_installed = {
+--         "c",
+--         "cpp",
+--         "python",
+--         "yaml",
+--         "markdown",
+--         "markdown_inline",
+--         "bash",
+--         "lua",
+--         "vim",
+--         "rust",
+--         "vimdoc",
+--         "query",
+--       },
+--       ignore_install = { "org" },
+--       auto_install = false,
+--     }
+--   end,
+-- }
 return {
-  "nvim-treesitter/nvim-treesitter",
-  build = ":TSUpdate",
-  branch = "master",
-  -- branch = "main",
-  config = function()
-    local status, treesitter = pcall(require, "nvim-treesitter.configs")
-    if not status then
-      return
-    end
-
-    -- configure treesitter
-    ---@diagnostic disable-next-line: missing-fields
-    treesitter.setup {
-      playground = { enable = true },
-      highlight = { enable = true, additional_vim_regex_highlighting = false },
-      indent = { enable = true },
-      ensure_installed = {
-        "c",
-        "cpp",
-        "python",
-        "yaml",
-        "markdown",
-        "markdown_inline",
-        "bash",
-        "lua",
-        "vim",
-        "rust",
-        "vimdoc",
-        "query",
-      },
-      ignore_install = { "org" },
-      auto_install = false,
-    }
-  end,
+  'nvim-treesitter/nvim-treesitter',
+  lazy = false,
+  branch = 'main',
+  build = ':TSUpdate',
+  init = function()
+    vim.api.nvim_create_autocmd('FileType', {
+      pattern = { 'rust', 'c3', 'c', 'cpp', 'python', 'lua' },
+      callback = function()
+        vim.treesitter.start()
+        vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+      end,
+    })
+  end
 }

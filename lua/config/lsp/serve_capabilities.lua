@@ -27,7 +27,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
     vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
     vim.o.foldlevelstart = 99
     vim.o.foldenable = true
-    vim.o.foldexpr = "nvim_treesitter#foldexpr()"
+    -- vim.o.foldexpr = "nvim_treesitter#foldexpr()"
 
     local function fold_virt_text(result, s, lnum, coloff)
       if not coloff then
