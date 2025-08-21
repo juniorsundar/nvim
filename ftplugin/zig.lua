@@ -13,4 +13,3 @@ vim.lsp.config["zls"] = {
 vim.lsp.enable {
   "zls",
 }
-

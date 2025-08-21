@@ -5,7 +5,7 @@ return {
     { "<leader>GD", "", desc = "Diffview" },
     { "<leader>GDo", "<cmd>DiffviewOpen<cr>", desc = "Open" },
     { "<leader>GDc", "<cmd>DiffviewClose<cr>", desc = "Close" },
-    { "<leader>GDh", "<cmd>DiffviewFileHistory<cr>", desc = "File History" }
+    { "<leader>GDh", "<cmd>DiffviewFileHistory<cr>", desc = "File History" },
   },
   config = function()
     local actions = require "diffview.actions"

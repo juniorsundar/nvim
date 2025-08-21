@@ -60,7 +60,7 @@ return {
     enabled = false,
     event = "VeryLazy",
     config = function()
-      require "mini.surround".setup()
+      require("mini.surround").setup()
     end,
-  }
+  },
 }

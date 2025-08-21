@@ -1,5 +1,5 @@
 M = {
-    capabilities = vim.lsp.protocol.make_client_capabilities()
+  capabilities = vim.lsp.protocol.make_client_capabilities(),
 }
 
 ---@alias blink_loaded boolean

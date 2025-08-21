@@ -8,6 +8,5 @@ vim.lsp.config["docker-compose"] = {
 }
 
 vim.lsp.enable {
-  "docker-compose"
+  "docker-compose",
 }
-

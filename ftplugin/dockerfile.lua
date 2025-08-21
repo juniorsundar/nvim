@@ -7,8 +7,6 @@ vim.lsp.config["dockerfile"] = {
   capabilities = capabilities,
 }
 
-
 vim.lsp.enable {
   "dockerfile",
 }
-

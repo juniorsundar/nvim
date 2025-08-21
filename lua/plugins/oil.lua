@@ -11,6 +11,6 @@ return {
       },
     }
 
-    vim.keymap.set( "n", "<leader>o", "<cmd>Oil<cr>", { desc = "Oil", noremap = false, silent = true })
+    vim.keymap.set("n", "<leader>o", "<cmd>Oil<cr>", { desc = "Oil", noremap = false, silent = true })
   end,
 }
