@@ -100,7 +100,7 @@ local momentary_virtual_lines_active = false
 vim.keymap.set("n", "<C-w>d", function()
   vim.diagnostic.config { virtual_lines = { current_line = true } }
   momentary_virtual_lines_active = true
-end, { desc = "Show momentary diagnostic virtual lines (current line)", remap = true })
+end, { desc = "Show diagnostic virtual lines", remap = true })
 
 local augroup = vim.api.nvim_create_augroup("MomentaryVirtualLines", { clear = true })
 
