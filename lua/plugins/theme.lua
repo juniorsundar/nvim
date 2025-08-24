@@ -5,6 +5,7 @@ return {
   {
     "AstroNvim/astrotheme",
     enabled = true,
+    priority = 1000,
     event = "VeryLazy",
     lazy = false,
     config = function()

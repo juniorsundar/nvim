@@ -1,6 +1,6 @@
 return {
   "NeogitOrg/neogit",
-  enabled = false,
+  enabled = true,
   dependencies = {
     "nvim-lua/plenary.nvim",
   },
