@@ -1,6 +1,9 @@
 return {
   "NeogitOrg/neogit",
   enabled = true,
+  keys = {
+    { "<leader>Gg", "<cmd>Neogit<cr>", { desc = "Neogit" } }
+  },
   dependencies = {
     "nvim-lua/plenary.nvim",
   },
@@ -21,7 +24,5 @@ return {
         snacks = true,
       },
     }
-
-    vim.keymap.set("n", "<leader>Gg", "<cmd>Neogit<cr>", { desc = "Neogit" })
   end,
 }
