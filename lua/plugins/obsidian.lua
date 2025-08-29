@@ -1,6 +1,6 @@
 return {
   "obsidian-nvim/obsidian.nvim",
-  enabled = true,
+  enabled = false,
   ft = { "markdown" },
   keys = {
     { "<localleader>O", group = "Obsidian" },
