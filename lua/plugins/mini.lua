@@ -1,6 +1,6 @@
 return {
   {
-    "echasnovski/mini.pairs",
+    "nvim-mini/mini.pairs",
     enabled = false,
     event = "VeryLazy",
     config = function()
@@ -19,7 +19,7 @@ return {
     end,
   },
   {
-    "echasnovski/mini.ai",
+    "nvim-mini/mini.ai",
     event = "VeryLazy",
     config = function()
       local ai = require "mini.ai"
@@ -29,7 +29,7 @@ return {
     end,
   },
   {
-    "echasnovski/mini.move",
+    "nvim-mini/mini.move",
     event = "VeryLazy",
     config = function()
       require("mini.move").setup {
@@ -48,7 +48,7 @@ return {
     end,
   },
   {
-    "echasnovski/mini.statusline",
+    "nvim-mini/mini.statusline",
     enabled = false,
     event = "VeryLazy",
     config = function()
@@ -56,7 +56,7 @@ return {
     end,
   },
   {
-    "echasnovski/mini.surround",
+    "nvim-mini/mini.surround",
     enabled = false,
     event = "VeryLazy",
     config = function()
