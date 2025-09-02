@@ -21,6 +21,7 @@ return {
         "go",
         "gomod",
         "zig",
+        "d",
     }
 
     vim.api.nvim_create_autocmd("FileType", {
@@ -40,6 +41,7 @@ return {
         "go",
         "gomod",
         "zig",
+        "d",
       },
       callback = function()
         vim.treesitter.start()
