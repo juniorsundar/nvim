@@ -42,6 +42,7 @@ return {
         "gomod",
         "zig",
         "d",
+        "odin",
       },
       callback = function()
         vim.treesitter.start()
