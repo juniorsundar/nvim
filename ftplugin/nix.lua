@@ -1,1 +1,1 @@
-vim.keymap.set("n", "<leader>Lf", "<cmd>%!alejandra -qq<cr>", { noremap = false, silent = true, desc = "Format" })
+vim.keymap.set("n", "<tab>", "za", { noremap = false, silent = true, desc = "Expand folding" })

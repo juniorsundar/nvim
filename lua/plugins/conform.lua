@@ -8,6 +8,7 @@ return {
       python = { "ruff" },
       go = { "gofumpt" },
       rust = { "rustfmt" },
+      nix = { "nixfmt" }
     },
   },
 }
