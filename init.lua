@@ -37,26 +37,26 @@ vim.o.grepformat = "%f:%l:%c:%m"
 vim.o.foldlevel = 0
 
 vim.api.nvim_create_autocmd("TextYankPost", {
-  desc = "Highlight when yanking (copying) text",
-  group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
-  callback = function()
-    vim.hl.on_yank()
-  end,
+    desc = "Highlight when yanking (copying) text",
+    group = vim.api.nvim_create_augroup("kickstart-highlight-yank", { clear = true }),
+    callback = function()
+        vim.hl.on_yank()
+    end,
 })
 
 vim.api.nvim_create_autocmd("BufReadPost", {
-  pattern = "*",
-  callback = function()
-    local line = vim.fn.line "'\""
-    if
-      line > 1
-      and line <= vim.fn.line "$"
-      and vim.bo.filetype ~= "commit"
-      and vim.fn.index({ "xxd", "gitrebase" }, vim.bo.filetype) == -1
-    then
-      vim.cmd 'normal! g`"'
-    end
-  end,
+    pattern = "*",
+    callback = function()
+        local line = vim.fn.line "'\""
+        if
+            line > 1
+            and line <= vim.fn.line "$"
+            and vim.bo.filetype ~= "commit"
+            and vim.fn.index({ "xxd", "gitrebase" }, vim.bo.filetype) == -1
+        then
+            vim.cmd 'normal! g`"'
+        end
+    end,
 })
 
 vim.loader.enable()
@@ -64,8 +64,8 @@ vim.loader.enable()
 -- KEYMAPS ==========================================================
 -- define common options
 local opts = {
-  noremap = false, -- non-recursive
-  silent = true, -- do not show message
+    noremap = false, -- non-recursive
+    silent = true, -- do not show message
 }
 
 -- Normal mode --
@@ -100,20 +100,20 @@ require "config.lsp"
 local mason_bin = vim.fn.stdpath "data" .. "/mason/bin"
 vim.env.PATH = mason_bin .. ":" .. vim.env.PATH
 vim.keymap.set("n", "<leader>m", function()
-  require("mason.ui").open()
+    require("mason.ui").open()
 end, { desc = "Mason", noremap = false, silent = true })
 
 -- Profile with `PROF=1 nvim` =======================================
 if vim.env.PROF then
-  -- example for lazy.nvim
-  -- change this to the correct path for your plugin manager
-  local snacks = vim.fn.stdpath "data" .. "/lazy/snacks.nvim"
-  vim.opt.rtp:append(snacks)
-  require("snacks.profiler").startup {
-    startup = {
-      event = "VimEnter", -- stop profiler on this event. Defaults to `VimEnter`
-      -- event = "UIEnter",
-      -- event = "VeryLazy",
-    },
-  }
+    -- example for lazy.nvim
+    -- change this to the correct path for your plugin manager
+    local snacks = vim.fn.stdpath "data" .. "/lazy/snacks.nvim"
+    vim.opt.rtp:append(snacks)
+    require("snacks.profiler").startup {
+        startup = {
+            event = "VimEnter", -- stop profiler on this event. Defaults to `VimEnter`
+            -- event = "UIEnter",
+            -- event = "VeryLazy",
+        },
+    }
 end
