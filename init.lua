@@ -97,12 +97,6 @@ vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode"
 require "config.lazy"
 require "config.lsp"
 
-local mason_bin = vim.fn.stdpath "data" .. "/mason/bin"
-vim.env.PATH = mason_bin .. ":" .. vim.env.PATH
-vim.keymap.set("n", "<leader>m", function()
-    require("mason.ui").open()
-end, { desc = "Mason", noremap = false, silent = true })
-
 -- Profile with `PROF=1 nvim` =======================================
 if vim.env.PROF then
     -- example for lazy.nvim
