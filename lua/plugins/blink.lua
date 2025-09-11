@@ -66,9 +66,9 @@ return {
         -- elsewhere in your config, without redefining it, due to `opts_extend`
         sources = {
             default = { 'lsp', 'path', 'snippets', 'buffer' },
-            per_filetype = {
-                markdown = { "obsidian", "obsidian_new", "obsidian_tags" },
-            },
+            -- per_filetype = {
+            --     markdown = { "obsidian", "obsidian_new", "obsidian_tags" },
+            -- },
             providers = {
                 lazydev = {
                     name = "LazyDev",
