@@ -51,8 +51,20 @@ return {
                             Folded = { fg = colors.crust, bg = colors.none },
                         }
                     end,
+                    mocha = function(colors)
+                        return {
+                            WhichKey = { fg = colors.text, bg = colors.base },
+                            WhichKeyNormal = { fg = colors.text, bg = colors.base },
+                            Folded = { fg = colors.text, bg = colors.base },
+                            BlinkCmpMenu = { fg = colors.text, bg = colors.base },
+                            BlinkCmpMenuBorder = { fg = colors.text, bg = colors.base },
+                        }
+                    end,
                 },
                 transparent_background = false,
+                float = {
+                    transparent = true
+                },
                 auto_integrations = true,
             }
             require("catppuccin").setup(config)
