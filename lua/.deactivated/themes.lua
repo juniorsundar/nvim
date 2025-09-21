@@ -32,9 +32,38 @@ return {
                 text = "#ffffff",
                 yellow = "#f1ff5e",
             }
+            local astrodark = {
+                rosewater = "#F8747E",
+                flamingo  = "#F8747E",
+                pink      = "#CC83E3",
+                maroon    = "#F8747E",
+                red       = "#F8747E",
+                peach     = "#EB8332",
+                yellow    = "#D09214",
+                green     = "#75AD47",
+                teal      = "#00B298",
+                sky       = "#00B298",
+                sapphire  = "#50A4E9",
+                blue      = "#50A4E9",
+                lavender  = "#CC83E3",
+                mauve     = "#CC83E3",
+                text      = "#E0E0Ee",
+                subtext1  = "#ADB0BB",
+                subtext0  = "#9B9FA9",
+                overlay2  = "#797D87",
+                overlay1  = "#494D56",
+                overlay0  = "#3A3E47",
+                surface2  = "#26343F",
+                surface1  = "#23272F",
+                surface0  = "#1E222A",
+                base      = "#1A1D23",
+                mantle    = "#16181D",
+                crust     = "#111317",
+            }
             local config = {
                 color_overrides = {
                     macchiato = cyberdream,
+                    frappe = astrodark
                 },
                 custom_highlights = function(colors)
                     return {}
@@ -49,6 +78,17 @@ return {
                             WhichKey = { fg = colors.text, bg = colors.base },
                             WhichKeyNormal = { fg = colors.text, bg = colors.base },
                             Folded = { fg = colors.crust, bg = colors.none },
+                        }
+                    end,
+                    frappe = function(colors)
+                        return {
+                            WhichKey = { fg = colors.text, bg = colors.base },
+                            WhichKeyNormal = { fg = colors.text, bg = colors.base },
+                            LineNr = { fg = colors.overlay1 },
+                            CursorLineNr = { fg = colors.text },
+                            Folded = { fg = colors.text, bg = colors.base },
+                            BlinkCmpMenu = { fg = colors.text, bg = colors.base },
+                            BlinkCmpMenuBorder = { fg = colors.text, bg = colors.base },
                         }
                     end,
                     mocha = function(colors)
@@ -68,7 +108,7 @@ return {
                 auto_integrations = true,
             }
             require("catppuccin").setup(config)
-            vim.cmd.colorscheme "catppuccin-macchiato"
+            vim.cmd.colorscheme "catppuccin-frappe"
         end,
     },
     {
