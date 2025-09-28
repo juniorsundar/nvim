@@ -137,11 +137,13 @@ return {
         end,
     },
     {
-        "NTBBloodbath/doom-one.nvim",
-        enabled = false,
+        "juniorsundar/doom-one.nvim",
+        -- dir = "~/Documents/Projects/doom-one.nvim",
+        enabled = true,
+        priority = 1000,
         config = function()
             vim.g.doom_one_cursor_coloring = false
-            vim.g.doom_one_terminal_colors = true
+            vim.g.doom_one_terminal_colors = false
             vim.g.doom_one_italic_comments = true
             vim.g.doom_one_enable_treesitter = true
             vim.g.doom_one_diagnostics_text_color = false
@@ -150,6 +152,7 @@ return {
             vim.g.doom_one_pumblend_enable = true
             vim.g.doom_one_pumblend_transparency = 20
             vim.cmd [[set fillchars+=eob:\ ]]
+
             vim.cmd.colorscheme "doom-one"
         end,
     },
@@ -212,5 +215,31 @@ return {
         config = function()
             vim.cmd("colorscheme nightfox")
         end,
-    }
+    },
+    {
+        "AstroNvim/astrotheme",
+        enabled = false,
+        priority = 1000,
+        event = "VeryLazy",
+        lazy = false,
+        config = function()
+            local c = require "astrotheme.palettes.astrodark"
+            require("astrotheme").setup {
+                style = {
+                    transparent = false,
+                    float = false,
+                },
+                plugin_default = true,
+                highlights = {
+                    global = {
+                        ["BlinkCmpMenu"] = { fg = c.ui.text, bg = c.ui.base },
+                        ["BlinkCmpMenuBorder"] = { fg = c.ui.text, bg = c.ui.base },
+                        ["Folded"] = { fg = c.ui.text, bg = c.ui.base },
+                    },
+                },
+            }
+            vim.cmd [[set fillchars+=eob:\ ]]
+            -- vim.cmd.colorscheme "astrodark"
+        end,
+    },
 }
