@@ -81,11 +81,11 @@ M.set_colorscheme = function()
 
     set_hl("LineNr", { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.grey })
     set_hl("Cursor", { bg = palette.blue })
-    set_hl("CursorLine", { bg = palette.bg_alt })
-    set_hl("CursorLineNr", { bg = palette.bg_alt, fg = palette.fg })
+    set_hl("CursorLine", { bg = "#2c3038" })
+    set_hl("CursorLineNr", { bg = "#2c3038", fg = palette.fg })
     set_hl("CursorColumn", { bg = palette.bg_alt })
 
-    set_hl("Folded", { bg = palette.bg_alt, fg = palette.base5 })
+    set_hl("Folded", { bg = palette.bg, fg = palette.base5 })
     set_hl("FoldColumn", { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.fg_alt })
     set_hl("SignColumn", { bg = config.ui.transparent_background and "NONE" or palette.bg })
     set_hl("ColorColumn", { bg = palette.bg_alt })
@@ -452,8 +452,11 @@ M.set_colorscheme = function()
 
     if config.plugins.barbar then
         set_hl("BufferCurrent",
-            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = dark_theme and palette.base8 or
-            palette.base0 })
+            {
+                bg = config.ui.transparent_background and "NONE" or palette.bg,
+                fg = dark_theme and palette.base8 or
+                    palette.base0
+            })
         set_hl("BufferCurrentIndex",
             { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.base6 })
         set_hl("BufferCurrentMod",
@@ -504,17 +507,20 @@ M.set_colorscheme = function()
     end
 
     if config.plugins.neogit then
-        set_hl("NeogitDiffAdd", { bg = "#e9f1e8", fg = "#40803f" })
-        set_hl("NeogitDiffAddHighlight", { bg = "#d8e8d7", fg = palette.green, bold = true })
-        set_hl("NeogitDiffDelete", { bg = "#f7e9e8", fg = "#cc5655" })
-        set_hl("NeogitDiffDeleteHighlight", { bg = "#f5d9d6", fg = palette.red, bold = true })
+        set_hl("NeogitDiffAdd", { fg = "#40803f" })
+        set_hl("NeogitDiffAddHighlight", { bg = palette.bg_alt, fg = palette.green, bold = true })
+        set_hl("NeogitDiffDelete", { fg = "#cc5655" })
+        set_hl("NeogitDiffDeleteHighlight", { bg = palette.bg_alt, fg = palette.red, bold = true })
         set_hl("NeogitDiffContext",
             { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.fg_alt })
         set_hl("NeogitDiffContextHighlight", { bg = palette.bg_alt, fg = palette.fg, bold = true })
         set_hl(
             "NeogitHunkHeader",
-            { bg = dark_theme and utils.darken(palette.violet, 0.2) or utils.lighten(palette.violet, 0.16), fg = palette
-            .bg }
+            {
+                bg = dark_theme and utils.darken(palette.violet, 0.2) or utils.lighten(palette.violet, 0.16),
+                fg = palette
+                    .bg
+            }
         )
         set_hl("NeogitHunkHeaderHighlight", { bg = palette.violet, fg = palette.bg_alt, bold = true })
         set_hl("NeogitStagedChanges", { fg = dark_theme and palette.blue or palette.orange, bold = true })
@@ -603,6 +609,7 @@ M.set_colorscheme = function()
         set_hl("LspSagaDefPreviewBorder", { link = "Bold" })
         set_hl("LspLinesDiagBorder", { link = "Bold" })
     end
+
 end
 
 return M
