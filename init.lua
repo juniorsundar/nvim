@@ -96,7 +96,6 @@ vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode"
 -- COLORSCHEME ======================================================
 require("theme").set_colorscheme()
 
-
 -- PLUGINS ==========================================================
 require "config.lazy"
 require "config.lsp"
