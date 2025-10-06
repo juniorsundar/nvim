@@ -249,7 +249,7 @@ M.set_colorscheme = function()
     set_hl("TypeBuiltin", { fg = palette.yellow, bold = true })
     set_hl("Class", { fg = dark_theme and palette.blue or palette.red })
     set_hl("StorageClass", { fg = dark_theme and palette.blue or palette.red })
-    set_hl("Structure", { fg = dark_theme and palette.blue or palette.red })
+    set_hl("Structure", { fg = dark_theme and palette.violet or palette.red })
 
     set_hl("Regexp", { fg = "#dd0093" })
     set_hl("RegexpSpecial", { fg = "#a40073" })
