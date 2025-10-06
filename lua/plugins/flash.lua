@@ -48,7 +48,5 @@ return {
             desc = "Treesitter incremental selection"
         },
     },
-    config = function()
-        require("flash").setup()
-    end,
+    opts = {}
 }
