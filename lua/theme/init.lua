@@ -79,10 +79,10 @@ M.set_colorscheme = function()
     set_hl("Visual", { bg = palette.dark_blue })
     set_hl("VisualBold", { bg = palette.dark_blue, bold = true })
 
-    set_hl("LineNr", { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.grey })
+    set_hl("LineNr", { fg = palette.grey })
     set_hl("Cursor", { bg = palette.blue })
     set_hl("CursorLine", { bg = "#2c3038" })
-    set_hl("CursorLineNr", { bg = "#2c3038", fg = palette.fg })
+    set_hl("CursorLineNr", { fg = palette.fg })
     set_hl("CursorColumn", { bg = palette.bg_alt })
 
     set_hl("Folded", { bg = palette.bg, fg = palette.base5 })

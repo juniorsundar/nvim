@@ -2,7 +2,8 @@ return {
     "NeogitOrg/neogit",
     enabled = true,
     keys = {
-        { "<leader>Gg", "<cmd>Neogit<cr>", { desc = "Neogit" } },
+        { "<leader>Gg", "<cmd>Neogit<cr>",           { desc = "Neogit" } },
+        { "<leader>G.", "<cmd>Neogit cwd=%:p:h<cr>", { desc = "Open to CWD" } }
     },
     dependencies = {
         "nvim-lua/plenary.nvim",
