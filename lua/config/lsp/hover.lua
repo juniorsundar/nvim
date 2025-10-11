@@ -1,16 +1,43 @@
 ---@type table
 vim.lsp.autohover = {
-    enabled = true,
+    enabled = false,
     delay = 2000,
+    layout = "eldoc",
     opts = {
         border = "rounded",
         relative = "editor",
-        offset_x = vim.o.columns
+        offset_x = vim.o.columns,
+        ratio = 0.1
     }
 }
 vim.o.updatetime = vim.lsp.autohover.delay
 
 local lsp_hover_augroup = vim.api.nvim_create_augroup("LspHoverOnHold", { clear = true })
+local eldoc_close_augroup = vim.api.nvim_create_augroup("LspEldocAutoClose", { clear = true })
+
+local eldoc_win_id = nil
+local eldoc_buf_id = nil
+
+local function close_eldoc_window()
+    pcall(vim.api.nvim_win_close, eldoc_win_id, true)
+    pcall(vim.api.nvim_buf_delete, eldoc_buf_id, { force = true }, true)
+    eldoc_buf_id = nil
+    eldoc_win_id = nil
+end
+
+vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+    group = eldoc_close_augroup,
+    callback = function()
+        if not eldoc_win_id or not vim.api.nvim_win_is_valid(eldoc_win_id) then
+            return
+        end
+        local current_win = vim.api.nvim_get_current_win()
+        if current_win ~= eldoc_win_id then
+            close_eldoc_window()
+        end
+    end,
+    desc = "Close LSP eldoc window when cursor moves or context changes",
+})
 
 vim.api.nvim_create_autocmd("CursorHold", {
     group = lsp_hover_augroup,
@@ -50,7 +77,32 @@ vim.api.nvim_create_autocmd("CursorHold", {
                 return
             end
 
-            vim.lsp.util.open_floating_preview(lines, "markdown", vim.lsp.autohover.opts)
+            if vim.lsp.autohover.layout == "eldoc" then
+                if eldoc_win_id ~= nil or eldoc_buf_id ~= nil then
+                    return
+                end
+                eldoc_buf_id = vim.api.nvim_create_buf(false, true)
+                vim.api.nvim_buf_set_lines(eldoc_buf_id, 0, 0, false, lines)
+                eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false,
+                    {
+                        split = 'below',
+                        win = -1,
+                        height = math.floor(vim.o.lines * vim.lsp.autohover.opts.ratio),
+                        style = 'minimal'
+                    })
+                vim.api.nvim_buf_set_name(eldoc_buf_id, "[LSP Eldoc]")
+                vim.api.nvim_set_option_value('filetype', 'markdown', { buf = eldoc_buf_id })
+                vim.api.nvim_set_option_value('buftype', 'nofile', { buf = eldoc_buf_id })
+                vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = eldoc_buf_id })
+                vim.api.nvim_set_option_value('modifiable', false, { buf = eldoc_buf_id })
+                vim.api.nvim_set_option_value('swapfile', false, { buf = eldoc_buf_id })
+                return
+            elseif vim.lsp.autohover.layout == "float" then
+                vim.lsp.util.open_floating_preview(lines, "markdown", vim.lsp.autohover.opts)
+                return
+            else
+                return
+            end
         end
 
         local params = vim.lsp.util.make_position_params(0, "utf-32")
@@ -60,11 +112,11 @@ vim.api.nvim_create_autocmd("CursorHold", {
 })
 
 local function toggle_auto_hover()
-    if not vim.lsp.autohover then
+    if vim.lsp.autohover == nil then
         vim.notify("`vim.lsp.autohover` doesn't exists!", vim.log.levels.WARN, { title = "LSP" })
         return
     end
-    if not vim.lsp.autohover.enabled then
+    if vim.lsp.autohover.enabled == nil then
         vim.notify("`vim.lsp.autohover.enabled` doesn't exists!", vim.log.levels.WARN, { title = "LSP" })
         return
     end
