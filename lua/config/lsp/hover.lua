@@ -1,6 +1,14 @@
----@type boolean
-local auto_hover_enabled = true
-vim.o.updatetime = 2000
+---@type table
+vim.lsp.autohover = {
+    enabled = true,
+    delay = 2000,
+    opts = {
+        border = "rounded",
+        relative = "editor",
+        offset_x = vim.o.columns
+    }
+}
+vim.o.updatetime = vim.lsp.autohover.delay
 
 local lsp_hover_augroup = vim.api.nvim_create_augroup("LspHoverOnHold", { clear = true })
 
@@ -8,7 +16,10 @@ vim.api.nvim_create_autocmd("CursorHold", {
     group = lsp_hover_augroup,
     pattern = "*",
     callback = function()
-        if not auto_hover_enabled then
+        if not vim.lsp.autohover then
+            return
+        end
+        if not vim.lsp.autohover.enabled then
             return
         end
 
@@ -39,11 +50,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
                 return
             end
 
-            vim.lsp.util.open_floating_preview(lines, "markdown", {
-                border = "rounded",
-                relative = "editor",
-                offset_x = vim.o.columns,
-            })
+            vim.lsp.util.open_floating_preview(lines, "markdown", vim.lsp.autohover.opts)
         end
 
         local params = vim.lsp.util.make_position_params(0, "utf-32")
@@ -53,8 +60,16 @@ vim.api.nvim_create_autocmd("CursorHold", {
 })
 
 local function toggle_auto_hover()
-    auto_hover_enabled = not auto_hover_enabled
-    if auto_hover_enabled then
+    if not vim.lsp.autohover then
+        vim.notify("`vim.lsp.autohover` doesn't exists!", vim.log.levels.WARN, { title = "LSP" })
+        return
+    end
+    if not vim.lsp.autohover.enabled then
+        vim.notify("`vim.lsp.autohover.enabled` doesn't exists!", vim.log.levels.WARN, { title = "LSP" })
+        return
+    end
+    vim.lsp.autohover.enabled = not vim.lsp.autohover.enabled
+    if vim.lsp.autohover.enabled then
         vim.notify("Auto Hover enabled", vim.log.levels.INFO, { title = "LSP" })
     else
         vim.notify("Auto Hover disabled", vim.log.levels.INFO, { title = "LSP" })
