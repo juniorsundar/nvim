@@ -123,9 +123,10 @@ return {
             },
             layout = {
                 cycle = true,
-                preset = function()
-                    return vim.o.columns >= 140 and "ivy" or "default"
-                end,
+                preset = "ivy"
+                -- preset = function()
+                --     return vim.o.columns >= 140 and "ivy" or "default"
+                -- end,
             },
             win = {
                 input = {
@@ -401,40 +402,55 @@ return {
                 })
             end,
         })
-        require("snacks.picker.config.layouts").default = {
-            layout = {
-                box = "vertical",
-                backdrop = false,
-                row = -1,
-                width = 0,
-                height = 0.5,
-                border = "top",
-                title = " {source} {live}",
-                title_pos = "left",
-                { win = "input", height = 1, border = "bottom" },
-                {
-                    box = "vertical",
-                    { win = "list", border = "none" },
-                    { win = "preview", height = 0.6, border = "top" },
-                },
-            },
-        }
+        -- require("snacks.picker.config.layouts").default = {
+        --     layout = {
+        --         box = "vertical",
+        --         backdrop = false,
+        --         row = -1,
+        --         width = 0,
+        --         height = 0.5,
+        --         border = "top",
+        --         title = " {source} {live}",
+        --         title_pos = "left",
+        --         { win = "input", height = 1, border = "bottom" },
+        --         {
+        --             box = "vertical",
+        --             { win = "list", border = "none" },
+        --             { win = "preview", height = 0.6, border = "top" },
+        --         },
+        --     },
+        -- }
+        -- require("snacks.picker.config.layouts").ivy = {
+        --     layout = {
+        --         box = "vertical",
+        --         backdrop = false,
+        --         row = -1,
+        --         width = 0,
+        --         height = 0.5,
+        --         border = "top",
+        --         title = " {source} {live}",
+        --         title_pos = "left",
+        --         { win = "input", height = 1, border = "bottom" },
+        --         {
+        --             box = "horizontal",
+        --             { win = "list", border = "none" },
+        --             { win = "preview", width = 0.6, border = "left" },
+        --         },
+        --     },
+        -- }
         require("snacks.picker.config.layouts").ivy = {
             layout = {
-                box = "vertical",
                 backdrop = false,
-                row = -1,
-                width = 0,
-                height = 0.5,
                 border = "top",
-                title = " {source} {live}",
-                title_pos = "left",
-                { win = "input", height = 1, border = "bottom" },
+                box = "vertical",
+                { win = "preview", title = "{preview}", height = 0.7 },
                 {
-                    box = "horizontal",
-                    { win = "list", border = "none" },
-                    { win = "preview", width = 0.6, border = "left" },
+                    title = " {source} {live}",
+                    win = "input",
+                    height = 1.0,
+                    border = "top"
                 },
+                { win = "list",    height = 0.25,       border = "top" },
             },
         }
         require("snacks.picker.config.layouts").sidebar.layout.position = "right"
