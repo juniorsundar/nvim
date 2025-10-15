@@ -73,15 +73,20 @@ end, { desc = "Document Symbols", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>LDd", function()
     Snacks.picker.diagnostics_buffer()
 end, { desc = "Document Diagnostics", noremap = false, silent = true })
+
 vim.keymap.set("n", "<leader>Ld", function()
-    lsp_function "definition"
+    Snacks.picker.lsp_definitions()
+    -- lsp_function "definition"
 end, { desc = "Definition", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>Lc", function()
-    lsp_function "declaration"
+    Snacks.picker.lsp_declarations()
+    -- lsp_function "declaration"
 end, { desc = "Declaration", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>Li", function()
-    lsp_function "implementation"
+    Snacks.picker.lsp_implementations()
+    -- lsp_function "implementation"
 end, { desc = "Implementation", noremap = false, silent = true })
+
 vim.keymap.set("n", "<leader>Lr", function()
     Snacks.picker.lsp_references()
 end, { desc = "References", noremap = false, silent = true })
