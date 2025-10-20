@@ -24,11 +24,11 @@ return {
             align = "center",
         },
         spec = {
-            { "<leader>l", "<cmd>Lazy<cr>", desc = "Lazy" },
-            { "<leader>F", desc = "Find" },
-            { "<leader>G", group = "Git" },
+            { "<leader>l",         "<cmd>Lazy<cr>",      desc = "Lazy" },
+            { "<leader>F",         desc = "Find" },
+            { "<leader>G",         group = "Git" },
             { "<leader><leader>T", group = "Toggle" },
-            { "<leader><leader>", group = "LocalLeader" },
+            { "<leader><leader>",  group = "LocalLeader" },
         },
     },
 }
