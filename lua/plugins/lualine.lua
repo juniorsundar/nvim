@@ -74,56 +74,100 @@ return {
 
         }
 
-        -- Inserts a component in lualine_c at left section
         local function ins_left(component)
             table.insert(config.sections.lualine_c, component)
         end
 
-        -- Inserts a component in lualine_x at right section
         local function ins_right(component)
             table.insert(config.sections.lualine_x, component)
         end
 
-        ins_left {
+        local function ins_inact_left(component)
+            table.insert(config.inactive_sections.lualine_c, component)
+        end
+
+        local function ins_inact_right(component)
+            table.insert(config.inactive_sections.lualine_x, component)
+        end
+
+        local mode_color = {
+            n = colors.red,
+            i = colors.green,
+            v = colors.blue,
+            [''] = colors.blue,
+            V = colors.blue,
+            c = colors.magenta,
+            no = colors.red,
+            s = colors.orange,
+            S = colors.orange,
+            [''] = colors.orange,
+            ic = colors.yellow,
+            R = colors.violet,
+            Rv = colors.violet,
+            cv = colors.red,
+            ce = colors.red,
+            r = colors.cyan,
+            rm = colors.cyan,
+            ['r?'] = colors.cyan,
+            ['!'] = colors.red,
+            t = colors.red,
+        }
+
+        ins_inact_left {
             function()
                 return '▊'
             end,
             color = function()
-                -- auto change color according to neovims mode
-                local mode_color = {
-                    n = colors.red,
-                    i = colors.green,
-                    v = colors.blue,
-                    [''] = colors.blue,
-                    V = colors.blue,
-                    c = colors.magenta,
-                    no = colors.red,
-                    s = colors.orange,
-                    S = colors.orange,
-                    [''] = colors.orange,
-                    ic = colors.yellow,
-                    R = colors.violet,
-                    Rv = colors.violet,
-                    cv = colors.red,
-                    ce = colors.red,
-                    r = colors.cyan,
-                    rm = colors.cyan,
-                    ['r?'] = colors.cyan,
-                    ['!'] = colors.red,
-                    t = colors.red,
-                }
+                return { fg = mode_color[vim.fn.mode()] }
+            end,
+            padding = { left = 0, right = 1 },
+        }
+        ins_inact_left({
+            'filename',
+            path = 1,
+            cond = conditions.buffer_not_empty,
+            color = { fg = colors.fg, gui = 'bold' },
+        })
+        ins_inact_right {
+            function()
+                return '▊'
+            end,
+            color = function()
                 return { fg = mode_color[vim.fn.mode()] }
             end,
             padding = { left = 0, right = 1 },
         }
 
         ins_left {
+            function()
+                return '▊'
+            end,
+            color = function()
+                return { fg = mode_color[vim.fn.mode()] }
+            end,
+            padding = { left = 0, right = 1 },
+        }
+        ins_left {
+            'lsp_status',
+            icon = '',
+            symbols = {
+                spinner = { '', '', '', '', '', '' },
+                done = '󰓦',
+                separator = '',
+            },
+            ignore_lsp = {},
+            show_name = false,
+            color = function()
+                return { fg = colors.bg, bg = mode_color[vim.fn.mode()] }
+            end,
+
+        }
+        ins_left {
             'filename',
             path = 1,
             cond = conditions.buffer_not_empty,
             color = { fg = colors.fg, gui = 'bold' },
         }
-
         ins_left {
             'diagnostics',
             sources = { 'nvim_diagnostic' },
@@ -134,19 +178,16 @@ return {
                 info = { fg = colors.cyan },
             },
         }
-
         ins_left {
             function()
                 return '%='
             end,
         }
-
         ins_right {
             'branch',
             icon = '',
             color = { fg = colors.violet, gui = 'bold' },
         }
-
         ins_right {
             'diff',
             symbols = { added = ' ', modified = '󰝤 ', removed = ' ' },
@@ -157,34 +198,19 @@ return {
             },
             cond = conditions.hide_in_width,
         }
-
+        ins_right {
+            'filetype',
+            colored = false,
+            icon_only = false,
+            color = function()
+                return { fg = colors.bg, bg = mode_color[vim.fn.mode()] }
+            end,
+        }
         ins_right {
             function()
                 return '▊'
             end,
             color = function()
-                local mode_color = {
-                    n = colors.red,
-                    i = colors.green,
-                    v = colors.blue,
-                    [''] = colors.blue,
-                    V = colors.blue,
-                    c = colors.magenta,
-                    no = colors.red,
-                    s = colors.orange,
-                    S = colors.orange,
-                    [''] = colors.orange,
-                    ic = colors.yellow,
-                    R = colors.violet,
-                    Rv = colors.violet,
-                    cv = colors.red,
-                    ce = colors.red,
-                    r = colors.cyan,
-                    rm = colors.cyan,
-                    ['r?'] = colors.cyan,
-                    ['!'] = colors.red,
-                    t = colors.red,
-                }
                 return { fg = mode_color[vim.fn.mode()] }
             end,
             padding = { left = 1 },
