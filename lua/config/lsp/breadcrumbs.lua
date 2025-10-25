@@ -1,3 +1,43 @@
+local devicons_ok, devicons = pcall(require, "nvim-web-devicons")
+local folder_icon = "%#Conditional#" .. "󰉋" .. "%#Normal#"
+local file_icon = "󰈙"
+
+local kind_icons = {
+    "%#File#" .. "󰈙" .. "%#Normal#", -- file
+    "%#Module#" .. "" .. "%#Normal#", -- module
+    "%#Structure#" .. "" .. "%#Normal#", -- namespace
+    "%#Keyword#" .. "󰌋" .. "%#Normal#", -- keyword
+    "%#Class#" .. "󰠱" .. "%#Normal#", -- class
+    "%#Method#" .. "󰆧" .. "%#Normal#", -- method
+    "%#Property#" .. "󰜢" .. "%#Normal#", -- property
+    "%#Field#" .. "󰇽" .. "%#Normal#", -- field
+    "%#Function#" .. "" .. "%#Normal#", -- constructor
+    "%#Enum#" .. "" .. "%#Normal#", -- enum
+    "%#Type#" .. "" .. "%#Normal#", -- interface
+    "%#Function#" .. "󰊕" .. "%#Normal#", -- function
+    "%#None#" .. "󰂡" .. "%#Normal#", -- variable
+    "%#Constant#" .. "󰏿" .. "%#Normal#", -- constant
+    "%#String#" .. "" .. "%#Normal#", -- string
+    "%#Number#" .. "" .. "%#Normal#", -- number
+    "%#Boolean#" .. "" .. "%#Normal#", -- boolean
+    "%#Array#" .. "" .. "%#Normal#", -- array
+    "%#Class#" .. "" .. "%#Normal#", -- object
+    "", -- package
+    "󰟢", -- null
+    "", -- enum-member
+    "%#Struct#" .. "" .. "%#Normal#", -- struct
+    "", -- event
+    "", -- operator
+    "󰅲", -- type-parameter
+    "",
+    "",
+    "󰎠",
+    "",
+    "󰏘",
+    "",
+    "󰉋",
+}
+
 local function range_contains_pos(range, line, char)
     local start = range.start
     local stop = range['end']
@@ -24,7 +64,8 @@ local function find_symbol_path(symbol_list, line, char, path)
 
     for _, symbol in ipairs(symbol_list) do
         if range_contains_pos(symbol.range, line, char) then
-            table.insert(path, symbol.name)
+            local icon = kind_icons[symbol.kind] or ""
+            table.insert(path, icon .. " " .. symbol.name)
             find_symbol_path(symbol.children, line, char, path)
             return true
         end
@@ -38,6 +79,7 @@ local function lsp_callback(err, symbols, ctx, config)
         return
     end
 
+    local winnr = vim.api.nvim_get_current_win()
     local pos = vim.api.nvim_win_get_cursor(0)
     local cursor_line = pos[1] - 1
     local cursor_char = pos[2]
@@ -55,29 +97,48 @@ local function lsp_callback(err, symbols, ctx, config)
     if #clients > 0 and clients[1].root_dir then
         local root_dir = clients[1].root_dir
         if root_dir == nil then
-            relative_path = ""
+            relative_path = file_path
         else
             relative_path = vim.fs.relpath(root_dir, file_path)
-            relative_path = string.gsub(relative_path, "/", " > ")
         end
+    else
+        local root_dir = vim.fn.getcwd(0)
+        relative_path = vim.fs.relpath(root_dir, file_path)
     end
 
+    local breadcrumbs = {}
 
-    local breadcrumbs = { relative_path }
+    local path_components = vim.split(relative_path, "[/\\]", { trimempty = true })
+    local num_components = #path_components
 
+    for i, component in ipairs(path_components) do
+        if i == num_components then
+            local icon
+            local icon_hl
+
+            if devicons_ok then
+                icon, icon_hl = devicons.get_icon(component)
+            end
+            table.insert(breadcrumbs, "%#" .. icon_hl .. "#" .. (icon or file_icon) .. "%#Normal#" .. " " .. component)
+        else
+            table.insert(breadcrumbs, folder_icon .. " " .. component)
+        end
+    end
     find_symbol_path(symbols, cursor_line, cursor_char, breadcrumbs)
 
     local breadcrumb_string = table.concat(breadcrumbs, " > ")
 
     if breadcrumb_string ~= "" then
-        vim.o.winbar = breadcrumb_string
+        vim.api.nvim_set_option_value('winbar', breadcrumb_string, { win = winnr })
     else
-        vim.o.winbar = " "
+        vim.api.nvim_set_option_value('winbar', " ", { win = winnr })
     end
 end
 
 local function breadcrumbs_set()
     local bufnr = vim.api.nvim_get_current_buf()
+    local winnr = vim.api.nvim_get_current_buf()
+    ---@type string
     local uri = vim.lsp.util.make_text_document_params(bufnr)["uri"]
     if not uri then
         vim.print("Error: Could not get URI for buffer. Is it saved?")
@@ -89,6 +150,13 @@ local function breadcrumbs_set()
             uri = uri
         }
     }
+
+    local buf_src = uri:sub(1, uri:find(":") - 1)
+    if buf_src ~= "file" then
+        vim.o.winbar = ""
+        return
+    end
+
     vim.lsp.buf_request(
         bufnr,
         'textDocument/documentSymbol',
@@ -103,4 +171,12 @@ vim.api.nvim_create_autocmd({ "CursorMoved" }, {
     group = breadcrumbs_augroup,
     callback = breadcrumbs_set,
     desc = "Set breadcrumbs.",
+})
+
+vim.api.nvim_create_autocmd({ "WinLeave" }, {
+    group = breadcrumbs_augroup,
+    callback = function()
+        vim.o.winbar = ""
+    end,
+    desc = "Clear breadcrumbs when leaving window.",
 })
