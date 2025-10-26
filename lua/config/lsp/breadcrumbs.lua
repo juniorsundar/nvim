@@ -6,7 +6,7 @@ local kind_icons = {
     "%#File#" .. "󰈙" .. "%#Normal#", -- file
     "%#Module#" .. "" .. "%#Normal#", -- module
     "%#Structure#" .. "" .. "%#Normal#", -- namespace
-    "%#Keyword#" .. "󰌋" .. "%#Normal#", -- keyword
+    "%#Keyword#" .. "󰌋" .. "%#Normal#", -- key
     "%#Class#" .. "󰠱" .. "%#Normal#", -- class
     "%#Method#" .. "󰆧" .. "%#Normal#", -- method
     "%#Property#" .. "󰜢" .. "%#Normal#", -- property
@@ -29,13 +29,6 @@ local kind_icons = {
     "", -- event
     "", -- operator
     "󰅲", -- type-parameter
-    "",
-    "",
-    "󰎠",
-    "",
-    "󰏘",
-    "",
-    "󰉋",
 }
 
 local function range_contains_pos(range, line, char)
@@ -138,6 +131,14 @@ end
 local function breadcrumbs_set()
     local bufnr = vim.api.nvim_get_current_buf()
     local winnr = vim.api.nvim_get_current_buf()
+
+    local clients = vim.lsp.get_clients({bufnr = bufnr})
+    if #clients == 0 then
+        return
+    elseif not clients[1].supports_method('textDocument/documentSymbol') then
+        return
+    end
+
     ---@type string
     local uri = vim.lsp.util.make_text_document_params(bufnr)["uri"]
     if not uri then
@@ -157,12 +158,14 @@ local function breadcrumbs_set()
         return
     end
 
-    vim.lsp.buf_request(
+    local result, _ = pcall(vim.lsp.buf_request,
         bufnr,
         'textDocument/documentSymbol',
         params,
-        lsp_callback
-    )
+        lsp_callback)
+    if not result then
+        return
+    end
 end
 
 local breadcrumbs_augroup = vim.api.nvim_create_augroup("Breadcrumbs", { clear = true })
