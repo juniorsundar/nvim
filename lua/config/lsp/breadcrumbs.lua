@@ -101,6 +101,9 @@ local function lsp_callback(err, symbols, ctx, config)
 
     local breadcrumbs = {}
 
+    if not relative_path then
+        return
+    end
     local path_components = vim.split(relative_path, "[/\\]", { trimempty = true })
     local num_components = #path_components
 
