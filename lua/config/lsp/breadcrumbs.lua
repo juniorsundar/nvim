@@ -4,16 +4,16 @@ local file_icon = "󰈙"
 
 local kind_icons = {
     "%#File#" .. "󰈙" .. "%#Normal#", -- file
-    "%#Module#" .. "" .. "%#Normal#", -- module
+    "%#Module#" .. "󰠱" .. "%#Normal#", -- module
     "%#Structure#" .. "" .. "%#Normal#", -- namespace
     "%#Keyword#" .. "󰌋" .. "%#Normal#", -- key
-    "%#Class#" .. "󰠱" .. "%#Normal#", -- class
+    "%#Class#" .. "" .. "%#Normal#", -- class
     "%#Method#" .. "󰆧" .. "%#Normal#", -- method
-    "%#Property#" .. "󰜢" .. "%#Normal#", -- property
-    "%#Field#" .. "󰇽" .. "%#Normal#", -- field
+    "%#Property#" .. "" .. "%#Normal#", -- property
+    "%#Field#" .. "" .. "%#Normal#", -- field
     "%#Function#" .. "" .. "%#Normal#", -- constructor
-    "%#Enum#" .. "" .. "%#Normal#", -- enum
-    "%#Type#" .. "" .. "%#Normal#", -- interface
+    "%#Enum#" .. "" .. "%#Normal#", -- enum
+    "%#Type#" .. "" .. "%#Normal#", -- interface
     "%#Function#" .. "󰊕" .. "%#Normal#", -- function
     "%#None#" .. "󰂡" .. "%#Normal#", -- variable
     "%#Constant#" .. "󰏿" .. "%#Normal#", -- constant
