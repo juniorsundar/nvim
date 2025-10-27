@@ -81,7 +81,7 @@ return {
                 hover = true,
             },
         },
-        scroll = { enabled = true },
+        scroll = { enabled = false },
         indent = { enabled = false },
         words = { enabled = true },
         styles = {
