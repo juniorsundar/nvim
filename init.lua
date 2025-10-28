@@ -65,7 +65,7 @@ vim.loader.enable()
 -- define common options
 local opts = {
     noremap = false, -- non-recursive
-    silent = true, -- do not show message
+    silent = true,   -- do not show message
 }
 
 -- Normal mode --
@@ -97,20 +97,107 @@ vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode"
 require("theme").set_colorscheme()
 
 -- PLUGINS ==========================================================
-require "config.lazy"
-require "config.lsp"
-
--- Profile with `PROF=1 nvim` =======================================
-if vim.env.PROF then
-    -- example for lazy.nvim
-    -- change this to the correct path for your plugin manager
-    local snacks = vim.fn.stdpath "data" .. "/lazy/snacks.nvim"
-    vim.opt.rtp:append(snacks)
-    require("snacks.profiler").startup {
-        startup = {
-            event = "VimEnter", -- stop profiler on this event. Defaults to `VimEnter`
-            -- event = "UIEnter",
-            -- event = "VeryLazy",
-        },
+local path_package = vim.fn.stdpath('data') .. '/site/'
+local mini_path = path_package .. 'pack/deps/start/mini.deps'
+if not vim.loop.fs_stat(mini_path) then
+    vim.cmd('echo "Installing `mini.deps`" | redraw')
+    local clone_cmd = {
+        'git', 'clone', '--filter=blob:none',
+        'https://github.com/nvim-mini/mini.deps', mini_path
     }
+    vim.fn.system(clone_cmd)
+    vim.cmd('packadd mini.deps | helptags ALL')
+    vim.cmd('echo "Installed `mini.deps`" | redraw')
 end
+require('mini.deps').setup({ path = { package = path_package } })
+
+local add, now, later = MiniDeps.add, MiniDeps.now, MiniDeps.later
+
+now(
+    function()
+        add({ source = "nvim-tree/nvim-web-devicons" })
+
+        add({ source = require("plugins.which-key").source })
+        require("plugins.which-key").config()
+
+        add({ source = require("plugins.snacks").source })
+        require("plugins.snacks").config()
+
+        add({ source = require("plugins.lualine").source })
+        require("plugins.lualine").config()
+
+        add({ source = require("plugins.oil").source })
+        require("plugins.oil").config()
+
+        add({
+            source = require("plugins.blink").source,
+            checkout = require("plugins.blink").checkout,
+            monitor = "main"
+        })
+        require("plugins.blink").config()
+
+        add({
+            source = require("plugins.treesitter").source,
+            checkout = require("plugins.treesitter").checkout,
+            hooks = {
+                post_checkout = require("plugins.treesitter").post_checkout
+            }
+        })
+        require("plugins.treesitter").config()
+
+        add({ source = require("plugins.nvim-surround").source })
+        require("plugins.nvim-surround").config()
+
+        add({ source = "nvim-mini/mini.ai" })
+        require("mini.ai").setup({
+            n_lines = 500,
+        })
+
+        add({ source = "nvim-mini/mini.move" })
+        require("mini.move").setup({
+            mappings = {
+                left = "<S-left>",
+                right = "<S-right>",
+                down = "<S-down>",
+                up = "<S-up>",
+                line_left = "<S-left>",
+                line_right = "<S-right>",
+                line_down = "<S-down>",
+                line_up = "<S-up>",
+            },
+        })
+    end
+)
+
+later(
+    function()
+        add({ source = require("plugins.mason").source })
+        require("plugins.mason").config()
+
+        add({ source = require("plugins.conform").source })
+        require("plugins.conform").config()
+
+        add({ source = require("plugins.lazydev").source })
+        require("plugins.lazydev").config()
+
+        add({ source = require("plugins.diffview").source })
+        require("plugins.diffview").config()
+
+        add({ source = require("plugins.gitsigns").source })
+        require("plugins.gitsigns").config()
+
+        add({ source = require("plugins.vim-fugitive").source })
+        require("plugins.vim-fugitive").config()
+
+        add({ source = require("plugins.flash").source })
+        require("plugins.flash").config()
+
+        add({ source = require("plugins.quicker").source })
+        require("plugins.quicker").config()
+
+        add({ source = require("plugins.render-markdown").source, depends = require("plugins.render-markdown").depends })
+        require("plugins.render-markdown").config()
+    end
+)
+
+require "config.lsp"

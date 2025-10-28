@@ -1,367 +1,7 @@
 return {
-    "folke/snacks.nvim",
-    priority = 1000,
-    enabled = true,
-    lazy = false,
-    opts = {
-        bigfile = { enabled = true },
-        dashboard = {
-            enabled = true,
-            preset = {
-                keys = {
-                    {
-                        icon = " ",
-                        key = "f",
-                        desc = "Find File",
-                        action = function()
-                            Snacks.picker.files { hidden = true }
-                        end,
-                    },
-                    {
-                        icon = " ",
-                        key = "n",
-                        desc = "New File",
-                        action = function()
-                            vim.cmd ":ene | startinsert"
-                        end,
-                    },
-                    {
-                        icon = " ",
-                        key = "t",
-                        desc = "Find Text",
-                        action = function()
-                            Snacks.dashboard.pick "live_grep"
-                        end,
-                    },
-                    {
-                        icon = " ",
-                        key = "r",
-                        desc = "Recent Files",
-                        action = function()
-                            Snacks.dashboard.pick "oldfiles"
-                        end,
-                    },
-                    {
-                        icon = " ",
-                        key = "c",
-                        desc = "Config",
-                        action = function()
-                            Snacks.dashboard.pick("files", { cwd = vim.fn.stdpath "config" })
-                        end,
-                    },
-                    {
-                        icon = "󰒲 ",
-                        key = "L",
-                        desc = "Lazy",
-                        action = ":Lazy",
-                        enabled = package.loaded.lazy ~= nil,
-                    },
-                    { icon = " ", key = "q", desc = "Quit", action = ":qa" },
-                },
-            },
-            sections = {
-                { section = "header" },
-                { icon = " ", title = "Keymaps", section = "keys", indent = 2, padding = 1 },
-                { icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = 1 },
-                { icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
-                { section = "startup" },
-            },
-        },
-        notifier = {
-            enabled = true,
-            timeout = 3000,
-        },
-        quickfile = { enabled = true },
-        statuscolumn = { enabled = true },
-        input = { enabled = true },
-        image = {
-            doc = {
-                enabled = true,
-                inline = false,
-                hover = true,
-            },
-        },
-        scroll = { enabled = false },
-        indent = { enabled = false },
-        words = { enabled = true },
-        styles = {
-            notification = {
-                wo = { wrap = true },
-            },
-            blame_line = {
-                width = 0.8,
-                height = 0.8,
-            },
-        },
-        toggle = {},
-        picker = {
-            matcher = {
-                frecency = true,
-            },
-            ui_select = true,
-            sources = {
-                lsp_symbols = {
-                    finder = "lsp_symbols",
-                    format = "lsp_symbol",
-                    hierarchy = true,
-                    filter = { default = true, markdown = true, help = true, lua = true, go = true },
-                },
-            },
-            formatters = {
-                file = {
-                    -- filename_first = true,
-                },
-            },
-            file = {
-                max_size = 10 * 1024 * 1024,
-                max_line_length = 5000,
-            },
-            previewers = {
-                git = {
-                    native = true,
-                },
-            },
-            layout = {
-                cycle = true,
-                preset = "ivy"
-                -- preset = function()
-                --     return vim.o.columns >= 140 and "ivy" or "default"
-                -- end,
-            },
-            win = {
-                input = {
-                    keys = {
-                        ["<Esc>"] = { "close", mode = { "n", "i" } },
-                        ["<C-c>"] = "close",
-                        ["<C-Up>"] = { "preview_scroll_up", mode = { "i", "n" } },
-                        ["<C-Down>"] = { "preview_scroll_down", mode = { "i", "n" } },
-                        ["<C-b>"] = { "history_back", mode = { "i", "n" } },
-                        ["<C-f>"] = { "history_forward", mode = { "i", "n" } },
-                        ["<A-s>"] = { "flash", mode = { "n", "i" } },
-                        ["s"] = { "flash" },
-                    },
-                },
-            },
-            actions = {
-                flash = function(picker)
-                    require("flash").jump {
-                        pattern = "^",
-                        label = { after = { 0, 0 } },
-                        search = {
-                            mode = "search",
-                            exclude = {
-                                function(win)
-                                    return vim.bo[vim.api.nvim_win_get_buf(win)].filetype ~= "snacks_picker_list"
-                                end,
-                            },
-                        },
-                        action = function(match)
-                            local idx = picker.list:row2idx(match.pos[1])
-                            picker.list:_move(idx, true, true)
-                        end,
-                    }
-                end,
-            },
-        },
-    },
-    keys = {
-        {
-            "<leader>n",
-            function()
-                Snacks.notifier.hide()
-            end,
-            desc = "Dismiss All Notifications",
-        },
-        {
-            "<leader>Gw",
-            function()
-                Snacks.gitbrowse()
-            end,
-            desc = "Git Browse",
-        },
-        {
-            "<leader>Go",
-            function()
-                Snacks.picker.git_status()
-            end,
-            desc = "Open changed file",
-        },
-        {
-            "<leader>GL",
-            function()
-                Snacks.lazygit()
-            end,
-            desc = "Lazygit",
-        },
-        {
-            "<leader>Gf",
-            function()
-                Snacks.lazygit.log_file()
-            end,
-            desc = "Log file",
-        },
-        {
-            "<leader>t",
-            function()
-                Snacks.terminal()
-            end,
-            desc = "Terminal",
-        },
-        {
-            "<leader>b",
-            function()
-                Snacks.picker.buffers()
-            end,
-            desc = "Buffers",
-        },
-        {
-            "<leader>Fp",
-            function()
-                Snacks.picker()
-            end,
-            desc = "Pickers",
-        },
-        {
-            "<leader>Ff",
-            function()
-                Snacks.picker.files { hidden = true }
-            end,
-            desc = "Files",
-        },
-        {
-            "<leader>Ft",
-            function()
-                Snacks.picker.grep()
-            end,
-            desc = "Text",
-        },
-        {
-            "<leader>Fl",
-            function()
-                Snacks.picker.lines()
-            end,
-            desc = "Line",
-        },
-        {
-            "<leader>Fc",
-            function()
-                Snacks.picker.colorschemes()
-            end,
-            desc = "Colorscheme",
-        },
-        {
-            "<leader>Fh",
-            function()
-                Snacks.picker.help()
-            end,
-            desc = "Find Help",
-        },
-        {
-            "<leader>Fk",
-            function()
-                Snacks.picker.keymaps()
-            end,
-            desc = "Keymaps",
-        },
-        {
-            "<leader>Fr",
-            function()
-                Snacks.picker.recent()
-            end,
-            desc = "Recent File",
-        },
-        {
-            "<leader>FM",
-            function()
-                Snacks.picker.man()
-            end,
-            desc = "Man Pages",
-        },
-        {
-            "<leader>FR",
-            function()
-                Snacks.picker.registers()
-            end,
-            desc = "Registers",
-        },
-        {
-            "<leader>FC",
-            function()
-                Snacks.picker.commands()
-            end,
-            desc = "Commands",
-        },
-        {
-            "<leader>Fu",
-            function()
-                Snacks.picker.undo()
-            end,
-            desc = "Undo",
-        },
-        {
-            "<leader>FT",
-            function()
-                require("config.snacks.pickers.tabs").tabs_picker()
-            end,
-            desc = "Tabs",
-        },
-        {
-            '<leader>F"',
-            function()
-                Snacks.picker.registers()
-            end,
-            desc = "Registers",
-        },
-        {
-            "<leader>e",
-            function()
-                Snacks.picker.explorer { hidden = true }
-            end,
-            desc = "Explorer",
-        },
-        {
-            "<leader>Fw",
-            function()
-                Snacks.picker.grep_word()
-            end,
-            desc = "Word",
-        },
-        {
-            "<localleader>s",
-            function()
-                Snacks.scratch()
-            end,
-            desc = "Scratch Toggle",
-        },
-        {
-            "<localleader>l",
-            function()
-                Snacks.scratch.select()
-            end,
-            desc = "Scratch Select",
-        },
-        {
-            "<localleader>N",
-            desc = "Neovim News",
-            function()
-                Snacks.win {
-                    file = vim.api.nvim_get_runtime_file("doc/news.txt", false)[1],
-                    width = 0.8,
-                    height = 0.8,
-                    wo = {
-                        spell = false,
-                        wrap = false,
-                        signcolumn = "yes",
-                        statuscolumn = " ",
-                        conceallevel = 3,
-                    },
-                }
-            end,
-        },
-    },
-    init = function()
-        vim.api.nvim_create_autocmd("User", {
-            pattern = "VeryLazy",
+    source = "folke/snacks.nvim",
+    config = function()
+        vim.api.nvim_create_autocmd("VimEnter", {
             callback = function()
                 ---@diagnostic disable-next-line: duplicate-set-field
                 _G.dd = function(...)
@@ -402,42 +42,6 @@ return {
                 })
             end,
         })
-        -- require("snacks.picker.config.layouts").default = {
-        --     layout = {
-        --         box = "vertical",
-        --         backdrop = false,
-        --         row = -1,
-        --         width = 0,
-        --         height = 0.5,
-        --         border = "top",
-        --         title = " {source} {live}",
-        --         title_pos = "left",
-        --         { win = "input", height = 1, border = "bottom" },
-        --         {
-        --             box = "vertical",
-        --             { win = "list", border = "none" },
-        --             { win = "preview", height = 0.6, border = "top" },
-        --         },
-        --     },
-        -- }
-        -- require("snacks.picker.config.layouts").ivy = {
-        --     layout = {
-        --         box = "vertical",
-        --         backdrop = false,
-        --         row = -1,
-        --         width = 0,
-        --         height = 0.5,
-        --         border = "top",
-        --         title = " {source} {live}",
-        --         title_pos = "left",
-        --         { win = "input", height = 1, border = "bottom" },
-        --         {
-        --             box = "horizontal",
-        --             { win = "list", border = "none" },
-        --             { win = "preview", width = 0.6, border = "left" },
-        --         },
-        --     },
-        -- }
         require("snacks.picker.config.layouts").ivy = {
             layout = {
                 backdrop = false,
@@ -454,5 +58,231 @@ return {
             },
         }
         require("snacks.picker.config.layouts").sidebar.layout.position = "right"
+
+        require("snacks").setup({
+            bigfile = { enabled = true },
+            dashboard = {
+                enabled = true,
+                preset = {
+                    keys = {
+                        {
+                            icon = " ",
+                            key = "f",
+                            desc = "Find File",
+                            action = function()
+                                Snacks.picker.files { hidden = true }
+                            end,
+                        },
+                        {
+                            icon = " ",
+                            key = "n",
+                            desc = "New File",
+                            action = function()
+                                vim.cmd ":ene | startinsert"
+                            end,
+                        },
+                        {
+                            icon = " ",
+                            key = "t",
+                            desc = "Find Text",
+                            action = function()
+                                Snacks.dashboard.pick "live_grep"
+                            end,
+                        },
+                        {
+                            icon = " ",
+                            key = "r",
+                            desc = "Recent Files",
+                            action = function()
+                                Snacks.dashboard.pick "oldfiles"
+                            end,
+                        },
+                        {
+                            icon = " ",
+                            key = "c",
+                            desc = "Config",
+                            action = function()
+                                Snacks.dashboard.pick("files", { cwd = vim.fn.stdpath "config" })
+                            end,
+                        },
+                        {
+                            icon = "󰒲 ",
+                            key = "L",
+                            desc = "Lazy",
+                            action = ":Lazy",
+                            enabled = package.loaded.lazy ~= nil,
+                        },
+                        { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+                    },
+                },
+                sections = {
+                    { section = "header" },
+                    { icon = " ", title = "Keymaps", section = "keys", indent = 2, padding = 1 },
+                    { icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = 1 },
+                    { icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
+                    -- { section = "startup" },
+                },
+            },
+            notifier = {
+                enabled = true,
+                timeout = 3000,
+            },
+            quickfile = { enabled = true },
+            statuscolumn = { enabled = true },
+            input = { enabled = true },
+            image = {
+                doc = {
+                    enabled = true,
+                    inline = false,
+                    hover = true,
+                },
+            },
+            scroll = { enabled = false },
+            indent = { enabled = false },
+            words = { enabled = true },
+            styles = {
+                notification = {
+                    wo = { wrap = true },
+                },
+                blame_line = {
+                    width = 0.8,
+                    height = 0.8,
+                },
+            },
+            toggle = {},
+            picker = {
+                matcher = {
+                    frecency = true,
+                },
+                ui_select = true,
+                sources = {
+                    lsp_symbols = {
+                        finder = "lsp_symbols",
+                        format = "lsp_symbol",
+                        hierarchy = true,
+                        filter = { default = true, markdown = true, help = true, lua = true, go = true },
+                    },
+                },
+                formatters = {
+                    file = {
+                        -- filename_first = true,
+                    },
+                },
+                file = {
+                    max_size = 10 * 1024 * 1024,
+                    max_line_length = 5000,
+                },
+                previewers = {
+                    git = {
+                        native = true,
+                    },
+                },
+                layout = {
+                    cycle = true,
+                    preset = "ivy"
+                    -- preset = function()
+                    --     return vim.o.columns >= 140 and "ivy" or "default"
+                    -- end,
+                },
+                win = {
+                    input = {
+                        keys = {
+                            ["<Esc>"] = { "close", mode = { "n", "i" } },
+                            ["<C-c>"] = "close",
+                            ["<C-Up>"] = { "preview_scroll_up", mode = { "i", "n" } },
+                            ["<C-Down>"] = { "preview_scroll_down", mode = { "i", "n" } },
+                            ["<C-b>"] = { "history_back", mode = { "i", "n" } },
+                            ["<C-f>"] = { "history_forward", mode = { "i", "n" } },
+                            ["<A-s>"] = { "flash", mode = { "n", "i" } },
+                            ["s"] = { "flash" },
+                        },
+                    },
+                },
+                actions = {
+                    flash = function(picker)
+                        require("flash").jump {
+                            pattern = "^",
+                            label = { after = { 0, 0 } },
+                            search = {
+                                mode = "search",
+                                exclude = {
+                                    function(win)
+                                        return vim.bo[vim.api.nvim_win_get_buf(win)].filetype ~= "snacks_picker_list"
+                                    end,
+                                },
+                            },
+                            action = function(match)
+                                local idx = picker.list:row2idx(match.pos[1])
+                                picker.list:_move(idx, true, true)
+                            end,
+                        }
+                    end,
+                },
+            },
+        })
+        vim.keymap.set('n', '<leader>n', function() Snacks.notifier.hide() end,
+            { desc = "Dismiss All Notifications", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Gw', function() Snacks.gitbrowse() end,
+            { desc = "Git Browse", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Go', function() Snacks.picker.git_status() end,
+            { desc = "Open changed file", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>GL', function() Snacks.lazygit() end,
+            { desc = "Lazygit", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Gf', function() Snacks.lazygit.log_file() end,
+            { desc = "Log file", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>t', function() Snacks.terminal() end,
+            { desc = "Terminal", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>b', function() Snacks.picker.buffers() end,
+            { desc = "Buffers", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Fp', function() Snacks.picker() end,
+            { desc = "Pickers", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Ff', function() Snacks.picker.files { hidden = true } end,
+            { desc = "Files", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Ft', function() Snacks.picker.grep() end,
+            { desc = "Text", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Fl', function() Snacks.picker.lines() end,
+            { desc = "Line", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Fc', function() Snacks.picker.colorschemes() end,
+            { desc = "Colorscheme", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Fh', function() Snacks.picker.help() end,
+            { desc = "Find Help", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Fk', function() Snacks.picker.keymaps() end,
+            { desc = "Keymaps", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Fr', function() Snacks.picker.recent() end,
+            { desc = "Recent File", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>FM', function() Snacks.picker.man() end,
+            { desc = "Man Pages", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>FR', function() Snacks.picker.registers() end,
+            { desc = "Registers", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>FC', function() Snacks.picker.commands() end,
+            { desc = "Commands", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Fu', function() Snacks.picker.undo() end,
+            { desc = "Undo", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>FT', function() require("config.snacks.pickers.tabs").tabs_picker() end,
+            { desc = "Tabs", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>F"', function() Snacks.picker.registers() end,
+            { desc = "Registers", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>e', function() Snacks.picker.explorer { hidden = true } end,
+            { desc = "Explorer", noremap = true, silent = true })
+        vim.keymap.set('n', '<leader>Fw', function() Snacks.picker.grep_word() end,
+            { desc = "Word", noremap = true, silent = true })
+        vim.keymap.set('n', '<localleader>s', function() Snacks.scratch() end,
+            { desc = "Scratch Toggle", noremap = true, silent = true })
+        vim.keymap.set('n', '<localleader>l', function() Snacks.scratch.select() end,
+            { desc = "Scratch Select", noremap = true, silent = true })
+        vim.keymap.set('n', '<localleader>N', function()
+            Snacks.win {
+                file = vim.api.nvim_get_runtime_file("doc/news.txt", false)[1],
+                width = 0.8,
+                height = 0.8,
+                wo = {
+                    spell = false,
+                    wrap = false,
+                    signcolumn = "yes",
+                    statuscolumn = " ",
+                    conceallevel = 3,
+                },
+            }
+        end, { desc = "Neovim News", noremap = true, silent = true })
     end,
 }
