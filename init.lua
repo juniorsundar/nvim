@@ -113,6 +113,10 @@ require('mini.deps').setup({ path = { package = path_package } })
 
 local add, now, later = MiniDeps.add, MiniDeps.now, MiniDeps.later
 
+vim.keymap.set("n", "<leader>P", "", {desc = "MiniDeps", noremap = false, silent = true})
+vim.keymap.set("n", "<leader>Pu", function() MiniDeps.update() end, {desc = "Update", noremap = false, silent = true})
+vim.keymap.set("n", "<leader>Pc", function() MiniDeps.clean() end, {desc = "Clean", noremap = false, silent = true})
+
 now(
     function()
         add({ source = "nvim-tree/nvim-web-devicons" })
