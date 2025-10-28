@@ -1,10 +1,6 @@
-return {
-    "MeanderingProgrammer/render-markdown.nvim",
-    dependencies = { "nvim-treesitter/nvim-treesitter" }, -- if you use the mini.nvim suite
-    ft = "markdown",
-    ----@module 'render-markdown'
-    ----@type render.md.UserConfig
-    -- opts = {},
+local M = {
+    source = "MeanderingProgrammer/render-markdown.nvim",
+    depends = { "nvim-treesitter/nvim-treesitter" }, -- if you use the mini.nvim suite
     config = function()
         require("render-markdown").setup {
             completions = {
@@ -26,3 +22,5 @@ return {
         }
     end,
 }
+
+return M

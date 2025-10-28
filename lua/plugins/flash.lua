@@ -1,42 +1,42 @@
-return {
-    "folke/flash.nvim",
-    event = "VeryLazy",
-    keys = {
-        {
+local M = {
+    source = "folke/flash.nvim",
+    config = function()
+        require("flash").setup()
+        vim.keymap.set(
+            { "n", "x", "o" },
             "<C-s>",
-            mode = { "n", "x", "o" },
             function()
                 require("flash").jump()
             end,
-            desc = "Flash",
-        },
-        {
+            { desc = "Flash", noremap = false, silent = true }
+        )
+        vim.keymap.set(
+            { "n", "x", "o" },
             "<C-M-s>",
-            mode = { "n", "x", "o" },
             function()
                 require("flash").treesitter()
             end,
-            desc = "Flash Treesitter",
-        },
-        {
+            { desc = "Flash Treesitter", noremap = false, silent = true }
+        )
+        vim.keymap.set(
+            "o",
             "gr",
-            mode = "o",
             function()
                 require("flash").remote()
             end,
-            desc = "Remote Flash",
-        },
-        {
+            { desc = "Remote Flash", noremap = false, silent = true }
+        )
+        vim.keymap.set(
+            { "o", "x" },
             "gR",
-            mode = { "o", "x" },
             function()
                 require("flash").treesitter_search()
             end,
-            desc = "Treesitter Search",
-        },
-        {
+            { desc = "Treesitter Search", noremap = false, silent = true }
+        )
+        vim.keymap.set(
+            { "n", "x", "o" },
             "<c-space>",
-            mode = { "n", "x", "o" },
             function()
                 require("flash").treesitter({
                     actions = {
@@ -45,8 +45,9 @@ return {
                     }
                 })
             end,
-            desc = "Treesitter incremental selection"
-        },
-    },
-    opts = {}
+            { desc = "Treesitter incremental selection", noremap = false, silent = true }
+        )
+    end
 }
+
+return M

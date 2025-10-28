@@ -1,9 +1,7 @@
-return {
-    "nvim-treesitter/nvim-treesitter",
-    lazy = false,
-    enabled = true,
-    branch = "main",
-    build = ":TSUpdate",
+local M = {
+    source = "nvim-treesitter/nvim-treesitter",
+    checkout = "main",
+    post_checkout = function() vim.cmd("TSUpdate") end,
     config = function()
         require("nvim-treesitter").install {
             "rust",
@@ -51,3 +49,5 @@ return {
         })
     end,
 }
+
+return M
