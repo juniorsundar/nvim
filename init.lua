@@ -111,7 +111,7 @@ if not vim.loop.fs_stat(mini_path) then
 end
 require('mini.deps').setup({ path = { package = path_package } })
 
-local add, now, later = MiniDeps.add, MiniDeps.now, MiniDeps.later
+vim.g.terminal_emulator = "wezterm"
 
 vim.keymap.set("n", "<leader>P", "", {desc = "MiniDeps", noremap = false, silent = true})
 vim.keymap.set("n", "<leader>Pu", function() MiniDeps.update() end, {desc = "Update", noremap = false, silent = true})
