@@ -1,16 +1,11 @@
-local M = {
-    source = "stevearc/conform.nvim",
-    config = function()
-        require("conform").setup({
-            formatters_by_ft = {
-                c = { "clang-format" },
-                python = { "ruff" },
-                go = { "gofumpt" },
-                rust = { "rustfmt" },
-                nix = { "nixfmt" },
-            },
-        })
-    end
-}
+MiniDeps.add({ source = "stevearc/conform.nvim" })
 
-return M
+require("conform").setup({
+    formatters_by_ft = {
+        c = { "clang-format" },
+        python = { "ruff" },
+        go = { "gofumpt" },
+        rust = { "rustfmt" },
+        nix = { "nixfmt" },
+    },
+})

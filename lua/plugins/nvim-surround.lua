@@ -1,8 +1,6 @@
-local M = {
-    source = "kylechui/nvim-surround",
-    config = function()
+MiniDeps.now(
+    function()
+        MiniDeps.add({ source = "kylechui/nvim-surround" })
         require("nvim-surround").setup()
     end
-}
-
-return M
+)
