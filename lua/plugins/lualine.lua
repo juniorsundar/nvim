@@ -1,6 +1,6 @@
-local M = {
-    source = "nvim-lualine/lualine.nvim",
-    config = function()
+MiniDeps.now(
+    function()
+        MiniDeps.add({ source = "nvim-lualine/lualine.nvim" })
         local lualine = require('lualine')
 
         local palette = require("theme.colors").dark
@@ -217,6 +217,4 @@ local M = {
 
         lualine.setup(config)
     end
-}
-
-return M
+)

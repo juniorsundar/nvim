@@ -1,8 +1,10 @@
-local M = {
-    source = "nvim-treesitter/nvim-treesitter",
-    checkout = "main",
-    post_checkout = function() vim.cmd("TSUpdate") end,
-    config = function()
+MiniDeps.now(
+    function()
+        MiniDeps.add({
+            source = "nvim-treesitter/nvim-treesitter",
+            checkout = "main",
+            hooks = { post_checkout = function() vim.cmd("TSUpdate") end }
+        })
         require("nvim-treesitter").install {
             "rust",
             "c3",
@@ -47,7 +49,5 @@ local M = {
                 vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
             end,
         })
-    end,
-}
-
-return M
+    end
+)

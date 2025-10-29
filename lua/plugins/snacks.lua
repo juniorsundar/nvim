@@ -1,6 +1,6 @@
-return {
-    source = "folke/snacks.nvim",
-    config = function()
+MiniDeps.now(
+    function()
+        MiniDeps.add({ source = "folke/snacks.nvim" })
         vim.api.nvim_create_autocmd("VimEnter", {
             callback = function()
                 ---@diagnostic disable-next-line: duplicate-set-field
@@ -284,5 +284,5 @@ return {
                 },
             }
         end, { desc = "Neovim News", noremap = true, silent = true })
-    end,
-}
+    end
+)

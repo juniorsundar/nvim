@@ -1,8 +1,11 @@
-local M = {
-    source = "saghen/blink.cmp",
-    checkout = "v1.7.0",
-    -- build = (vim.fn.executable "nix" == 1) and "nix run .#build-plugin" or "cargo build --release",
-    config = function ()
+MiniDeps.now(
+    function()
+        MiniDeps.add({
+            source = "saghen/blink.cmp",
+            checkout = "v1.7.0",
+            monitor = "main"
+        })
+        -- build = (vim.fn.executable "nix" == 1) and "nix run .#build-plugin" or "cargo build --release",
         require("blink.cmp").setup({
             -- 'default' for mappings similar to built-in completion
             -- 'super-tab' for mappings similar to vscode (tab to accept, arrow keys to navigate)
@@ -58,47 +61,45 @@ local M = {
             sources = {
                 default = { 'lsp', 'path', 'snippets', 'buffer' },
                 -- per_filetype = {
-                    --     markdown = { "obsidian", "obsidian_new", "obsidian_tags" },
-                    -- },
-                    providers = {
-                        lazydev = {
-                            name = "LazyDev",
-                            module = "lazydev.integrations.blink",
-                            score_offset = 100,
-                        },
+                --     markdown = { "obsidian", "obsidian_new", "obsidian_tags" },
+                -- },
+                providers = {
+                    lazydev = {
+                        name = "LazyDev",
+                        module = "lazydev.integrations.blink",
+                        score_offset = 100,
                     },
                 },
-                completion = {
-                    menu = {
-                        -- winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
-                        border = 'rounded',
-                        draw = {
-                            treesitter = { 'lsp', 'path', 'snippets', 'buffer', "lazydev" },
-                        },
+            },
+            completion = {
+                menu = {
+                    -- winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
+                    border = 'rounded',
+                    draw = {
+                        treesitter = { 'lsp', 'path', 'snippets', 'buffer', "lazydev" },
                     },
-                    documentation = {
-                        auto_show = true,
-                        auto_show_delay_ms = 50,
-                        window = { border = 'single' }
-                    },
-                    list = {
-                        selection = {
-                            preselect = false,
-                            auto_insert = false,
-                        }
-                    },
-                    ghost_text = {
-                        enabled = false,
+                },
+                documentation = {
+                    auto_show = true,
+                    auto_show_delay_ms = 50,
+                    window = { border = 'single' }
+                },
+                list = {
+                    selection = {
+                        preselect = false,
+                        auto_insert = false,
                     }
                 },
-                signature = {
-                    enabled = true,
-                    window = {
-                        border = 'single',
-                    }
-                },
-            })
-        end
-    }
-
-    return M
+                ghost_text = {
+                    enabled = false,
+                }
+            },
+            signature = {
+                enabled = true,
+                window = {
+                    border = 'single',
+                }
+            },
+        })
+    end
+)

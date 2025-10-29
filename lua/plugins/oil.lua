@@ -1,6 +1,6 @@
-local M = {
-    source = "stevearc/oil.nvim",
-    config = function()
+MiniDeps.now(
+    function()
+        MiniDeps.add({ source = "stevearc/oil.nvim" })
         require("oil").setup({
             columns = {
                 "permissions",
@@ -17,6 +17,4 @@ local M = {
         })
         vim.keymap.set("n", "<leader>o", "<cmd>Oil<cr>", { desc = "LSP", noremap = false, silent = true })
     end
-}
-
-return M
+)
