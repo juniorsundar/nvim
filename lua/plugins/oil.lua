@@ -1,9 +1,9 @@
 MiniDeps.later(function()
-    MiniDeps.add({ source = "stevearc/oil.nvim" })
+    MiniDeps.add { source = "stevearc/oil.nvim" }
 
     vim.keymap.set("n", "<leader>o", function()
         if not package.loaded["oil"] then
-            require("oil").setup({
+            require("oil").setup {
                 columns = {
                     "permissions",
                     "mtime",
@@ -14,11 +14,11 @@ MiniDeps.later(function()
                     show_hidden = true,
                 },
                 confirmation = {
-                    border = "rounded"
-                }
-            })
+                    border = "rounded",
+                },
+            }
         end
 
-        vim.cmd("Oil")
+        vim.cmd "Oil"
     end, { desc = "Oil", noremap = false, silent = true })
 end)

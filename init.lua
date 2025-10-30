@@ -65,7 +65,7 @@ vim.loader.enable()
 -- define common options
 local opts = {
     noremap = false, -- non-recursive
-    silent = true,   -- do not show message
+    silent = true, -- do not show message
 }
 
 -- Normal mode --
@@ -97,24 +97,31 @@ vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode"
 require("theme").set_colorscheme()
 
 -- PLUGINS ==========================================================
-local path_package = vim.fn.stdpath('data') .. '/site/'
-local mini_path = path_package .. 'pack/deps/start/mini.deps'
+local path_package = vim.fn.stdpath "data" .. "/site/"
+local mini_path = path_package .. "pack/deps/start/mini.deps"
 if not vim.loop.fs_stat(mini_path) then
-    vim.cmd('echo "Installing `mini.deps`" | redraw')
+    vim.cmd 'echo "Installing `mini.deps`" | redraw'
     local clone_cmd = {
-        'git', 'clone', '--filter=blob:none',
-        'https://github.com/nvim-mini/mini.deps', mini_path
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "https://github.com/nvim-mini/mini.deps",
+        mini_path,
     }
     vim.fn.system(clone_cmd)
-    vim.cmd('packadd mini.deps | helptags ALL')
-    vim.cmd('echo "Installed `mini.deps`" | redraw')
+    vim.cmd "packadd mini.deps | helptags ALL"
+    vim.cmd 'echo "Installed `mini.deps`" | redraw'
 end
-require('mini.deps').setup({ path = { package = path_package } })
+require("mini.deps").setup { path = { package = path_package } }
 
-vim.keymap.set("n", "<leader>P", "", {desc = "MiniDeps", noremap = false, silent = true})
-vim.keymap.set("n", "<leader>Pu", function() MiniDeps.update() end, {desc = "Update", noremap = false, silent = true})
-vim.keymap.set("n", "<leader>Pc", function() MiniDeps.clean() end, {desc = "Clean", noremap = false, silent = true})
+vim.keymap.set("n", "<leader>P", "", { desc = "MiniDeps", noremap = false, silent = true })
+vim.keymap.set("n", "<leader>Pu", function()
+    MiniDeps.update()
+end, { desc = "Update", noremap = false, silent = true })
+vim.keymap.set("n", "<leader>Pc", function()
+    MiniDeps.clean()
+end, { desc = "Clean", noremap = false, silent = true })
 
-require("plugins")
+require "plugins"
 
 require "config.lsp"

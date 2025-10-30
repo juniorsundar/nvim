@@ -1,8 +1,8 @@
 local M = {}
 
 local if_nil = vim.F.if_nil
-local utils = require("theme.utils")
-local colors = require("theme.colors")
+local utils = require "theme.utils"
+local colors = require "theme.colors"
 
 local config = {
     ui = {
@@ -104,8 +104,10 @@ M.set_colorscheme = function()
     set_hl("VertSplit", { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.grey })
 
     set_hl("TabLine", { bg = palette.bg_alt, fg = palette.base7, bold = true })
-    set_hl("TabLineSel",
-        { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.blue, bold = true })
+    set_hl(
+        "TabLineSel",
+        { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.blue, bold = true }
+    )
     set_hl("TabLineFill", { bg = palette.base1, bold = true })
 
     set_hl("StatusLine", { bg = dark_theme and palette.base3 or palette.base2, fg = palette.base8 })
@@ -451,29 +453,44 @@ M.set_colorscheme = function()
     end
 
     if config.plugins.barbar then
-        set_hl("BufferCurrent",
-            {
-                bg = config.ui.transparent_background and "NONE" or palette.bg,
-                fg = dark_theme and palette.base8 or
-                    palette.base0
-            })
-        set_hl("BufferCurrentIndex",
-            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.base6 })
-        set_hl("BufferCurrentMod",
-            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.yellow })
-        set_hl("BufferCurrentSign", { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.blue })
-        set_hl("BufferCurrentTarget",
-            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.red, bold = true })
+        set_hl("BufferCurrent", {
+            bg = config.ui.transparent_background and "NONE" or palette.bg,
+            fg = dark_theme and palette.base8 or palette.base0,
+        })
+        set_hl(
+            "BufferCurrentIndex",
+            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.base6 }
+        )
+        set_hl(
+            "BufferCurrentMod",
+            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.yellow }
+        )
+        set_hl(
+            "BufferCurrentSign",
+            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.blue }
+        )
+        set_hl(
+            "BufferCurrentTarget",
+            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.red, bold = true }
+        )
 
         set_hl("BufferVisible", { fg = palette.base7, bg = config.ui.transparent_background and "NONE" or palette.bg })
-        set_hl("BufferVisibleIndex",
-            { fg = palette.base6, bg = config.ui.transparent_background and "NONE" or palette.bg })
-        set_hl("BufferVisibleMod",
-            { fg = palette.yellow, bg = config.ui.transparent_background and "NONE" or palette.bg })
-        set_hl("BufferVisibleSign",
-            { fg = palette.base4, bg = config.ui.transparent_background and "NONE" or palette.bg })
-        set_hl("BufferVisibleTarget",
-            { fg = palette.red, bg = config.ui.transparent_background and "NONE" or palette.bg, bold = true })
+        set_hl(
+            "BufferVisibleIndex",
+            { fg = palette.base6, bg = config.ui.transparent_background and "NONE" or palette.bg }
+        )
+        set_hl(
+            "BufferVisibleMod",
+            { fg = palette.yellow, bg = config.ui.transparent_background and "NONE" or palette.bg }
+        )
+        set_hl(
+            "BufferVisibleSign",
+            { fg = palette.base4, bg = config.ui.transparent_background and "NONE" or palette.bg }
+        )
+        set_hl(
+            "BufferVisibleTarget",
+            { fg = palette.red, bg = config.ui.transparent_background and "NONE" or palette.bg, bold = true }
+        )
 
         set_hl("BufferInactive", { fg = palette.base6, bg = dark_theme and palette.base1 or palette.base8 })
         set_hl("BufferInactiveIndex", { fg = palette.base6, bg = dark_theme and palette.base1 or palette.base8 })
@@ -511,17 +528,15 @@ M.set_colorscheme = function()
         set_hl("NeogitDiffAddHighlight", { bg = palette.bg_alt, fg = palette.green, bold = true })
         set_hl("NeogitDiffDelete", { fg = "#cc5655" })
         set_hl("NeogitDiffDeleteHighlight", { bg = palette.bg_alt, fg = palette.red, bold = true })
-        set_hl("NeogitDiffContext",
-            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.fg_alt })
-        set_hl("NeogitDiffContextHighlight", { bg = palette.bg_alt, fg = palette.fg, bold = true })
         set_hl(
-            "NeogitHunkHeader",
-            {
-                bg = dark_theme and utils.darken(palette.violet, 0.2) or utils.lighten(palette.violet, 0.16),
-                fg = palette
-                    .bg
-            }
+            "NeogitDiffContext",
+            { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.fg_alt }
         )
+        set_hl("NeogitDiffContextHighlight", { bg = palette.bg_alt, fg = palette.fg, bold = true })
+        set_hl("NeogitHunkHeader", {
+            bg = dark_theme and utils.darken(palette.violet, 0.2) or utils.lighten(palette.violet, 0.16),
+            fg = palette.bg,
+        })
         set_hl("NeogitHunkHeaderHighlight", { bg = palette.violet, fg = palette.bg_alt, bold = true })
         set_hl("NeogitStagedChanges", { fg = dark_theme and palette.blue or palette.orange, bold = true })
         set_hl("NeogitStagedChangesRegion", { bg = palette.bg_alt })
@@ -609,7 +624,6 @@ M.set_colorscheme = function()
         set_hl("LspSagaDefPreviewBorder", { link = "Bold" })
         set_hl("LspLinesDiagBorder", { link = "Bold" })
     end
-
 end
 
 return M

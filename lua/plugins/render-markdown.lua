@@ -1,8 +1,8 @@
 MiniDeps.later(function()
-    MiniDeps.add({
+    MiniDeps.add {
         source = "MeanderingProgrammer/render-markdown.nvim",
-        depends = { "nvim-treesitter/nvim-treesitter" }
-    })
+        depends = { "nvim-treesitter/nvim-treesitter" },
+    }
     vim.api.nvim_create_autocmd("FileType", {
         pattern = "markdown",
         once = true,
@@ -21,7 +21,12 @@ MiniDeps.later(function()
                             highlight = "RenderMarkdownDash",
                             scope_highlight = "RenderMarkdownDash",
                         },
-                        doing = { raw = "[/]", rendered = "󰥔", highlight = "RenderMarkdownTodo", scope_highlight = nil },
+                        doing = {
+                            raw = "[/]",
+                            rendered = "󰥔",
+                            highlight = "RenderMarkdownTodo",
+                            scope_highlight = nil,
+                        },
                     },
                 },
             }
