@@ -1,11 +1,11 @@
 MiniDeps.later(function()
-    MiniDeps.add({ source = "stevearc/quicker.nvim" })
+    MiniDeps.add { source = "stevearc/quicker.nvim" }
 
     vim.api.nvim_create_autocmd("FileType", {
         pattern = "qf",
         once = true,
         callback = function()
-            require("quicker").setup({
+            require("quicker").setup {
                 keys = {
                     {
                         ">",
@@ -22,7 +22,7 @@ MiniDeps.later(function()
                         desc = "Collapse quickfix context",
                     },
                 },
-            })
+            }
         end,
     })
 end)

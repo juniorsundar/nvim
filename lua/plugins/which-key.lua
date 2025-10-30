@@ -1,11 +1,11 @@
 MiniDeps.now(function()
-    MiniDeps.add({ source = "folke/which-key.nvim" })
+    MiniDeps.add { source = "folke/which-key.nvim" }
 
     vim.o.timeout = true
     vim.o.timeoutlen = 500
     require("which-key.colors").Normal = "NormalFloat"
 
-    require("which-key").setup({
+    require("which-key").setup {
         preset = "helix",
         icons = {
             rules = false,
@@ -23,11 +23,11 @@ MiniDeps.now(function()
             align = "center",
         },
         spec = {
-            { "<leader>l",         "<cmd>Lazy<cr>",      desc = "Lazy" },
-            { "<leader>F",         desc = "Find" },
-            { "<leader>G",         group = "Git" },
+            { "<leader>l", "<cmd>Lazy<cr>", desc = "Lazy" },
+            { "<leader>F", desc = "Find" },
+            { "<leader>G", group = "Git" },
             { "<leader><leader>T", group = "Toggle" },
-            { "<leader><leader>",  group = "LocalLeader" },
+            { "<leader><leader>", group = "LocalLeader" },
         },
-    })
+    }
 end)

@@ -1,5 +1,5 @@
 vim.lsp.breadcrumbs = {
-    enabled = true
+    enabled = true,
 }
 -- Safely try to load nvim-web-devicons
 ---@type boolean
@@ -49,7 +49,7 @@ local kind_icons = {
 ---@return boolean
 local function range_contains_pos(range, line, char)
     local start = range.start
-    local stop = range['end']
+    local stop = range["end"]
 
     if line < start.line or line > stop.line then
         return false
@@ -123,7 +123,7 @@ local function lsp_callback(err, symbols, ctx, config)
     local relative_path
 
     ---@type vim.lsp.Client[]
-    local clients = vim.lsp.get_clients({ bufnr = ctx.bufnr })
+    local clients = vim.lsp.get_clients { bufnr = ctx.bufnr }
 
     if #clients > 0 and clients[1].root_dir then
         -- Try to get relative path from LSP root
@@ -181,9 +181,9 @@ local function lsp_callback(err, symbols, ctx, config)
 
     -- Set the winbar
     if breadcrumb_string ~= "" then
-        vim.api.nvim_set_option_value('winbar', breadcrumb_string, { win = winnr })
+        vim.api.nvim_set_option_value("winbar", breadcrumb_string, { win = winnr })
     else
-        vim.api.nvim_set_option_value('winbar', " ", { win = winnr })
+        vim.api.nvim_set_option_value("winbar", " ", { win = winnr })
     end
 end
 
@@ -202,42 +202,38 @@ local function breadcrumbs_set()
     local winnr = vim.api.nvim_get_current_buf() -- Note: This is buffer handle, not window. Not used.
 
     ---@type vim.lsp.Client[]
-    local clients = vim.lsp.get_clients({ bufnr = bufnr })
+    local clients = vim.lsp.get_clients { bufnr = bufnr }
 
     -- Exit if no clients or client doesn't support documentSymbol
     if #clients == 0 then
         return
-    elseif not clients[1].supports_method('textDocument/documentSymbol') then
+    elseif not clients[1].supports_method "textDocument/documentSymbol" then
         return
     end
 
     ---@type string
     local uri = vim.lsp.util.make_text_document_params(bufnr)["uri"]
     if not uri then
-        vim.print("Error: Could not get URI for buffer. Is it saved?")
+        vim.print "Error: Could not get URI for buffer. Is it saved?"
         return
     end
 
     local params = {
         textDocument = {
-            uri = uri
-        }
+            uri = uri,
+        },
     }
 
     -- Don't run on non-file buffers (e.g., help tags)
     ---@type string
-    local buf_src = uri:sub(1, uri:find(":") - 1)
+    local buf_src = uri:sub(1, uri:find ":" - 1)
     if buf_src ~= "file" then
         vim.o.winbar = ""
         return
     end
 
     -- Make the async LSP request
-    local result, _ = pcall(vim.lsp.buf_request,
-        bufnr,
-        'textDocument/documentSymbol',
-        params,
-        lsp_callback)
+    local result, _ = pcall(vim.lsp.buf_request, bufnr, "textDocument/documentSymbol", params, lsp_callback)
 
     if not result then
         -- Request failed to send

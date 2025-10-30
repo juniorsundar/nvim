@@ -7,8 +7,8 @@ vim.lsp.autohover = {
         border = "rounded",
         relative = "editor",
         offset_x = vim.o.columns,
-        ratio = 0.1
-    }
+        ratio = 0.1,
+    },
 }
 vim.o.updatetime = vim.lsp.autohover.delay
 
@@ -83,19 +83,18 @@ vim.api.nvim_create_autocmd("CursorHold", {
                 end
                 eldoc_buf_id = vim.api.nvim_create_buf(false, true)
                 vim.api.nvim_buf_set_lines(eldoc_buf_id, 0, 0, false, lines)
-                eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false,
-                    {
-                        split = 'below',
-                        win = -1,
-                        height = math.floor(vim.o.lines * vim.lsp.autohover.opts.ratio),
-                        style = 'minimal'
-                    })
+                eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
+                    split = "below",
+                    win = -1,
+                    height = math.floor(vim.o.lines * vim.lsp.autohover.opts.ratio),
+                    style = "minimal",
+                })
                 vim.api.nvim_buf_set_name(eldoc_buf_id, "[LSP Eldoc]")
-                vim.api.nvim_set_option_value('filetype', 'markdown', { buf = eldoc_buf_id })
-                vim.api.nvim_set_option_value('buftype', 'nofile', { buf = eldoc_buf_id })
-                vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = eldoc_buf_id })
-                vim.api.nvim_set_option_value('modifiable', false, { buf = eldoc_buf_id })
-                vim.api.nvim_set_option_value('swapfile', false, { buf = eldoc_buf_id })
+                vim.api.nvim_set_option_value("filetype", "markdown", { buf = eldoc_buf_id })
+                vim.api.nvim_set_option_value("buftype", "nofile", { buf = eldoc_buf_id })
+                vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = eldoc_buf_id })
+                vim.api.nvim_set_option_value("modifiable", false, { buf = eldoc_buf_id })
+                vim.api.nvim_set_option_value("swapfile", false, { buf = eldoc_buf_id })
                 return
             elseif vim.lsp.autohover.layout == "float" then
                 vim.lsp.util.open_floating_preview(lines, "markdown", vim.lsp.autohover.opts)

@@ -1,10 +1,10 @@
 MiniDeps.later(function()
-    MiniDeps.add({ source = "stevearc/conform.nvim" })
+    MiniDeps.add { source = "stevearc/conform.nvim" }
     vim.api.nvim_create_autocmd("BufWritePre", {
         pattern = "*",
         once = true,
         callback = function()
-            require("conform").setup({
+            require("conform").setup {
                 formatters_by_ft = {
                     c = { "clang-format" },
                     python = { "ruff" },
@@ -12,7 +12,7 @@ MiniDeps.later(function()
                     rust = { "rustfmt" },
                     nix = { "nixfmt" },
                 },
-            })
-        end
+            }
+        end,
     })
 end)
