@@ -1,3 +1,4 @@
+-- require "plugins.theme"
 require "plugins.nvim-web-devicons"
 require "plugins.which-key"
 require "plugins.snacks"
