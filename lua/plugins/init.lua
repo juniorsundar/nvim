@@ -1,21 +1,21 @@
--- require "plugins.theme"
-require "plugins.nvim-web-devicons"
-require "plugins.which-key"
-require "plugins.snacks"
-require "plugins.lualine"
-require "plugins.oil"
-require "plugins.blink"
-require "plugins.treesitter"
-require "plugins.nvim-surround"
-require "plugins.nvim-lint"
-require "plugins.mini"
-require "plugins.mason"
-require "plugins.conform"
-require "plugins.lazydev"
-require "plugins.diffview"
-require "plugins.gitsigns"
-require "plugins.vim-fugitive"
-require "plugins.flash"
-require "plugins.quicker"
-require "plugins.render-markdown"
-require "plugins.persistence"
+require("plugins.catppuccin")
+require("plugins.nvim-web-devicons")
+require("plugins.which-key")
+require("plugins.snacks")
+require("plugins.lualine")
+require("plugins.oil")
+require("plugins.blink")
+require("plugins.treesitter")
+require("plugins.nvim-surround")
+require("plugins.nvim-lint")
+require("plugins.mini")
+require("plugins.mason")
+require("plugins.conform")
+require("plugins.lazydev")
+require("plugins.diffview")
+require("plugins.gitsigns")
+require("plugins.vim-fugitive")
+require("plugins.flash")
+require("plugins.quicker")
+require("plugins.render-markdown")
+require("plugins.persistence")
