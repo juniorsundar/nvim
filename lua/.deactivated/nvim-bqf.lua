@@ -1,5 +1,5 @@
 return {
-    "kevinhwang91/nvim-bqf",
-    ft = "qf",
-    enabled = false,
+	"kevinhwang91/nvim-bqf",
+	ft = "qf",
+	enabled = false,
 }
