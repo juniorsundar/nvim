@@ -289,13 +289,38 @@ M.set_colorscheme = function()
     set_hl("diffOldFile", { fg = palette.blue })
     set_hl("diffNewFile", { fg = palette.blue })
 
-    --- Markdown
+    --- Markup
     ------------
+    set_hl("rainbow1", { fg = palette.red })
+    set_hl("rainbow2", { fg = palette.magenta })
+    set_hl("rainbow3", { fg = palette.yellow })
+    set_hl("rainbow4", { fg = palette.green })
+    set_hl("rainbow5", { fg = palette.teal })
+    set_hl("rainbow6", { fg = palette.violet })
+
     set_hl("markdownCode", { link = "Comment" })
     set_hl("markdownCodeBlock", { link = "markdownCode" })
-    set_hl("markdownH1", { bold = true })
-    set_hl("markdownH2", { bold = true })
+    set_hl("markdownH1", { link = "rainbow1" })
+    set_hl("markdownH2", { link = "rainbow2" })
+    set_hl("markdownH3", { link = "rainbow3" })
+    set_hl("markdownH4", { link = "rainbow4" })
+    set_hl("markdownH5", { link = "rainbow5" })
+    set_hl("markdownH6", { link = "rainbow5" })
     set_hl("markdownLinkText", { underline = true })
+
+    set_hl("@markup.heading.1.markdown", { link = "rainbow1" })
+    set_hl("@markup.heading.2.markdown", { link = "rainbow2" })
+    set_hl("@markup.heading.3.markdown", { link = "rainbow3" })
+    set_hl("@markup.heading.4.markdown", { link = "rainbow4" })
+    set_hl("@markup.heading.5.markdown", { link = "rainbow5" })
+    set_hl("@markup.heading.6.markdown", { link = "rainbow6" })
+
+    set_hl("@org.headline.level1.org", { link = "rainbow1" })
+    set_hl("@org.headline.level2.org", { link = "rainbow2" })
+    set_hl("@org.headline.level3.org", { link = "rainbow3" })
+    set_hl("@org.headline.level4.org", { link = "rainbow4" })
+    set_hl("@org.headline.level5.org", { link = "rainbow5" })
+    set_hl("@org.headline.level6.org", { link = "rainbow6" })
 
     --- LSP
     ------------
