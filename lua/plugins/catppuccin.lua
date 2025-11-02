@@ -1,7 +1,35 @@
 MiniDeps.now(function()
 	MiniDeps.add({ source = "catppuccin/nvim", name = "catppuccin" })
 
-	local doom = {
+	local doom_light = {
+		crust = "#f0f0f0",
+		mantle = "#f0f0f0",
+		base = "#fafafa",
+		surface0 = "#9ca0a4",
+		surface1 = "#424242",
+		surface2 = "#2e2e2e",
+		overlay0 = "#9ca0a4",
+		overlay1 = "#424242",
+		overlay2 = "#1e1e1e",
+		subtext0 = "#73797e",
+		subtext1 = "#1e1e1e",
+		text = "#383a42",
+		red = "#e45649",
+		peach = "#da8548",
+		yellow = "#986801",
+		green = "#50a14f",
+		teal = "#4db5bd",
+		sky = "#0184bc",
+		sapphire = "#005478",
+		blue = "#4078f2",
+		lavender = "#b751b6",
+		mauve = "#a626a4",
+		pink = "#ca626a4",
+		maroon = nil,
+		flamingo = nil,
+		rosewater = nil,
+	}
+	local doom_dark = {
 		crust = "#1b2229",
 		mantle = "#21242b",
 		base = "#282c34",
@@ -31,7 +59,8 @@ MiniDeps.now(function()
 	}
 	local config = {
 		color_overrides = {
-			macchiato = doom,
+			macchiato = doom_dark,
+            latte = doom_light
 		},
 		custom_highlights = function(colors)
 			return {}
@@ -46,7 +75,7 @@ MiniDeps.now(function()
 					WhichKey = { fg = colors.blue, bg = nil },
 					WhichKeyNormal = { fg = colors.text, bg = nil },
 					WhichKeyDesc = { fg = colors.maroon },
-					Folded = { fg = colors.crust, bg = colors.none },
+					Folded = { fg = colors.overlay1, bg = colors.none },
 					BlinkCmpMenu = { fg = colors.text, bg = colors.base },
 					BlinkCmpMenuBorder = { fg = colors.text, bg = colors.base },
 				}

@@ -124,4 +124,5 @@ end, { desc = "Clean", noremap = false, silent = true })
 
 require "plugins"
 
+-- LSP ======================================================
 require "config.lsp"
