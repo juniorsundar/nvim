@@ -2,22 +2,23 @@ M = {
 	capabilities = vim.lsp.protocol.make_client_capabilities(),
 }
 
+M.capabilities.workspace = {
+    didChangeWatchedFiles = {
+        dynamicRegistration = true,
+    },
+}
+
+M.capabilities.textDocument.foldingRange = {
+    dynamicRegistration = false,
+    lineFoldingOnly = true,
+}
+
 ---@alias blink_loaded boolean
 ---@alias blink blink.cmp.API
 local blink_loaded, blink = pcall(require, "blink.cmp")
 if blink_loaded then
 	M.capabilities = vim.tbl_deep_extend("force", M.capabilities, blink.get_lsp_capabilities(M.capabilities))
 end
-
-M.capabilities.workspace = {
-	didChangeWatchedFiles = {
-		dynamicRegistration = true,
-	},
-}
-M.capabilities.textDocument.foldingRange = {
-	dynamicRegistration = false,
-	lineFoldingOnly = true,
-}
 
 vim.api.nvim_create_autocmd("LspAttach", {
 	group = vim.api.nvim_create_augroup("FoldConfig", { clear = true }),
