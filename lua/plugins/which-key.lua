@@ -23,7 +23,7 @@ MiniDeps.now(function()
 			align = "center",
 		},
 		spec = {
-			{ "<leader>l", "<cmd>Lazy<cr>", desc = "Lazy" },
+			-- { "<leader>l", "<cmd>Lazy<cr>", desc = "Lazy" },
 			{ "<leader>F", desc = "Find" },
 			{ "<leader>G", group = "Git" },
 			{ "<leader><leader>T", group = "Toggle" },
