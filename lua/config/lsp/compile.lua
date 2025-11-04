@@ -2,6 +2,7 @@ local M = {}
 
 M.last_cmd = nil
 M.last_cwd = nil
+M.last_env = nil
 M.compile_window = nil
 
 M.close_compile_window = function()
@@ -36,6 +37,15 @@ M.run_last = function()
     M.executor(M.last_cmd, M.last_cwd)
 end
 
+M.with_env = function()
+    local env_file = vim.fn.input('Path to .env file: ', M.last_env or vim.fs.joinpath(vim.fn.getcwd(), ".env"), 'file')
+    if env_file == nil or env_file == "" then
+        vim.notify("Cancelled", vim.log.levels.WARN)
+        return
+    end
+    M.last_env = env_file
+    M.command()
+end
 
 M.executor = function(cmd, cwd)
     if M.compile_window ~= nil then
@@ -48,6 +58,10 @@ M.executor = function(cmd, cwd)
     end
     M.last_cmd = cmd
     M.last_cwd = cwd
+    if M.last_env then
+        cmd = ". " .. M.last_env .. " && " .. cmd
+        M.last_env = nil -- reset last_env since it may not be necessary all the time
+    end
 
     local original_window = vim.api.nvim_get_current_win()
     local compile_buffer = vim.api.nvim_create_buf(false, true)
@@ -58,7 +72,7 @@ M.executor = function(cmd, cwd)
         style = "minimal",
     })
     local actual_cwd = cwd or vim.fn.getcwd()
-    local cmd_table = vim.split(cmd, " ", { trimempty = false })
+    local cmd_table = { 'sh', '-c', cmd }
 
     if not cmd or cmd == "" then
         vim.notify("Error: 'cmd' is required.", vim.log.levels.ERROR)
@@ -144,5 +158,37 @@ M.executor = function(cmd, cwd)
     }, on_exit)
 end
 
-vim.api.nvim_create_user_command("Compile", M.command, {})
-vim.api.nvim_create_user_command("CompileLast", M.run_last, {})
+vim.api.nvim_create_user_command(
+    'Compile',
+    function(args)
+        local fargs = args.fargs
+        if #fargs == 0 then
+            M.command()
+        elseif #fargs == 1 then
+            if fargs[1] == "--with-env" then
+                M.with_env()
+            elseif fargs[1] == "--last" then
+                M.run_last()
+            else
+                vim.notify("Error: Unknown argument '" .. fargs[1] .. "'", vim.log.levels.ERROR)
+            end
+        else
+            vim.notify("Error: Too many arguments for Compile", vim.log.levels.ERROR)
+        end
+    end,
+    {
+        nargs = '*',
+        desc = 'Compiles the project (supports --with-env, --last)',
+        complete = function(arglead, cmdline, cursorpos)
+            local completions = { "--with-env", "--last" }
+
+            local filtered = {}
+            for _, item in ipairs(completions) do
+                if vim.startswith(item, arglead) then
+                    table.insert(filtered, item)
+                end
+            end
+            return filtered
+        end
+    }
+)
