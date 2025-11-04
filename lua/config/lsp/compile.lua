@@ -19,7 +19,9 @@ M.compile_window = nil
 --- Does nothing if no compile window is open.
 --- @return nil
 M.close_compile_window = function()
-    vim.api.nvim_win_close(M.compile_window, true)
+    if M.compile_window and vim.api.nvim_win_is_valid(M.compile_window) then
+        vim.api.nvim_win_close(M.compile_window, true)
+    end
     M.compile_window = nil
 end
 
@@ -115,18 +117,36 @@ M.executor = function(cmd, cwd)
     vim.api.nvim_buf_set_keymap(compile_buffer, "n", "<CR>", "", {
         callback = function()
             local line = vim.api.nvim_get_current_line()
+
             local cfile = vim.fn.expand("<cfile>")
             local start_idx = line:find(cfile, 1, true)
             if not start_idx then
                 print("Path not found on current line")
                 return
             end
-            local after_path = line:sub(start_idx + #cfile)
-            local colon_num_match = after_path:match("^%s*:(%d+)")
-            local lnum = 1
-            if colon_num_match then
-                lnum = vim.fn.str2nr(colon_num_match)
-            end
+            local trimmed_line = line:sub(start_idx)
+
+            -- Pipe this all into quickfix to take advantage of the errorformatting that it does
+            local original_qf_state = vim.fn.getqflist({ all = 0 })
+            local original_efm = vim.go.errorformat
+
+            local temp_efm = table.concat({
+                '%f:%l:%c:%m',
+                '%f:%l:%c',
+                '%f:%l',
+            }, ',')
+            vim.go.errorformat = temp_efm .. ","  .. original_efm
+            vim.fn.setqflist({}, 'r', { lines = { trimmed_line } })
+            local qf_items = vim.fn.getqflist()
+
+            vim.go.errorformat = original_efm
+            vim.fn.setqflist({}, 'r', {
+                items = original_qf_state.items,
+                title = original_qf_state.title,
+            })
+
+            local lnum = qf_items[1].lnum
+            local col = qf_items[1].col
 
             local full_path = vim.fs.normalize(vim.fs.joinpath(actual_cwd, cfile))
             if not vim.uv.fs_stat(full_path) and vim.uv.fs_stat(cfile) then
@@ -141,7 +161,12 @@ M.executor = function(cmd, cwd)
                 return
             end
 
-            vim.fn.win_execute(original_window, "edit +" .. lnum .. " " .. vim.fn.fnameescape(full_path))
+            local open_to_cmd = "edit +" .. lnum .. " " .. vim.fn.fnameescape(full_path)
+            if type(col) == "number" and col > 0 then
+                open_to_cmd = open_to_cmd .. " | normal! " .. col .. "|"
+            end
+
+            vim.fn.win_execute(original_window, open_to_cmd)
             vim.api.nvim_set_current_win(original_window)
         end,
         noremap = true,
@@ -159,7 +184,10 @@ M.executor = function(cmd, cwd)
     vim.api.nvim_set_option_value("buftype", "nofile", { buf = compile_buffer })
     vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = compile_buffer })
     vim.api.nvim_set_option_value("swapfile", false, { buf = compile_buffer })
+    vim.api.nvim_set_option_value("filetype", "compile", { buf = compile_buffer })
 
+    --- @param err string|nil
+    --- @param data string|nil
     local on_data = function(err, data)
         if err then
             vim.schedule(function()
@@ -176,6 +204,7 @@ M.executor = function(cmd, cwd)
         end)
     end
 
+    --- @param obj {code: integer}
     local on_exit = function(obj)
         vim.schedule(function()
             local status_line = "[Command finished with code " .. obj.code .. "]"
@@ -189,6 +218,14 @@ M.executor = function(cmd, cwd)
         stdout = on_data,
         stderr = on_data
     }, on_exit)
+
+    vim.api.nvim_create_autocmd("BufWipeout", {
+        buffer = compile_buffer,
+        once = true,
+        callback = function()
+            M.compile_window = nil
+        end,
+    })
 end
 
 vim.api.nvim_create_user_command(
@@ -198,9 +235,9 @@ vim.api.nvim_create_user_command(
         if #fargs == 0 then
             M.command()
         elseif #fargs == 1 then
-            if fargs[1] == "--with-env" then
+            if fargs[1] == "with-env" then
                 M.with_env()
-            elseif fargs[1] == "--last" then
+            elseif fargs[1] == "last" then
                 M.run_last()
             else
                 vim.notify("Error: Unknown argument '" .. fargs[1] .. "'", vim.log.levels.ERROR)
@@ -211,9 +248,9 @@ vim.api.nvim_create_user_command(
     end,
     {
         nargs = '*',
-        desc = 'Compiles the project (supports --with-env, --last)',
+        desc = 'Compiles the project (supports with-env, last)',
         complete = function(arglead, _, _)
-            local completions = { "--with-env", "--last" }
+            local completions = { "with-env", "last" }
 
             local filtered = {}
             for _, item in ipairs(completions) do
