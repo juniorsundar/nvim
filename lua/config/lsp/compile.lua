@@ -1,15 +1,32 @@
+--- @module 'compile'
+--- Interactive compilation runner for Neovim with .env support and output navigation.
 local M = {}
 
+--- @type string|nil
+--- The last shell command executed by the user.
 M.last_cmd = nil
+--- @type string|nil
+--- The last working directory used for compilation.
 M.last_cwd = nil
+--- @type string|nil
+--- Path to the last .env file used (consumed once per execution).
 M.last_env = nil
+--- @type integer|nil
+--- Handle to the current compile output window, if open.
 M.compile_window = nil
 
+--- Closes the active compile output window and resets its handle.
+--- Does nothing if no compile window is open.
+--- @return nil
 M.close_compile_window = function()
     vim.api.nvim_win_close(M.compile_window, true)
     M.compile_window = nil
 end
 
+--- Prompts the user for a compilation command and working directory,
+--- then executes the command via `M.executor`.
+--- Uses `M.last_cmd` and `M.last_cwd` as defaults in prompts.
+--- @return nil
 M.command = function()
     local cmd = vim.fn.input('Compile command: ', M.last_cmd or "")
 
@@ -29,6 +46,9 @@ M.command = function()
     M.executor(cmd, cwd)
 end
 
+--- Re-executes the last compilation command and working directory.
+--- Shows an error if no prior command exists.
+--- @return nil
 M.run_last = function()
     if not M.last_cmd then
         vim.notify("No last command to run. Use :Compile first.", vim.log.levels.ERROR)
@@ -37,6 +57,10 @@ M.run_last = function()
     M.executor(M.last_cmd, M.last_cwd)
 end
 
+--- Prompts the user for a `.env` file path (defaulting to `./.env`),
+--- stores it in `M.last_env`, then invokes `M.command()`.
+--- The `.env` file is sourced once during the next execution and then cleared.
+--- @return nil
 M.with_env = function()
     local env_file = vim.fn.input('Path to .env file: ', M.last_env or vim.fs.joinpath(vim.fn.getcwd(), ".env"), 'file')
     if env_file == nil or env_file == "" then
@@ -47,6 +71,15 @@ M.with_env = function()
     M.command()
 end
 
+--- Executes a shell command in a given working directory and streams output
+--- to a dedicated scratch window named `[Compile]`.
+--- - Closes any existing compile window.
+--- - Sources `M.last_env` (if set) before the command and then unsets it.
+--- - Supports clickable file paths (e.g., `file:line`) via `<CR>` mapping.
+--- - Press `q` to close the window.
+--- @param cmd string Shell command to execute.
+--- @param cwd string Working directory for the command.
+--- @return nil
 M.executor = function(cmd, cwd)
     if M.compile_window ~= nil then
         M.close_compile_window()
@@ -92,7 +125,7 @@ M.executor = function(cmd, cwd)
             local colon_num_match = after_path:match("^%s*:(%d+)")
             local lnum = 1
             if colon_num_match then
-                lnum = tonumber(colon_num_match)
+                lnum = vim.fn.str2nr(colon_num_match)
             end
 
             local full_path = vim.fs.normalize(vim.fs.joinpath(actual_cwd, cfile))
@@ -179,7 +212,7 @@ vim.api.nvim_create_user_command(
     {
         nargs = '*',
         desc = 'Compiles the project (supports --with-env, --last)',
-        complete = function(arglead, cmdline, cursorpos)
+        complete = function(arglead, _, _)
             local completions = { "--with-env", "--last" }
 
             local filtered = {}
