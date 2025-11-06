@@ -106,7 +106,6 @@ M.executor = function(cmd, cwd)
 
     local original_window = vim.api.nvim_get_current_win()
     local actual_cwd = cwd or vim.fn.getcwd()
-
     local full_command_string = "cd " .. vim.fn.shellescape(actual_cwd, true) .. " && "
 
     if M.last_env then
@@ -115,9 +114,7 @@ M.executor = function(cmd, cwd)
     end
 
     full_command_string = full_command_string .. cmd
-
     local term_command = 'sh -c ' .. vim.fn.shellescape(full_command_string, true)
-
     local escaped_cmd = vim.fn.fnameescape(term_command)
 
     if not cmd or cmd == "" then
