@@ -129,6 +129,7 @@ M.executor = function(cmd, cwd)
 
     M.compile_buffer = vim.api.nvim_get_current_buf()
     M.compile_window = vim.api.nvim_get_current_win()
+    vim.api.nvim_buf_set_name(M.compile_buffer, "[Compile]")
 
     vim.api.nvim_buf_set_keymap(M.compile_buffer, "n", "<CR>", "", {
         callback = function()
