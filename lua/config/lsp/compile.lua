@@ -14,11 +14,17 @@ M.last_env = nil
 --- @type integer|nil
 --- Handle to the current compile output window, if open.
 M.compile_window = nil
+M.compile_buffer = nil
 
 --- Closes the active compile output window and resets its handle.
 --- Does nothing if no compile window is open.
 --- @return nil
 M.close_compile_window = function()
+    if M.compile_buffer and vim.api.nvim_buf_is_valid(M.compile_buffer) then
+        vim.api.nvim_buf_delete(M.compile_buffer, { force = true })
+    end
+    M.compile_buffer = nil
+
     if M.compile_window and vim.api.nvim_win_is_valid(M.compile_window) then
         vim.api.nvim_win_close(M.compile_window, true)
     end
@@ -99,22 +105,32 @@ M.executor = function(cmd, cwd)
     end
 
     local original_window = vim.api.nvim_get_current_win()
-    local compile_buffer = vim.api.nvim_create_buf(false, true)
-    M.compile_window = vim.api.nvim_open_win(compile_buffer, true, {
-        split = "below",
-        win = -1,
-        height = math.floor(vim.o.lines * 0.5),
-        style = "minimal",
-    })
     local actual_cwd = cwd or vim.fn.getcwd()
-    local cmd_table = { 'sh', '-c', cmd }
+
+    local full_command_string = "cd " .. vim.fn.shellescape(actual_cwd, true) .. " && "
+
+    if M.last_env then
+        full_command_string = full_command_string .. ". " .. vim.fn.shellescape(M.last_env, true) .. " && "
+        M.last_env = nil
+    end
+
+    full_command_string = full_command_string .. cmd
+
+    local term_command = 'sh -c ' .. vim.fn.shellescape(full_command_string, true)
+
+    local escaped_cmd = vim.fn.fnameescape(term_command)
 
     if not cmd or cmd == "" then
         vim.notify("Error: 'cmd' is required.", vim.log.levels.ERROR)
         return
     end
 
-    vim.api.nvim_buf_set_keymap(compile_buffer, "n", "<CR>", "", {
+    vim.cmd("split term://" .. escaped_cmd)
+
+    M.compile_buffer = vim.api.nvim_get_current_buf()
+    M.compile_window = vim.api.nvim_get_current_win()
+
+    vim.api.nvim_buf_set_keymap(M.compile_buffer, "n", "<CR>", "", {
         callback = function()
             local line = vim.api.nvim_get_current_line()
 
@@ -135,7 +151,7 @@ M.executor = function(cmd, cwd)
                 '%f:%l:%c',
                 '%f:%l',
             }, ',')
-            vim.go.errorformat = temp_efm .. ","  .. original_efm
+            vim.go.errorformat = temp_efm .. "," .. original_efm
             vim.fn.setqflist({}, 'r', { lines = { trimmed_line } })
             local qf_items = vim.fn.getqflist()
 
@@ -172,7 +188,7 @@ M.executor = function(cmd, cwd)
         noremap = true,
         silent = true,
     })
-    vim.api.nvim_buf_set_keymap(compile_buffer, "n", "q", "", {
+    vim.api.nvim_buf_set_keymap(M.compile_buffer, "n", "q", "", {
         callback = function()
             M.close_compile_window()
         end,
@@ -180,47 +196,8 @@ M.executor = function(cmd, cwd)
         silent = true,
     })
 
-    vim.api.nvim_buf_set_name(compile_buffer, "[Compile]")
-    vim.api.nvim_set_option_value("buftype", "nofile", { buf = compile_buffer })
-    vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = compile_buffer })
-    vim.api.nvim_set_option_value("swapfile", false, { buf = compile_buffer })
-    vim.api.nvim_set_option_value("filetype", "compile", { buf = compile_buffer })
-
-    --- @param err string|nil
-    --- @param data string|nil
-    local on_data = function(err, data)
-        if err then
-            vim.schedule(function()
-                vim.api.nvim_buf_set_lines(compile_buffer, -1, -1, false, { "[Stream error: " .. err .. "]" })
-            end)
-            return
-        end
-        if data == nil then
-            return
-        end
-        vim.schedule(function()
-            local lines = vim.split(data, "\n", { trimempty = false })
-            vim.api.nvim_buf_set_lines(compile_buffer, -1, -1, false, lines)
-        end)
-    end
-
-    --- @param obj {code: integer}
-    local on_exit = function(obj)
-        vim.schedule(function()
-            local status_line = "[Command finished with code " .. obj.code .. "]"
-            vim.api.nvim_buf_set_lines(compile_buffer, -1, -1, false, { "", status_line })
-        end)
-    end
-
-    vim.system(cmd_table, {
-        cwd = actual_cwd,
-        text = true,
-        stdout = on_data,
-        stderr = on_data
-    }, on_exit)
-
     vim.api.nvim_create_autocmd("BufWipeout", {
-        buffer = compile_buffer,
+        buffer = M.compile_buffer,
         once = true,
         callback = function()
             M.compile_window = nil
