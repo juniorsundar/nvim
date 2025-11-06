@@ -122,7 +122,7 @@ M.executor = function(cmd, cwd)
         return
     end
 
-    vim.cmd("split term://" .. escaped_cmd)
+    vim.cmd("bot split term://" .. escaped_cmd)
 
     M.compile_buffer = vim.api.nvim_get_current_buf()
     M.compile_window = vim.api.nvim_get_current_win()
