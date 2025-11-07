@@ -4,8 +4,9 @@ vim.api.nvim_create_autocmd("BufEnter", {
     group = fugitive_augroup,
     pattern = "fugitive://*",
     callback = function()
-        vim.opt.number = false
-        vim.opt.relativenumber = false
+        local fugitive_window = vim.api.nvim_get_current_win()
+        vim.api.nvim_set_option_value("number", false, { win = fugitive_window })
+        vim.api.nvim_set_option_value("relativenumber", false, { win = fugitive_window })
     end,
 })
 
@@ -13,7 +14,8 @@ vim.api.nvim_create_autocmd("BufLeave", {
     group = fugitive_augroup,
     pattern = "fugitive://*",
     callback = function()
-        vim.opt.number = true
-        vim.opt.relativenumber = true
+        local exit_window = vim.api.nvim_get_current_win()
+        vim.api.nvim_set_option_value("number", true, { win = exit_window })
+        vim.api.nvim_set_option_value("relativenumber", true, { win = exit_window })
     end,
 })
