@@ -85,7 +85,22 @@ MiniDeps.now(function()
         float = {
             transparent = true,
         },
-        auto_integrations = true,
+        integrations = {
+            diffview = true,
+            flash = true,
+            gitsigns = true,
+            mason = true,
+            mini = {
+                enabled = true,
+            },
+            neogit = true,
+            nvim_surround = true,
+            render_markdown = true,
+            snacks = {
+                enabled = true,
+            },
+            which_key = true,
+        },
     }
     require("catppuccin").setup(config)
     vim.cmd.colorscheme "catppuccin-macchiato"
