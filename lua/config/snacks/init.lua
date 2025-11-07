@@ -1,1 +1,1 @@
-require("config.snacks.pickers")
+require "config.snacks.pickers"

@@ -1,17 +1,17 @@
 MiniDeps.now(function()
-    MiniDeps.add({
+    MiniDeps.add {
         source = "nvim-treesitter/nvim-treesitter",
         checkout = "main",
         hooks = {
             post_checkout = function()
-                vim.cmd("TSUpdate")
+                vim.cmd "TSUpdate"
             end,
         },
-    })
-    require 'nvim-treesitter'.setup {
-        install_dir = vim.fn.stdpath('data') .. '/site'
     }
-    require("nvim-treesitter").install({
+    require("nvim-treesitter").setup {
+        install_dir = vim.fn.stdpath "data" .. "/site",
+    }
+    require("nvim-treesitter").install {
         "bash",
         "c",
         "c3",
@@ -30,7 +30,7 @@ MiniDeps.now(function()
         "toml",
         "yaml",
         "zig",
-    })
+    }
 
     vim.api.nvim_create_autocmd("FileType", {
         pattern = {

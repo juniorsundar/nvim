@@ -36,7 +36,7 @@ end
 --- Uses `M.last_cmd` and `M.last_cwd` as defaults in prompts.
 --- @return nil
 M.command = function()
-    local cmd = vim.fn.input('Compile command: ', M.last_cmd or "")
+    local cmd = vim.fn.input("Compile command: ", M.last_cmd or "")
 
     if cmd == nil or cmd == "" then
         vim.notify("Compilation cancelled", vim.log.levels.WARN)
@@ -44,7 +44,7 @@ M.command = function()
     end
 
     local default_cwd = M.last_cwd or vim.fn.getcwd()
-    local cwd = vim.fn.input('CWD: ', default_cwd)
+    local cwd = vim.fn.input("CWD: ", default_cwd)
 
     if cwd == nil or cwd == "" then
         vim.notify("Compilation cancelled", vim.log.levels.WARN)
@@ -70,7 +70,7 @@ end
 --- The `.env` file is sourced once during the next execution and then cleared.
 --- @return nil
 M.with_env = function()
-    local env_file = vim.fn.input('Path to .env file: ', M.last_env or vim.fs.joinpath(vim.fn.getcwd(), ".env"), 'file')
+    local env_file = vim.fn.input("Path to .env file: ", M.last_env or vim.fs.joinpath(vim.fn.getcwd(), ".env"), "file")
     if env_file == nil or env_file == "" then
         vim.notify("Cancelled", vim.log.levels.WARN)
         return
@@ -114,7 +114,7 @@ M.executor = function(cmd, cwd)
     end
 
     full_command_string = full_command_string .. cmd
-    local term_command = 'sh -c ' .. vim.fn.shellescape(full_command_string, true)
+    local term_command = "sh -c " .. vim.fn.shellescape(full_command_string, true)
     local escaped_cmd = vim.fn.fnameescape(term_command)
 
     if not cmd or cmd == "" then
@@ -132,29 +132,29 @@ M.executor = function(cmd, cwd)
         callback = function()
             local line = vim.api.nvim_get_current_line()
 
-            local cfile = vim.fn.expand("<cfile>")
+            local cfile = vim.fn.expand "<cfile>"
             local start_idx = line:find(cfile, 1, true)
             if not start_idx then
-                print("Path not found on current line")
+                print "Path not found on current line"
                 return
             end
             local trimmed_line = line:sub(start_idx)
 
             -- Pipe this all into quickfix to take advantage of the errorformatting that it does
-            local original_qf_state = vim.fn.getqflist({ all = 0 })
+            local original_qf_state = vim.fn.getqflist { all = 0 }
             local original_efm = vim.go.errorformat
 
             local temp_efm = table.concat({
-                '%f:%l:%c:%m',
-                '%f:%l:%c',
-                '%f:%l',
-            }, ',')
+                "%f:%l:%c:%m",
+                "%f:%l:%c",
+                "%f:%l",
+            }, ",")
             vim.go.errorformat = temp_efm .. "," .. original_efm
-            vim.fn.setqflist({}, 'r', { lines = { trimmed_line } })
+            vim.fn.setqflist({}, "r", { lines = { trimmed_line } })
             local qf_items = vim.fn.getqflist()
 
             vim.go.errorformat = original_efm
-            vim.fn.setqflist({}, 'r', {
+            vim.fn.setqflist({}, "r", {
                 items = original_qf_state.items,
                 title = original_qf_state.title,
             })
@@ -203,37 +203,33 @@ M.executor = function(cmd, cwd)
     })
 end
 
-vim.api.nvim_create_user_command(
-    'Compile',
-    function(args)
-        local fargs = args.fargs
-        if #fargs == 0 then
-            M.command()
-        elseif #fargs == 1 then
-            if fargs[1] == "with-env" then
-                M.with_env()
-            elseif fargs[1] == "last" then
-                M.run_last()
-            else
-                vim.notify("Error: Unknown argument '" .. fargs[1] .. "'", vim.log.levels.ERROR)
-            end
+vim.api.nvim_create_user_command("Compile", function(args)
+    local fargs = args.fargs
+    if #fargs == 0 then
+        M.command()
+    elseif #fargs == 1 then
+        if fargs[1] == "with-env" then
+            M.with_env()
+        elseif fargs[1] == "last" then
+            M.run_last()
         else
-            vim.notify("Error: Too many arguments for Compile", vim.log.levels.ERROR)
+            vim.notify("Error: Unknown argument '" .. fargs[1] .. "'", vim.log.levels.ERROR)
         end
-    end,
-    {
-        nargs = '*',
-        desc = 'Compiles the project (supports with-env, last)',
-        complete = function(arglead, _, _)
-            local completions = { "with-env", "last" }
+    else
+        vim.notify("Error: Too many arguments for Compile", vim.log.levels.ERROR)
+    end
+end, {
+    nargs = "*",
+    desc = "Compiles the project (supports with-env, last)",
+    complete = function(arglead, _, _)
+        local completions = { "with-env", "last" }
 
-            local filtered = {}
-            for _, item in ipairs(completions) do
-                if vim.startswith(item, arglead) then
-                    table.insert(filtered, item)
-                end
+        local filtered = {}
+        for _, item in ipairs(completions) do
+            if vim.startswith(item, arglead) then
+                table.insert(filtered, item)
             end
-            return filtered
         end
-    }
-)
+        return filtered
+    end,
+})

@@ -1,16 +1,16 @@
 MiniDeps.now(function()
-    MiniDeps.add({
+    MiniDeps.add {
         source = "saghen/blink.cmp",
         checkout = "v1.7.0",
         monitor = "main",
-    })
+    }
 
     vim.api.nvim_create_autocmd({ "CmdlineEnter", "LspAttach" }, {
         pattern = "*",
         once = true,
         callback = function()
             -- build = (vim.fn.executable "nix" == 1) and "nix run .#build-plugin" or "cargo build --release",
-            require("blink.cmp").setup({
+            require("blink.cmp").setup {
                 -- 'default' for mappings similar to built-in completion
                 -- 'super-tab' for mappings similar to vscode (tab to accept, arrow keys to navigate)
                 -- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
@@ -104,7 +104,7 @@ MiniDeps.now(function()
                         border = "single",
                     },
                 },
-            })
+            }
         end,
     })
 end)

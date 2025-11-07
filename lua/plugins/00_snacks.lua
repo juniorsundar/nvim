@@ -1,5 +1,5 @@
 MiniDeps.now(function()
-    MiniDeps.add({ source = "folke/snacks.nvim" })
+    MiniDeps.add { source = "folke/snacks.nvim" }
     vim.api.nvim_create_autocmd("VimEnter", {
         callback = function()
             ---@diagnostic disable-next-line: duplicate-set-field
@@ -11,21 +11,21 @@ MiniDeps.now(function()
                 Snacks.debug.backtrace()
             end
             vim.print = _G.dd -- Override print to use snacks for `:=` command
-            Snacks.toggle.option("spell", { name = "Spelling" }):map("<leader><leader>Ts")
-            Snacks.toggle.option("wrap", { name = "Wrap" }):map("<leader><leader>Tw")
-            Snacks.toggle.option("relativenumber", { name = "Relative Number" }):map("<leader><leader>TL")
-            Snacks.toggle.diagnostics():map("<leader><leader>Td")
-            Snacks.toggle.line_number():map("<leader><leader>Tl")
+            Snacks.toggle.option("spell", { name = "Spelling" }):map "<leader><leader>Ts"
+            Snacks.toggle.option("wrap", { name = "Wrap" }):map "<leader><leader>Tw"
+            Snacks.toggle.option("relativenumber", { name = "Relative Number" }):map "<leader><leader>TL"
+            Snacks.toggle.diagnostics():map "<leader><leader>Td"
+            Snacks.toggle.line_number():map "<leader><leader>Tl"
             Snacks.toggle
                 .option("conceallevel", { off = 0, on = vim.o.conceallevel > 0 and vim.o.conceallevel or 2 })
-                :map("<leader><leader>Tc")
-            Snacks.toggle.treesitter():map("<leader><leader>TT")
+                :map "<leader><leader>Tc"
+            Snacks.toggle.treesitter():map "<leader><leader>TT"
             Snacks.toggle
                 .option("background", { off = "light", on = "dark", name = "Dark Background" })
-                :map("<leader><leader>Tb")
-            Snacks.toggle.inlay_hints():map("<leader><leader>Ti")
-            Snacks.toggle.indent():map("<leader><leader>Tg")
-            Snacks.toggle.dim():map("<leader><leader>TD")
+                :map "<leader><leader>Tb"
+            Snacks.toggle.inlay_hints():map "<leader><leader>Ti"
+            Snacks.toggle.indent():map "<leader><leader>Tg"
+            Snacks.toggle.dim():map "<leader><leader>TD"
         end,
     })
     vim.api.nvim_create_autocmd("LspProgress", {
@@ -53,12 +53,12 @@ MiniDeps.now(function()
                 height = 1.0,
                 border = "top",
             },
-            { win = "list",    height = 0.25,       border = "top" },
+            { win = "list", height = 0.25, border = "top" },
         },
     }
     require("snacks.picker.config.layouts").sidebar.layout.position = "right"
 
-    require("snacks").setup({
+    require("snacks").setup {
         bigfile = { enabled = true },
         dashboard = {
             enabled = true,
@@ -69,7 +69,7 @@ MiniDeps.now(function()
                         key = "f",
                         desc = "Find File",
                         action = function()
-                            Snacks.picker.files({ hidden = true })
+                            Snacks.picker.files { hidden = true }
                         end,
                     },
                     {
@@ -77,7 +77,7 @@ MiniDeps.now(function()
                         key = "n",
                         desc = "New File",
                         action = function()
-                            vim.cmd(":ene | startinsert")
+                            vim.cmd ":ene | startinsert"
                         end,
                     },
                     {
@@ -85,7 +85,7 @@ MiniDeps.now(function()
                         key = "t",
                         desc = "Find Text",
                         action = function()
-                            Snacks.dashboard.pick("live_grep")
+                            Snacks.dashboard.pick "live_grep"
                         end,
                     },
                     {
@@ -93,7 +93,7 @@ MiniDeps.now(function()
                         key = "r",
                         desc = "Recent Files",
                         action = function()
-                            Snacks.dashboard.pick("oldfiles")
+                            Snacks.dashboard.pick "oldfiles"
                         end,
                     },
                     {
@@ -101,7 +101,7 @@ MiniDeps.now(function()
                         key = "c",
                         desc = "Config",
                         action = function()
-                            Snacks.dashboard.pick("files", { cwd = vim.fn.stdpath("config") })
+                            Snacks.dashboard.pick("files", { cwd = vim.fn.stdpath "config" })
                         end,
                     },
                     -- { icon = " ", key = "s", desc = "Restore Session", section = "session" },
@@ -214,7 +214,7 @@ MiniDeps.now(function()
             },
             actions = {
                 flash = function(picker)
-                    require("flash").jump({
+                    require("flash").jump {
                         pattern = "^",
                         label = { after = { 0, 0 } },
                         search = {
@@ -229,11 +229,11 @@ MiniDeps.now(function()
                             local idx = picker.list:row2idx(match.pos[1])
                             picker.list:_move(idx, true, true)
                         end,
-                    })
+                    }
                 end,
             },
         },
-    })
+    }
     vim.keymap.set("n", "<leader>n", function()
         Snacks.notifier.hide()
     end, { desc = "Dismiss All Notifications", noremap = true, silent = true })
@@ -259,7 +259,7 @@ MiniDeps.now(function()
         Snacks.picker()
     end, { desc = "Pickers", noremap = true, silent = true })
     vim.keymap.set("n", "<leader>Ff", function()
-        Snacks.picker.files({ hidden = true })
+        Snacks.picker.files { hidden = true }
     end, { desc = "Files", noremap = true, silent = true })
     vim.keymap.set("n", "<leader>Ft", function()
         Snacks.picker.grep()
@@ -298,7 +298,7 @@ MiniDeps.now(function()
         Snacks.picker.registers()
     end, { desc = "Registers", noremap = true, silent = true })
     vim.keymap.set("n", "<leader>e", function()
-        Snacks.picker.explorer({ hidden = true })
+        Snacks.picker.explorer { hidden = true }
     end, { desc = "Explorer", noremap = true, silent = true })
     vim.keymap.set("n", "<leader>Fw", function()
         Snacks.picker.grep_word()
@@ -310,7 +310,7 @@ MiniDeps.now(function()
         Snacks.scratch.select()
     end, { desc = "Scratch Select", noremap = true, silent = true })
     vim.keymap.set("n", "<localleader>N", function()
-        Snacks.win({
+        Snacks.win {
             file = vim.api.nvim_get_runtime_file("doc/news.txt", false)[1],
             width = 0.8,
             height = 0.8,
@@ -321,12 +321,18 @@ MiniDeps.now(function()
                 statuscolumn = " ",
                 conceallevel = 3,
             },
-        })
+        }
     end, { desc = "Neovim News", noremap = true, silent = true })
-    vim.keymap.set("n", "<leader>GHi", function() Snacks.picker.gh_issue() end, { desc = "GitHub Issues (open)" })
-    vim.keymap.set("n", "<leader>GI", function() Snacks.picker.gh_issue({ state = "all" }) end,
-        { desc = "GitHub Issues (all)" })
-    vim.keymap.set("n", "<leader>GHp", function() Snacks.picker.gh_pr() end, { desc = "GitHub Pull Requests (open)" })
-    vim.keymap.set("n", "<leader>GHP", function() Snacks.picker.gh_pr({ state = "all" }) end,
-        { desc = "GitHub Pull Requests (all)" })
+    vim.keymap.set("n", "<leader>GHi", function()
+        Snacks.picker.gh_issue()
+    end, { desc = "GitHub Issues (open)" })
+    vim.keymap.set("n", "<leader>GI", function()
+        Snacks.picker.gh_issue { state = "all" }
+    end, { desc = "GitHub Issues (all)" })
+    vim.keymap.set("n", "<leader>GHp", function()
+        Snacks.picker.gh_pr()
+    end, { desc = "GitHub Pull Requests (open)" })
+    vim.keymap.set("n", "<leader>GHP", function()
+        Snacks.picker.gh_pr { state = "all" }
+    end, { desc = "GitHub Pull Requests (all)" })
 end)
