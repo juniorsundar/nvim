@@ -14,6 +14,8 @@ M.last_env = nil
 --- @type integer|nil
 --- Handle to the current compile output window, if open.
 M.compile_window = nil
+--- @type integer|nil
+--- Handle to the current compile output buffer, if open.
 M.compile_buffer = nil
 
 --- Closes the active compile output window and resets its handle.
@@ -205,24 +207,50 @@ end
 
 vim.api.nvim_create_user_command("Compile", function(args)
     local fargs = args.fargs
+
     if #fargs == 0 then
         M.command()
-    elseif #fargs == 1 then
-        if fargs[1] == "with-env" then
-            M.with_env()
-        elseif fargs[1] == "last" then
-            M.run_last()
-        else
-            vim.notify("Error: Unknown argument '" .. fargs[1] .. "'", vim.log.levels.ERROR)
+        return
+    end
+
+    if fargs[1] == "--" then
+        local cmd_parts = {}
+        for i = 2, #fargs do
+            table.insert(cmd_parts, fargs[i])
         end
+        local cmd = table.concat(cmd_parts, " ")
+
+        local cwd_to_use = M.last_cwd or vim.fn.getcwd()
+
+        M.executor(cmd, cwd_to_use)
+        return
+    end
+
+    if #fargs == 1 and fargs[1] == "with-env" then
+        M.with_env()
+        return
+    end
+
+    if #fargs == 1 and fargs[1] == "last" then
+        M.run_last()
+        return
+    end
+
+    if #fargs == 1 then
+        vim.notify("Error: Unknown argument '" .. fargs[1] .. "'. Did you mean --, with-env, or last?",
+            vim.log.levels.ERROR)
     else
-        vim.notify("Error: Too many arguments for Compile", vim.log.levels.ERROR)
+        vim.notify("Error: Invalid arguments. To pass a command, use :Compile -- <cmd>", vim.log.levels.ERROR)
     end
 end, {
     nargs = "*",
-    desc = "Compiles the project (supports with-env, last)",
-    complete = function(arglead, _, _)
-        local completions = { "with-env", "last" }
+    desc = "Compiles the project (supports -- <cmd>, with-env, last)",
+    complete = function(arglead, cmdline, _)
+        local completions = { "with-env", "last", "--" }
+
+        if cmdline:find("%-%-") then
+            return {}
+        end
 
         local filtered = {}
         for _, item in ipairs(completions) do
