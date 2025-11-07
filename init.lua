@@ -123,3 +123,6 @@ require "plugins"
 
 -- LSP ======================================================
 require "config.lsp"
+
+-- MISC UTILS ===============================================
+require "config.utils"
