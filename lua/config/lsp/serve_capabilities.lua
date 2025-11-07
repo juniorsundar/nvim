@@ -6,6 +6,9 @@ M.capabilities.workspace = {
     didChangeWatchedFiles = {
         dynamicRegistration = true,
     },
+    refresh = {
+        enabled = true,
+    },
 }
 
 M.capabilities.textDocument.foldingRange = {
