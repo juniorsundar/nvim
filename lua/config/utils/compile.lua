@@ -46,7 +46,7 @@ M.command = function()
     end
 
     local default_cwd = M.last_cwd or vim.fn.getcwd()
-    local cwd = vim.fn.input("CWD: ", default_cwd)
+    local cwd = vim.fn.input("CWD: ", default_cwd, "dir")
 
     if cwd == nil or cwd == "" then
         vim.notify("Compilation cancelled", vim.log.levels.WARN)
