@@ -1,4 +1,3 @@
-
 vim.lsp.enable {
     "dockerfile",
 }
