@@ -71,7 +71,7 @@ MiniDeps.now(function()
                     NormalFloat = { fg = colors.text, bg = colors.base },
                     LineNr = { fg = colors.overlay1 },
                     CursorLineNr = { fg = colors.text },
-                    Comment = { fg = colors.overlay1 },
+                    Comment = { fg = colors.surface2 },
                     WhichKey = { fg = colors.blue, bg = nil },
                     WhichKeyNormal = { fg = colors.text, bg = nil },
                     WhichKeyDesc = { fg = colors.maroon },
