@@ -7,7 +7,7 @@ vim.lsp.autohover = {
         border = "rounded",
         relative = "editor",
         offset_x = vim.o.columns,
-        ratio = 0.1,
+        ratio = 0.2,
     },
 }
 vim.o.updatetime = vim.lsp.autohover.delay
@@ -23,6 +23,73 @@ local function close_eldoc_window()
     pcall(vim.api.nvim_buf_delete, eldoc_buf_id, { force = true }, true)
     eldoc_buf_id = nil
     eldoc_win_id = nil
+end
+
+local function show_documentation()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local clients = vim.lsp.get_clients { bufnr = bufnr }
+
+    ---@type boolean
+    local has_hover_provider = false
+    for _, client in ipairs(clients) do
+        if client and client.server_capabilities and client.server_capabilities.hoverProvider then
+            has_hover_provider = true
+            break
+        end
+    end
+
+    if not has_hover_provider then
+        return
+    end
+
+    local handler = function(err, result, _, _)
+        if err or not result or not result.contents then
+            return
+        end
+
+        ---@type string[]
+        local lines = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
+        table.insert(lines, 1, "")
+
+        if vim.tbl_isempty(lines) then
+            return
+        end
+
+        if vim.lsp.autohover.layout == "eldoc" then
+            if eldoc_win_id ~= nil or eldoc_buf_id ~= nil then
+                return
+            end
+            eldoc_buf_id = vim.api.nvim_create_buf(false, true)
+            vim.api.nvim_buf_set_lines(eldoc_buf_id, 0, 0, false, lines)
+            eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
+                split = "below",
+                win = -1,
+                height = math.floor(vim.o.lines * vim.lsp.autohover.opts.ratio),
+                style = "minimal",
+            })
+            vim.api.nvim_buf_set_name(eldoc_buf_id, "[LSP Eldoc]")
+            vim.api.nvim_set_option_value("filetype", "markdown", { buf = eldoc_buf_id })
+            vim.api.nvim_set_option_value("buftype", "nofile", { buf = eldoc_buf_id })
+            vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = eldoc_buf_id })
+            vim.api.nvim_set_option_value("modifiable", false, { buf = eldoc_buf_id })
+            vim.api.nvim_set_option_value("swapfile", false, { buf = eldoc_buf_id })
+            vim.keymap.set("n", "q", close_eldoc_window, {
+                buffer = eldoc_buf_id,
+                silent = true,
+                noremap = true,
+                desc = "Close LSP eldoc window",
+            })
+            return
+        elseif vim.lsp.autohover.layout == "float" then
+            vim.lsp.util.open_floating_preview(lines, "markdown", vim.lsp.autohover.opts)
+            return
+        else
+            return
+        end
+    end
+
+    local params = vim.lsp.util.make_position_params(0, "utf-32")
+    vim.lsp.buf_request(bufnr, "textDocument/hover", params, handler)
 end
 
 vim.api.nvim_create_autocmd({ "CursorMoved" }, {
@@ -49,63 +116,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
         if not vim.lsp.autohover.enabled then
             return
         end
-
-        local bufnr = vim.api.nvim_get_current_buf()
-        local clients = vim.lsp.get_clients { bufnr = bufnr }
-
-        ---@type boolean
-        local has_hover_provider = false
-        for _, client in ipairs(clients) do
-            if client and client.server_capabilities and client.server_capabilities.hoverProvider then
-                has_hover_provider = true
-                break
-            end
-        end
-
-        if not has_hover_provider then
-            return
-        end
-
-        local handler = function(err, result, _, _)
-            if err or not result or not result.contents then
-                return
-            end
-
-            local lines = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
-
-            if vim.tbl_isempty(lines) then
-                return
-            end
-
-            if vim.lsp.autohover.layout == "eldoc" then
-                if eldoc_win_id ~= nil or eldoc_buf_id ~= nil then
-                    return
-                end
-                eldoc_buf_id = vim.api.nvim_create_buf(false, true)
-                vim.api.nvim_buf_set_lines(eldoc_buf_id, 0, 0, false, lines)
-                eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
-                    split = "below",
-                    win = -1,
-                    height = math.floor(vim.o.lines * vim.lsp.autohover.opts.ratio),
-                    style = "minimal",
-                })
-                vim.api.nvim_buf_set_name(eldoc_buf_id, "[LSP Eldoc]")
-                vim.api.nvim_set_option_value("filetype", "markdown", { buf = eldoc_buf_id })
-                vim.api.nvim_set_option_value("buftype", "nofile", { buf = eldoc_buf_id })
-                vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = eldoc_buf_id })
-                vim.api.nvim_set_option_value("modifiable", false, { buf = eldoc_buf_id })
-                vim.api.nvim_set_option_value("swapfile", false, { buf = eldoc_buf_id })
-                return
-            elseif vim.lsp.autohover.layout == "float" then
-                vim.lsp.util.open_floating_preview(lines, "markdown", vim.lsp.autohover.opts)
-                return
-            else
-                return
-            end
-        end
-
-        local params = vim.lsp.util.make_position_params(0, "utf-32")
-        vim.lsp.buf_request(bufnr, "textDocument/hover", params, handler)
+        show_documentation()
     end,
     desc = "Show LSP hover documentation on CursorHold (silently ignores empty responses)",
 })
@@ -132,4 +143,16 @@ vim.keymap.set(
     "<leader><leader>Th",
     toggle_auto_hover,
     { desc = "Toggle LSP auto hover", noremap = false, silent = true }
+)
+vim.keymap.set(
+    "n",
+    "<leader>Lk",
+    function()
+        if eldoc_buf_id ~= nil and eldoc_win_id ~= nil then
+            vim.api.nvim_set_current_win(eldoc_win_id)
+        else
+            show_documentation()
+        end
+    end,
+    { desc = "Hover", noremap = false, silent = true }
 )
