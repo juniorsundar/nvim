@@ -56,6 +56,7 @@ local function show_documentation()
         end
 
         if vim.lsp.autohover.layout == "eldoc" then
+            table.remove(lines, 1)
             if eldoc_win_id ~= nil or eldoc_buf_id ~= nil then
                 return
             end
@@ -64,7 +65,7 @@ local function show_documentation()
             eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
                 split = "below",
                 win = -1,
-                height = math.floor(vim.o.lines * vim.lsp.autohover.opts.ratio),
+                height = math.min(math.floor(vim.o.lines * vim.lsp.autohover.opts.ratio), #lines),
                 style = "minimal",
             })
             vim.api.nvim_buf_set_name(eldoc_buf_id, "[LSP Eldoc]")
