@@ -93,6 +93,10 @@ vim.keymap.set("v", ">", ">gv", opts)
 -- Terminal mode --
 vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 
+-- COLORSCHEME ======================================================
+
+require("theme").set_colorscheme()
+
 -- PLUGINS ==========================================================
 local path_package = vim.fn.stdpath "data" .. "/site/"
 local mini_path = path_package .. "pack/deps/start/mini.deps"
