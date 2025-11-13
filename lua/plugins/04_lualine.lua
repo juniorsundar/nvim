@@ -2,18 +2,19 @@ MiniDeps.now(function()
     MiniDeps.add { source = "nvim-lualine/lualine.nvim", depends = { "catppuccin/nvim" } }
     local lualine = require "lualine"
 
-    local palette = require("catppuccin.palettes").get_palette "macchiato"
+    -- local palette = require("catppuccin.palettes").get_palette "macchiato"
+    local palette = require("theme.colors").dark
     local colors = {
-        bg = palette.base,
-        fg = palette.text,
+        bg = palette.bg_alt,
+        fg = palette.fg,
         yellow = palette.yellow,
-        cyan = palette.sapphire,
-        darkblue = palette.blue,
+        cyan = palette.cyan,
+        darkblue = palette.dark_blue,
         green = palette.green,
-        orange = palette.pink,
-        violet = palette.mauve,
-        magenta = palette.maroon,
-        blue = palette.sky,
+        orange = palette.orange,
+        violet = palette.violet,
+        magenta = palette.magenta,
+        blue = palette.blue,
         red = palette.red,
     }
 
@@ -89,11 +90,11 @@ MiniDeps.now(function()
     end
 
     local mode_color = {
-        n = colors.red,
+        n = colors.blue,
         i = colors.green,
-        v = colors.blue,
-        [""] = colors.blue,
-        V = colors.blue,
+        v = colors.red,
+        [""] = colors.red,
+        V = colors.red,
         c = colors.magenta,
         no = colors.red,
         s = colors.orange,
