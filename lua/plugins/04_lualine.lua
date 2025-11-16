@@ -45,11 +45,11 @@ MiniDeps.now(function()
             },
             component_separators = "",
             section_separators = "",
-            theme = "catppuccin",
-            -- {
-            --     normal = { c = { fg = colors.fg, bg = colors.bg } },
-            --     inactive = { c = { fg = colors.fg, bg = colors.bg } },
-            -- },
+            -- theme = "catppuccin",
+            theme = {
+                normal = { c = { fg = colors.fg, bg = colors.bg } },
+                inactive = { c = { fg = colors.fg, bg = colors.bg } },
+            },
         },
         sections = {
             -- these are to remove the defaults
