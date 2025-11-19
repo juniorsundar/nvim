@@ -213,6 +213,4 @@ MiniDeps.now(function()
         end,
         padding = { left = 1 },
     }
-
-    lualine.setup(config)
 end)

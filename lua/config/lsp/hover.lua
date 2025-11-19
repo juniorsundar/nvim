@@ -7,7 +7,7 @@ vim.lsp.autohover = {
         border = "rounded",
         relative = "editor",
         offset_x = vim.o.columns,
-        ratio = 0.2,
+        ratio = 0.3,
     },
 }
 vim.o.updatetime = vim.lsp.autohover.delay
@@ -56,11 +56,13 @@ local function show_documentation()
         end
 
         if vim.lsp.autohover.layout == "eldoc" then
-            table.remove(lines, 1)
+            -- table.remove(lines, 1)
             if eldoc_win_id ~= nil or eldoc_buf_id ~= nil then
                 return
             end
             eldoc_buf_id = vim.api.nvim_create_buf(false, true)
+            vim.b[eldoc_buf_id].statusline_ignore = true
+
             vim.api.nvim_buf_set_lines(eldoc_buf_id, 0, 0, false, lines)
             eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
                 split = "below",
@@ -74,6 +76,7 @@ local function show_documentation()
             vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = eldoc_buf_id })
             vim.api.nvim_set_option_value("modifiable", false, { buf = eldoc_buf_id })
             vim.api.nvim_set_option_value("swapfile", false, { buf = eldoc_buf_id })
+            vim.api.nvim_win_set_var(eldoc_win_id, "statusline_ignore", true)
             vim.keymap.set("n", "q", close_eldoc_window, {
                 buffer = eldoc_buf_id,
                 silent = true,
@@ -145,15 +148,15 @@ vim.keymap.set(
     toggle_auto_hover,
     { desc = "Toggle LSP auto hover", noremap = false, silent = true }
 )
-vim.keymap.set(
-    "n",
-    "<leader>Lk",
-    function()
-        if eldoc_buf_id ~= nil and eldoc_win_id ~= nil then
-            vim.api.nvim_set_current_win(eldoc_win_id)
-        else
-            show_documentation()
-        end
-    end,
-    { desc = "Hover", noremap = false, silent = true }
-)
+-- vim.keymap.set(
+--     "n",
+--     "<leader>Lk",
+--     function()
+--         if eldoc_buf_id ~= nil and eldoc_win_id ~= nil then
+--             vim.api.nvim_set_current_win(eldoc_win_id)
+--         else
+--             show_documentation()
+--         end
+--     end,
+--     { desc = "Hover", noremap = false, silent = true }
+-- )
