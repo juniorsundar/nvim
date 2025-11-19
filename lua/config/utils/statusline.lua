@@ -161,6 +161,9 @@ local function update_split_status()
                     local content = left_text .. string.rep(" ", available_space) .. right_text
 
                     local height = vim.api.nvim_win_get_height(win_id)
+                    if not is_active then
+                        height = height - 1
+                    end
                     local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf_id), ":t")
 
                     if name == "" then name = "[No Name]" end
