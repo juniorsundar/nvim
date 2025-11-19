@@ -49,9 +49,9 @@ end, { desc = "CodeLens Action", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>Ln", function()
     vim.lsp.buf.rename()
 end, { desc = "Rename", noremap = false, silent = true })
--- vim.keymap.set("n", "<leader>Lk", function()
---     vim.lsp.buf.hover { border = "rounded" }
--- end, { desc = "Hover", noremap = false, silent = true })
+vim.keymap.set("n", "<leader>Lk", function()
+    vim.lsp.buf.hover { border = "rounded" }
+end, { desc = "Hover", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>LWa", function()
     vim.lsp.buf.add_workspace_folder()
 end, { desc = "Add Workspace Folder", noremap = false, silent = true })
