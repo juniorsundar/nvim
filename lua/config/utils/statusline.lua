@@ -1,256 +1,316 @@
 vim.opt.statusline = " "
-vim.api.nvim_set_hl(0, "StatusLine", { bg = "None", fg = "None" })
-vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "None", fg = "None" })
+vim.opt.scrolloff = 1
+local ns_id = vim.api.nvim_create_namespace("StatusLineNS")
 
-local IGNORED_NAMES = {
-    ["[LSP Eldoc]"] = true,
-    ["NvimTree_1"] = true,
-    ["No Name"] = true,
+local StatusLine = {}
+
+StatusLine.config = {
+    ignored = {
+        names = { ["[LSP Eldoc]"] = true, ["NvimTree_1"] = true, ["No Name"] = true },
+        buftypes = { ["nofile"] = true, ["nowrite"] = true, ["prompt"] = true, ["popup"] = true, ["terminal"] = true },
+        filetypes = { ["fugitive"] = true, ["oil"] = true, ["snacks_dashboard"] = true },
+    },
+    colors = (function()
+        local p = require("theme.colors").dark
+        return {
+            bg = p.bg_alt,
+            fg = p.fg,
+            yellow = p.yellow,
+            cyan = p.cyan,
+            darkblue = p.dark_blue,
+            green = p.green,
+            orange = p.orange,
+            violet = p.violet,
+            magenta = p.magenta,
+            blue = p.blue,
+            red = p.red,
+        }
+    end)(),
+    diff = {
+        symbols = { added = " ", modified = "󰝤 ", removed = " " },
+    },
+    lsp_errors = {
+        symbols = { info = " ", warn = " ", error = " " },
+    }
 }
 
-local IGNORED_BUFTYPES = {
-    ["nofile"] = true,
-    ["nowrite"] = true,
-    ["prompt"] = true,
-    ["popup"] = true,
-    ["terminal"] = true,
+StatusLine.state = {
+    wins = {},
 }
 
-local IGNORED_FILETYPES = {
-    ["fugitive"] = true,
-    ["oil"] = true,
-}
+function StatusLine.setup_highlights()
+    vim.api.nvim_set_hl(0, "StatusLine", { bg = "None", fg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "None", fg = "None" })
 
--- Helper function to check if a buffer should be ignored
-local function is_ignored(buf_id, win_id)
+    vim.api.nvim_set_hl(0, "StatusLineFilename", { fg = StatusLine.config.colors.fg, bg = "None", bold = true })
+
+    vim.api.nvim_set_hl(0, "StatusLineGitBranch", { fg = StatusLine.config.colors.violet, bg = "None", bold = true })
+
+    vim.api.nvim_set_hl(0, "StatusLineDiffAdd", { fg = StatusLine.config.colors.green, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiffChange", { fg = StatusLine.config.colors.orange, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiffDelete", { fg = StatusLine.config.colors.red, bg = "None" })
+
+    vim.api.nvim_set_hl(0, "StatusLineDiagError", { fg = StatusLine.config.colors.red, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiagWarn", { fg = StatusLine.config.colors.yellow, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiagInfo", { fg = StatusLine.config.colors.cyan, bg = "None" })
+end
+
+function StatusLine.is_ignored(buf_id)
     local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf_id), ":t")
     local buftype = vim.bo[buf_id].buftype
     local filetype = vim.bo[buf_id].filetype
 
-    if IGNORED_NAMES[name] then return true end
-    if IGNORED_BUFTYPES[buftype] then return true end
-    if IGNORED_FILETYPES[filetype] then return true end
+    if StatusLine.config.ignored.names[name] then return true end
+    if StatusLine.config.ignored.buftypes[buftype] then return true end
+    if StatusLine.config.ignored.filetypes[filetype] then return true end
     return false
 end
 
-local window_status_map = {}
-local palette = require("theme.colors").dark
-local colors = {
-    bg = palette.bg_alt,
-    fg = palette.fg,
-    yellow = palette.yellow,
-    cyan = palette.cyan,
-    darkblue = palette.dark_blue,
-    green = palette.green,
-    orange = palette.orange,
-    violet = palette.violet,
-    magenta = palette.magenta,
-    blue = palette.blue,
-    red = palette.red,
-}
-
-local mode_colors = {
-    n = colors.blue,
-    i = colors.green,
-    v = colors.red,
-    [""] = colors.red,
-    V = colors.red,
-    c = colors.magenta,
-    no = colors.red,
-    s = colors.orange,
-    S = colors.orange,
-    [''] = colors.orange,
-    ic = colors.yellow,
-    R = colors.violet,
-    Rv = colors.violet,
-    cv = colors.red,
-    ce = colors.red,
-    r = colors.cyan,
-    rm = colors.cyan,
-    ["r?"] = colors.cyan,
-    ["!"] = colors.red,
-    t = colors.red,
-}
-local function get_mode_color()
-    return mode_colors[vim.fn.mode()] or colors.blue
+function StatusLine.get_mode_color()
+    local m = vim.fn.mode()
+    local c = StatusLine.config.colors
+    local map = {
+        n = c.blue,
+        i = c.green,
+        v = c.red,
+        ["\22"] = c.red,
+        V = c.red,
+        c = c.magenta,
+        no = c.red,
+        s = c.orange,
+        S = c.orange,
+        ["\19"] = c.orange,
+        ic = c.yellow,
+        R = c.violet,
+        Rv = c.violet,
+        cv = c.red,
+        ce = c.red,
+        r = c.cyan,
+        rm = c.cyan,
+        ["r?"] = c.cyan,
+        ["!"] = c.red,
+        t = c.red
+    }
+    return map[m] or c.blue
 end
 
-local function get_git_branch(buf_id)
-    local icon = " "
+function StatusLine.get_git_branch(buf_id)
     local signs = vim.b[buf_id].gitsigns_status_dict
-    if signs then
-        return icon .. (signs.head or "")
-    end
-    return ""
+    local text = signs and ("  " .. (signs.head or "") .. " ") or ""
+    return { { text = text, group = "StatusLineGitBranch" } } -- Use Comment color for branch
 end
 
-local function get_diagnostics(buf_id)
+function StatusLine.get_git_diff(buf_id)
+    local signs = vim.b[buf_id].gitsigns_status_dict
+    if not signs then return {} end
+
+    local config = StatusLine.config.diff
+    local parts = { { text = " ", group = "None" } }
+
+    if (signs.added or 0) > 0 then
+        table.insert(parts, { text = config.symbols.added .. signs.added .. " ", group = "StatusLineDiffAdd" })
+    end
+    if (signs.changed or 0) > 0 then
+        table.insert(parts, { text = config.symbols.modified .. signs.changed .. " ", group = "StatusLineDiffChange" })
+    end
+    if (signs.removed or 0) > 0 then
+        table.insert(parts, { text = config.symbols.removed .. signs.removed .. " ", group = "StatusLineDiffDelete" })
+    end
+
+    return parts
+end
+
+function StatusLine.get_diagnostics(buf_id)
     local count = vim.diagnostic.count(buf_id)
-    local errors = count[vim.diagnostic.severity.ERROR] or 0
-    local warnings = count[vim.diagnostic.severity.WARN] or 0
-    local hints = count[vim.diagnostic.severity.HINT] or 0
+    local parts = { { text = " ", group = "None" } }
+    local sym = StatusLine.config.lsp_errors.symbols
 
-    local parts = {}
-    if hints > 0 then table.insert(parts, " " .. hints) end
-    if errors > 0 then table.insert(parts, " " .. errors) end
-    if warnings > 0 then table.insert(parts, " " .. warnings) end
-
-    if #parts > 0 then
-        return table.concat(parts, " ")
+    if (count[vim.diagnostic.severity.HINT] or 0) > 0 then
+        table.insert(parts, { text = sym.info .. count[4] .. " ", group = "StatusLineDiagInfo" })
     end
-    return ""
+    if (count[vim.diagnostic.severity.WARN] or 0) > 0 then
+        table.insert(parts, { text = sym.warn .. count[2] .. " ", group = "StatusLineDiagWarn" })
+    end
+    if (count[vim.diagnostic.severity.ERROR] or 0) > 0 then
+        table.insert(parts, { text = sym.error .. count[1] .. " ", group = "StatusLineDiagError" })
+    end
+
+    return parts
 end
 
-local function get_file_info(buf_id)
+function StatusLine.get_file_info(buf_id)
     local full_path = vim.api.nvim_buf_get_name(buf_id)
-
     local filename = vim.fn.fnamemodify(full_path, ":.")
-    if filename == "" then filename = "[No Name]" end
-
     local extension = vim.fn.fnamemodify(full_path, ":e")
-    local filename_tail = vim.fn.fnamemodify(full_path, ":t")
+    local tail = vim.fn.fnamemodify(full_path, ":t")
 
-    local icon, icon_color = require("nvim-web-devicons").get_icon(filename_tail, extension, { default = true })
+    if filename == "" then filename = "[No Name]" end
+    local icon, icon_hl_group = require("nvim-web-devicons").get_icon(tail, extension, { default = true })
 
-    return icon, filename, icon_color
+    return {
+        icon = { text = " " .. icon .. " ", group = icon_hl_group },
+        name = { text = " " .. filename .. " ", group = "StatusLineFilename" }
+    }
 end
 
-local function update_split_status()
-    -- Cleanup closed windows
-    for parent_win_id, status_win_id in pairs(window_status_map) do
-        if not vim.api.nvim_win_is_valid(parent_win_id) then
-            if vim.api.nvim_win_is_valid(status_win_id) then
-                vim.api.nvim_win_close(status_win_id, true)
-            end
-            window_status_map[parent_win_id] = nil
-        end
-    end
+function StatusLine.generate_content(win_id, buf_id, width)
+    local left_components = {}
+    local right_components = {}
 
-    local visible_wins = vim.api.nvim_tabpage_list_wins(0)
+    -- A. Build Left Side
+    local file = StatusLine.get_file_info(buf_id)
+    table.insert(left_components, file.icon)
+    table.insert(left_components, file.name)
 
-    for _, win_id in ipairs(visible_wins) do
-        if vim.api.nvim_win_is_valid(win_id) then
-            local config_custom = vim.api.nvim_win_get_config(win_id)
+    local diffs = StatusLine.get_git_diff(buf_id)
+    for _, d in ipairs(diffs) do table.insert(left_components, d) end
 
-            if config_custom.relative == "" then
-                local buf_id = vim.api.nvim_win_get_buf(win_id)
+    -- B. Build Right Side
+    local diags = StatusLine.get_diagnostics(buf_id)
+    for _, d in ipairs(diags) do table.insert(right_components, d) end
 
-                if is_ignored(buf_id, win_id) then
-                    local existing_status = window_status_map[win_id]
-                    if existing_status and vim.api.nvim_win_is_valid(existing_status) then
-                        vim.api.nvim_win_close(existing_status, true)
-                        window_status_map[win_id] = nil
-                    end
-                else
-                    local is_active = (vim.api.nvim_get_current_win() == win_id)
-                    local width = vim.api.nvim_win_get_width(win_id)
+    local branch = StatusLine.get_git_branch(buf_id)
+    for _, b in ipairs(branch) do table.insert(right_components, b) end
 
-                    -- Data Gathering
-                    local icon, filename, _ = get_file_info(buf_id)
-                    local branch = get_git_branch(buf_id)
-                    local diagnostics = get_diagnostics(buf_id)
-                    local mode_hl_color = get_mode_color()
+    -- C. Calculate Spacer
+    local left_len = 0
+    for _, c in ipairs(left_components) do left_len = left_len + vim.fn.strdisplaywidth(c.text) end
 
-                    local left_text = string.format(" %s  %s", icon, filename)
-                    local right_text = string.format("%s  %s ", diagnostics, branch)
+    local right_len = 0
+    for _, c in ipairs(right_components) do right_len = right_len + vim.fn.strdisplaywidth(c.text) end
 
-                    local available_space = width - vim.fn.strdisplaywidth(left_text) -
-                        vim.fn.strdisplaywidth(right_text)
-                    if available_space < 0 then available_space = 1 end
+    local space_len = width - left_len - right_len
+    local spacer_text = string.rep(" ", math.max(space_len, 1))
 
-                    local content = left_text .. string.rep(" ", available_space) .. right_text
+    -- D. Assemble and Track Highlights
+    local full_text = ""
+    local highlights = {}
 
-                    local height = vim.api.nvim_win_get_height(win_id)
-                    if not is_active then
-                        height = height - 1
-                    end
-                    local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf_id), ":t")
-
-                    if name == "" then name = "[No Name]" end
-
-                    local status_win = window_status_map[win_id]
-                    local status_buf = nil
-                    local top_border = { " ", "_", "", "", "", "", "", "" }
-
-                    if status_win and vim.api.nvim_win_is_valid(status_win) then
-                        status_buf = vim.api.nvim_win_get_buf(status_win)
-                        vim.api.nvim_win_set_config(status_win, {
-                            relative = "win",
-                            win = win_id,
-                            width = width,
-                            height = 1,
-                            row = height,
-                            col = 0,
-                            border = top_border
-                        })
-                    else
-                        status_buf = vim.api.nvim_create_buf(false, true)
-                        status_win = vim.api.nvim_open_win(status_buf, false, {
-                            relative = "win",
-                            win = win_id,
-                            width = width,
-                            height = 1,
-                            row = height,
-                            col = 0,
-                            style = "minimal",
-                            border = top_border,
-                            focusable = false,
-                            zindex = 10,
-                        })
-                        window_status_map[win_id] = status_win
-                    end
-
-                    vim.api.nvim_buf_set_lines(status_buf, 0, -1, false, { content })
-
-                    local border_color_group = "FloatBorder"
-
-                    if is_active then
-                        local mode = vim.api.nvim_get_mode()["mode"]
-                        if mode == "\22" then mode = "VBlock" end
-                        if mode == "\19" then mode = "SBlock" end
-                        local hl_name = "StatusBorderActive" .. mode
-                        vim.api.nvim_set_hl(0, hl_name, { fg = mode_hl_color })
-                        border_color_group = hl_name
-                    else
-                        border_color_group = "Comment"
-                    end
-
-                    vim.api.nvim_set_option_value("winhighlight", "Normal:Normal,FloatBorder:" .. border_color_group,
-                        { win = status_win })
-                end
+    local function add_components(list)
+        for _, comp in ipairs(list) do
+            local start_pos = #full_text
+            full_text = full_text .. comp.text
+            local end_pos = #full_text
+            if comp.group then
+                table.insert(highlights, { group = comp.group, start = start_pos, finish = end_pos })
             end
         end
     end
+
+    add_components(left_components)
+    full_text = full_text .. spacer_text -- Add spacer (no highlight)
+    add_components(right_components)
+
+    return full_text, highlights
 end
 
-local gid = vim.api.nvim_create_augroup("SplitStatus", { clear = true })
+function StatusLine.render_window(parent_win, buf_id)
+    if StatusLine.is_ignored(buf_id) or vim.api.nvim_win_get_config(parent_win).relative ~= "" then
+        if StatusLine.state.wins[parent_win] then
+            pcall(vim.api.nvim_win_close, StatusLine.state.wins[parent_win], true)
+            StatusLine.state.wins[parent_win] = nil
+        end
+        return
+    end
+
+    local width = vim.api.nvim_win_get_width(parent_win)
+    local height = vim.api.nvim_win_get_height(parent_win)
+    local is_active = vim.api.nvim_get_current_win() == parent_win
+
+    local row = is_active and height or (height - 1)
+
+    local content, highlights = StatusLine.generate_content(parent_win, buf_id, width)
+
+    local status_win = StatusLine.state.wins[parent_win]
+    local status_buf
+
+    local opts = {
+        relative = "win",
+        win = parent_win,
+        width = width,
+        height = 1,
+        row = row,
+        col = 0,
+        border = { " ", "_", "", "", "", "", "", "" },
+        style = "minimal",
+        focusable = false,
+        zindex = 10,
+    }
+
+    if status_win and vim.api.nvim_win_is_valid(status_win) then
+        status_buf = vim.api.nvim_win_get_buf(status_win)
+        vim.api.nvim_win_set_config(status_win, opts)
+    else
+        status_buf = vim.api.nvim_create_buf(false, true)
+        status_win = vim.api.nvim_open_win(status_buf, false, opts)
+        StatusLine.state.wins[parent_win] = status_win
+    end
+
+    vim.api.nvim_buf_set_lines(status_buf, 0, -1, false, { content })
+
+    vim.api.nvim_buf_clear_namespace(status_buf, ns_id, 0, -1)
+    for _, hl in ipairs(highlights) do
+        vim.api.nvim_buf_add_highlight(status_buf, ns_id, hl.group, 0, hl.start, hl.finish)
+    end
+
+    local border_group = "Comment"
+    if is_active then
+        local mode = vim.api.nvim_get_mode().mode
+        if mode == "\22" then mode = "VBlock" end
+        if mode == "\19" then mode = "SBlock" end
+
+        local hl_name = "StatusBorderActive" .. mode
+        vim.api.nvim_set_hl(0, hl_name, { fg = StatusLine.get_mode_color() })
+        border_group = hl_name
+    end
+
+    vim.api.nvim_set_option_value("winhighlight", "Normal:Normal,FloatBorder:" .. border_group, { win = status_win })
+end
+
+function StatusLine.update()
+    vim.schedule(function()
+        for parent, status in pairs(StatusLine.state.wins) do
+            if not vim.api.nvim_win_is_valid(parent) then
+                if vim.api.nvim_win_is_valid(status) then vim.api.nvim_win_close(status, true) end
+                StatusLine.state.wins[parent] = nil
+            end
+        end
+        for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+            if vim.api.nvim_win_is_valid(win) then
+                StatusLine.render_window(win, vim.api.nvim_win_get_buf(win))
+            end
+        end
+    end)
+end
+
+function StatusLine.autoscroll()
+    local win = vim.api.nvim_get_current_win()
+    if vim.api.nvim_win_get_config(win).relative ~= "" then return end
+
+    local current_line = vim.fn.line('.')
+    local last_line = vim.fn.line('$')
+
+    if current_line == last_line then
+        local win_height = vim.api.nvim_win_get_height(win)
+        local cursor_win_line = vim.fn.winline()
+        if math.abs(cursor_win_line - win_height) <= 1 then
+            vim.cmd("normal! \5") -- \5 is CTRL-E (Scroll window down)
+        end
+    end
+end
+
+StatusLine.setup_highlights()
+
+local grp = vim.api.nvim_create_augroup("CustomStatusLine", { clear = true })
+
 vim.api.nvim_create_autocmd(
     { "WinEnter", "WinClosed", "VimResized", "BufEnter", "CursorHold", "ModeChanged" },
-    {
-        group = gid,
-        callback = update_split_status,
-    })
+    { group = grp, callback = StatusLine.update }
+)
 
-local scroll_gid = vim.api.nvim_create_augroup("AutoScrollBottom", { clear = true })
-vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-    group = scroll_gid,
-    callback = function()
-        local win_id = vim.api.nvim_get_current_win()
-        if vim.api.nvim_win_get_config(win_id).relative ~= "" then return end
+vim.api.nvim_create_autocmd(
+    { "CursorMoved", "CursorMovedI" },
+    { group = grp, callback = StatusLine.autoscroll }
+)
 
-        local current_line = vim.fn.line('.')
-        local last_line = vim.fn.line('$')
-
-
-        if current_line == last_line then
-            local win_height = vim.api.nvim_win_get_height(win_id)
-            local cursor_win_line = vim.fn.winline()
-
-            if math.abs(cursor_win_line - win_height) <= 1 then
-                vim.cmd("normal! \5")
-            end
-        else
-            return
-        end
-    end,
-})
+return StatusLine
