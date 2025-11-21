@@ -46,14 +46,14 @@ MiniDeps.now(function()
             backdrop = false,
             border = "top",
             box = "vertical",
-            { win = "preview", title = "{preview}", height = 0.7 },
+            { win = "preview", title = "{preview}", height = 0.65 },
             {
                 title = " {source} {live}",
                 win = "input",
                 height = 1.0,
                 border = "top",
             },
-            { win = "list", height = 0.25, border = "top" },
+            { win = "list", height = 0.3, border = "top" },
         },
     }
     require("snacks.picker.config.layouts").sidebar.layout.position = "right"
