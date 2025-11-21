@@ -43,6 +43,8 @@ function StatusLine.setup_highlights()
     vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "None", fg = "None" })
 
     vim.api.nvim_set_hl(0, "StatusLineFilename", { fg = StatusLine.config.colors.fg, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineFilenameEdited", { fg = StatusLine.config.colors.yellow, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineFilenameRO", { fg = StatusLine.config.colors.red, bg = "None", bold = true })
 
     vim.api.nvim_set_hl(0, "StatusLineGitBranch", { fg = StatusLine.config.colors.violet, bg = "None", bold = true })
 
@@ -145,11 +147,22 @@ function StatusLine.get_file_info(buf_id)
     local tail = vim.fn.fnamemodify(full_path, ":t")
 
     if filename == "" then filename = "[No Name]" end
-    local icon, icon_hl_group = require("nvim-web-devicons").get_icon(tail, extension, { default = true })
+    local icon_symbol, icon_hl_group = require("nvim-web-devicons").get_icon(tail, extension, { default = true })
+
+    local icon = { text = " " .. icon_symbol .. " ", group = icon_hl_group }
+    local name = { text = " " .. filename .. " ", group = "StatusLineFilename" }
+
+    if vim.bo[buf_id].modified then
+        name.text =  name.text .. "󰏫 "
+        name.group = "StatusLineFilenameEdited"
+    elseif vim.bo[buf_id].readonly then
+        name.text =  name.text .. "󰏮 "
+        name.group = "StatusLineFilenameRO"
+    end
 
     return {
-        icon = { text = " " .. icon .. " ", group = icon_hl_group },
-        name = { text = " " .. filename .. " ", group = "StatusLineFilename" }
+        icon = icon,
+        name = name
     }
 end
 
@@ -231,7 +244,7 @@ function StatusLine.render_window(parent_win, buf_id)
         height = 1,
         row = row,
         col = 0,
-        border = { " ", "_", "", "", "", "", "", "" },
+        border = { " ", "─", "", "", "", "", "", "" },
         style = "minimal",
         focusable = false,
         zindex = 10,
