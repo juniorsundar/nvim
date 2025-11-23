@@ -100,7 +100,7 @@ end
 function StatusLine.get_git_branch(buf_id)
     local signs = vim.b[buf_id].gitsigns_status_dict
     local text = signs and ("  " .. (signs.head or "") .. " ") or ""
-    return { { text = text, group = "StatusLineGitBranch" } } -- Use Comment color for branch
+    return { { text = text, group = "StatusLineGitBranch" } }
 end
 
 function StatusLine.get_git_diff(buf_id)
@@ -154,10 +154,10 @@ function StatusLine.get_file_info(buf_id)
     local name = { text = " " .. filename .. " ", group = "StatusLineFilename" }
 
     if vim.bo[buf_id].modified then
-        name.text =  name.text .. "󰏫 "
+        name.text = name.text .. "󰏫 "
         name.group = "StatusLineFilenameEdited"
     elseif vim.bo[buf_id].readonly then
-        name.text =  name.text .. "󰏮 "
+        name.text = name.text .. "󰏮 "
         name.group = "StatusLineFilenameRO"
     end
 
@@ -264,7 +264,7 @@ function StatusLine.render_window(parent_win, buf_id)
 
     vim.api.nvim_buf_clear_namespace(status_buf, ns_id, 0, -1)
     for _, hl in ipairs(highlights) do
-        vim.api.nvim_buf_add_highlight(status_buf, ns_id, hl.group, 0, hl.start, hl.finish)
+        vim.hl.range(status_buf, ns_id, hl.group, {0, hl.start}, {0, hl.finish})
     end
 
     local border_group = "Comment"
