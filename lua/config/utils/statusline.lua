@@ -1,5 +1,5 @@
 vim.opt.statusline = " "
-vim.opt.scrolloff = 1
+-- vim.opt.scrolloff = 1
 local ns_id = vim.api.nvim_create_namespace("StatusLineNS")
 
 local StatusLine = {}
@@ -31,7 +31,8 @@ StatusLine.config = {
     },
     lsp_errors = {
         symbols = { info = " ", warn = " ", error = " " },
-    }
+    },
+    border_style = { " ", "─", "", "", "", "", "", "" }
 }
 
 StatusLine.state = {
@@ -244,7 +245,7 @@ function StatusLine.render_window(parent_win, buf_id)
         height = 1,
         row = row,
         col = 0,
-        border = { " ", "─", "", "", "", "", "", "" },
+        border = StatusLine.config.border_style,
         style = "minimal",
         focusable = false,
         zindex = 10,
@@ -317,7 +318,7 @@ StatusLine.setup_highlights()
 local grp = vim.api.nvim_create_augroup("CustomStatusLine", { clear = true })
 
 vim.api.nvim_create_autocmd(
-    { "WinEnter", "WinClosed", "VimResized", "BufEnter", "CursorHold", "ModeChanged" },
+    { "WinEnter", "WinClosed", "VimResized", "WinScrolled", "BufEnter", "CursorHold", "ModeChanged" },
     { group = grp, callback = StatusLine.update }
 )
 
