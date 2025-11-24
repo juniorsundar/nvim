@@ -264,7 +264,7 @@ function StatusLine.render_window(parent_win, buf_id)
 
     vim.api.nvim_buf_clear_namespace(status_buf, ns_id, 0, -1)
     for _, hl in ipairs(highlights) do
-        vim.hl.range(status_buf, ns_id, hl.group, {0, hl.start}, {0, hl.finish})
+        vim.hl.range(status_buf, ns_id, hl.group, { 0, hl.start }, { 0, hl.finish })
     end
 
     local border_group = "Comment"
