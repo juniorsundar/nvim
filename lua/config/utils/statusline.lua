@@ -1,5 +1,5 @@
 vim.opt.statusline = " "
--- vim.opt.scrolloff = 1
+vim.opt.scrolloff = 1
 local ns_id = vim.api.nvim_create_namespace("StatusLineNS")
 
 local StatusLine = {}
