@@ -26,6 +26,8 @@ local config = {
         dashboard = if_nil(vim.g.doom_one_plugin_dashboard, true),
         startify = if_nil(vim.g.doom_one_plugin_startify, true),
         whichkey = if_nil(vim.g.doom_one_plugin_whichkey, true),
+        snacks = if_nil(vim.g.doom_one_plugin_snacks, true),
+        blink = if_nil(vim.g.doom_one_plugin_blink, true),
         indent_blankline = if_nil(vim.g.doom_one_plugin_indent_blankline, true),
         vim_illuminate = if_nil(vim.g.doom_one_plugin_vim_illuminate, true),
         lspsaga = if_nil(vim.g.doom_one_plugin_lspsaga, false),
@@ -59,16 +61,12 @@ M.set_colorscheme = function()
 
     --- GENERAL UI
     -----------------
-    set_hl("BlinkCmpMenu", { fg = palette.fg, bg = palette.bg })
-    set_hl("BlinkCmpMenuBorder", { fg = palette.fg, bg = palette.bg })
-    set_hl("BlinkCmpKind", { fg = palette.fg, bg = palette.bg })
     set_hl("WinBar", { fg = palette.fg, bg = palette.bg })
     set_hl("WinBarNC", { fg = palette.fg_alt, bg = palette.bg_alt })
-    set_hl("SnacksPickerCol", { fg = palette.fg })
     set_hl("FlashLabel", { fg = palette.red, bold = true })
 
     set_hl("Normal", { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.fg })
-    set_hl("NormalFloat", { bg = config.ui.transparent_background and "NONE" or palette.bg, fg = palette.fg })
+    set_hl("NormalFloat", { bg = config.ui.transparent_background and "NONE" or palette.bg_alt, fg = palette.fg })
     set_hl("NormalBorder", { bg = palette.bg, fg = palette.fg })
     set_hl("NormalPopup", { bg = palette.bg_alt, fg = utils.lighten(palette.fg, 0.2) })
     set_hl("NormalPopover", { bg = palette.bg_alt, fg = utils.lighten(palette.fg, 0.2) })
@@ -369,6 +367,7 @@ M.set_colorscheme = function()
     --- Tree-Sitter
     ---------------
     if config.ui.enable_treesitter then
+        set_hl("TreesitterContext", { fg = palette.fg, bg = palette.bg })
         set_hl("@annotation", { link = "PreProc" })
         set_hl("@attribute", { link = "Attribute" })
         set_hl("@conditional", { link = "Conditional" })
@@ -466,6 +465,29 @@ M.set_colorscheme = function()
 
     --- Plugins integrations
     ------------------------
+    if config.plugins.blink then
+        set_hl("BlinkCmpMenu", { fg = palette.fg, bg = palette.bg_alt })
+        set_hl("BlinkCmpMenuBorder", { fg = palette.fg, bg = palette.bg_alt })
+        set_hl("BlinkCmpSignatureHelp", { fg = palette.fg, bg = palette.bg_alt })
+        set_hl("BlinkCmpSignatureHelpBorder", { fg = palette.fg, bg = palette.bg_alt })
+        set_hl("BlinkCmpDoc", { fg = palette.fg, bg = palette.bg_alt })
+        set_hl("BlinkCmpDocBorder", { fg = palette.fg, bg = palette.bg_alt })
+        set_hl("BlinkCmpKind", { fg = palette.fg, bg = palette.bg_alt })
+        set_hl("BlinkCmpDocSeparator", { fg = palette.fg, bg = palette.bg_alt })
+    end
+
+    if config.plugins.snacks then
+        set_hl("SnacksPickerListBorder", { fg = palette.fg, bg = palette.bg })
+        set_hl("SnacksPickerPreviewBorder", { fg = palette.fg, bg = palette.bg })
+        set_hl("SnacksPickerInputBorder", { fg = palette.fg, bg = palette.bg })
+        set_hl("SnacksPickerBoxBorder", { fg = palette.fg, bg = palette.bg })
+        set_hl("SnacksPickerList", { fg = palette.fg, bg = palette.bg })
+        set_hl("SnacksPickerPreview", { fg = palette.fg, bg = palette.bg })
+        set_hl("SnacksPickerInput", { fg = palette.fg, bg = palette.bg })
+        set_hl("SnacksPickerBox", { fg = palette.fg, bg = palette.bg })
+        set_hl("SnacksPickerCol", { fg = palette.fg })
+    end
+
     if config.plugins.indent_blankline then
         set_hl("IndentBlanklineChar", { fg = palette.base4, nocombine = true })
         set_hl("IndentBlanklineContextChar", { fg = dark_theme and palette.blue or palette.orange, nocombine = true })

@@ -78,7 +78,7 @@ MiniDeps.now(function()
                 completion = {
                     menu = {
                         -- winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
-                        border = "rounded",
+                        border = "solid",
                         draw = {
                             treesitter = { "lsp", "path", "snippets", "buffer", "lazydev" },
                         },
@@ -86,7 +86,7 @@ MiniDeps.now(function()
                     documentation = {
                         auto_show = true,
                         auto_show_delay_ms = 50,
-                        window = { border = "single" },
+                        window = { border = "solid" },
                     },
                     list = {
                         selection = {
@@ -101,7 +101,7 @@ MiniDeps.now(function()
                 signature = {
                     enabled = true,
                     window = {
-                        border = "single",
+                        border = "solid",
                     },
                 },
             }
