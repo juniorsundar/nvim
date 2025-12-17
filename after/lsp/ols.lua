@@ -6,4 +6,3 @@ return {
     root_markers = { "ols.json", ".git" },
     capabilities = capabilities,
 }
-

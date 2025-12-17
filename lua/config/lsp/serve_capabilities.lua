@@ -21,7 +21,7 @@ M.capabilities.textDocument.foldingRange = {
 local blink_loaded, blink = pcall(require, "blink.cmp")
 -- local cmp_loaded, cmp = pcall(require, "cmp_nvim_lsp")
 if blink_loaded then
--- if cmp_loaded then
+    -- if cmp_loaded then
     M.capabilities = vim.tbl_deep_extend("force", M.capabilities, blink.get_lsp_capabilities(M.capabilities))
     -- M.capabilities = vim.tbl_deep_extend("force", M.capabilities, cmp.default_capabilities())
 end

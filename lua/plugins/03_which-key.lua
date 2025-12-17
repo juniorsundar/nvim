@@ -16,7 +16,7 @@ MiniDeps.now(function()
             title = true,
             title_pos = "center",
             zindex = 1000,
-            border = "solid"
+            border = "solid",
         },
         layout = {
             width = { min = 20 },

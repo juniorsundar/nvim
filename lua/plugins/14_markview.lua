@@ -1,5 +1,5 @@
 MiniDeps.later(function()
-    MiniDeps.add({
+    MiniDeps.add {
         source = "OXY2DEV/markview.nvim",
-    });
+    }
 end)

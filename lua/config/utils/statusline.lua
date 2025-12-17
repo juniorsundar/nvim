@@ -1,6 +1,6 @@
 vim.opt.statusline = " "
 vim.opt.scrolloff = 1
-local ns_id = vim.api.nvim_create_namespace("StatusLineNS")
+local ns_id = vim.api.nvim_create_namespace "StatusLineNS"
 
 local StatusLine = {}
 
@@ -32,7 +32,7 @@ StatusLine.config = {
     lsp_errors = {
         symbols = { info = " ", warn = " ", error = " " },
     },
-    border_style = { " ", "─", "", "", "", "", "", "" }
+    border_style = { " ", "─", "", "", "", "", "", "" },
 }
 
 StatusLine.state = {
@@ -44,7 +44,11 @@ function StatusLine.setup_highlights()
     vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "None", fg = "None" })
 
     vim.api.nvim_set_hl(0, "StatusLineFilename", { fg = StatusLine.config.colors.fg, bg = "None", bold = true })
-    vim.api.nvim_set_hl(0, "StatusLineFilenameEdited", { fg = StatusLine.config.colors.yellow, bg = "None", bold = true })
+    vim.api.nvim_set_hl(
+        0,
+        "StatusLineFilenameEdited",
+        { fg = StatusLine.config.colors.yellow, bg = "None", bold = true }
+    )
     vim.api.nvim_set_hl(0, "StatusLineFilenameRO", { fg = StatusLine.config.colors.red, bg = "None", bold = true })
 
     vim.api.nvim_set_hl(0, "StatusLineGitBranch", { fg = StatusLine.config.colors.violet, bg = "None", bold = true })
@@ -63,9 +67,15 @@ function StatusLine.is_ignored(buf_id)
     local buftype = vim.bo[buf_id].buftype
     local filetype = vim.bo[buf_id].filetype
 
-    if StatusLine.config.ignored.names[name] then return true end
-    if StatusLine.config.ignored.buftypes[buftype] then return true end
-    if StatusLine.config.ignored.filetypes[filetype] then return true end
+    if StatusLine.config.ignored.names[name] then
+        return true
+    end
+    if StatusLine.config.ignored.buftypes[buftype] then
+        return true
+    end
+    if StatusLine.config.ignored.filetypes[filetype] then
+        return true
+    end
     return false
 end
 
@@ -92,7 +102,7 @@ function StatusLine.get_mode_color()
         rm = c.cyan,
         ["r?"] = c.cyan,
         ["!"] = c.red,
-        t = c.red
+        t = c.red,
     }
     return map[m] or c.blue
 end
@@ -105,7 +115,9 @@ end
 
 function StatusLine.get_git_diff(buf_id)
     local signs = vim.b[buf_id].gitsigns_status_dict
-    if not signs then return {} end
+    if not signs then
+        return {}
+    end
 
     local config = StatusLine.config.diff
     local parts = { { text = " ", group = "None" } }
@@ -147,7 +159,9 @@ function StatusLine.get_file_info(buf_id)
     local extension = vim.fn.fnamemodify(full_path, ":e")
     local tail = vim.fn.fnamemodify(full_path, ":t")
 
-    if filename == "" then filename = "[No Name]" end
+    if filename == "" then
+        filename = "[No Name]"
+    end
     local icon_symbol, icon_hl_group = require("nvim-web-devicons").get_icon(tail, extension, { default = true })
 
     local icon = { text = " " .. icon_symbol .. " ", group = icon_hl_group }
@@ -163,7 +177,7 @@ function StatusLine.get_file_info(buf_id)
 
     return {
         icon = icon,
-        name = name
+        name = name,
     }
 end
 
@@ -177,21 +191,31 @@ function StatusLine.generate_content(win_id, buf_id, width)
     table.insert(left_components, file.name)
 
     local diffs = StatusLine.get_git_diff(buf_id)
-    for _, d in ipairs(diffs) do table.insert(left_components, d) end
+    for _, d in ipairs(diffs) do
+        table.insert(left_components, d)
+    end
 
     -- B. Build Right Side
     local diags = StatusLine.get_diagnostics(buf_id)
-    for _, d in ipairs(diags) do table.insert(right_components, d) end
+    for _, d in ipairs(diags) do
+        table.insert(right_components, d)
+    end
 
     local branch = StatusLine.get_git_branch(buf_id)
-    for _, b in ipairs(branch) do table.insert(right_components, b) end
+    for _, b in ipairs(branch) do
+        table.insert(right_components, b)
+    end
 
     -- C. Calculate Spacer
     local left_len = 0
-    for _, c in ipairs(left_components) do left_len = left_len + vim.fn.strdisplaywidth(c.text) end
+    for _, c in ipairs(left_components) do
+        left_len = left_len + vim.fn.strdisplaywidth(c.text)
+    end
 
     local right_len = 0
-    for _, c in ipairs(right_components) do right_len = right_len + vim.fn.strdisplaywidth(c.text) end
+    for _, c in ipairs(right_components) do
+        right_len = right_len + vim.fn.strdisplaywidth(c.text)
+    end
 
     local space_len = width - left_len - right_len
     local spacer_text = string.rep(" ", math.max(space_len, 1))
@@ -270,8 +294,12 @@ function StatusLine.render_window(parent_win, buf_id)
     local border_group = "Comment"
     if is_active then
         local mode = vim.api.nvim_get_mode().mode
-        if mode == "\22" then mode = "VBlock" end
-        if mode == "\19" then mode = "SBlock" end
+        if mode == "\22" then
+            mode = "VBlock"
+        end
+        if mode == "\19" then
+            mode = "SBlock"
+        end
 
         local hl_name = "StatusBorderActive" .. mode
         vim.api.nvim_set_hl(0, hl_name, { fg = StatusLine.get_mode_color() })
@@ -285,7 +313,9 @@ function StatusLine.update()
     vim.schedule(function()
         for parent, status in pairs(StatusLine.state.wins) do
             if not vim.api.nvim_win_is_valid(parent) then
-                if vim.api.nvim_win_is_valid(status) then vim.api.nvim_win_close(status, true) end
+                if vim.api.nvim_win_is_valid(status) then
+                    vim.api.nvim_win_close(status, true)
+                end
                 StatusLine.state.wins[parent] = nil
             end
         end
@@ -299,16 +329,18 @@ end
 
 function StatusLine.autoscroll()
     local win = vim.api.nvim_get_current_win()
-    if vim.api.nvim_win_get_config(win).relative ~= "" then return end
+    if vim.api.nvim_win_get_config(win).relative ~= "" then
+        return
+    end
 
-    local current_line = vim.fn.line('.')
-    local last_line = vim.fn.line('$')
+    local current_line = vim.fn.line "."
+    local last_line = vim.fn.line "$"
 
     if current_line == last_line then
         local win_height = vim.api.nvim_win_get_height(win)
         local cursor_win_line = vim.fn.winline()
         if math.abs(cursor_win_line - win_height) <= 1 then
-            vim.cmd("normal! \5") -- \5 is CTRL-E (Scroll window down)
+            vim.cmd "normal! \5" -- \5 is CTRL-E (Scroll window down)
         end
     end
 end
@@ -322,9 +354,6 @@ vim.api.nvim_create_autocmd(
     { group = grp, callback = StatusLine.update }
 )
 
-vim.api.nvim_create_autocmd(
-    { "CursorMoved", "CursorMovedI" },
-    { group = grp, callback = StatusLine.autoscroll }
-)
+vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, { group = grp, callback = StatusLine.autoscroll })
 
 return StatusLine
