@@ -28,19 +28,19 @@
         ];
 
         shellHook = ''
-          # VENV_DIR=".venv"
-          #
-          # if [ ! -d "$VENV_DIR" ]; then
-          #   echo "Creating Python virtual environment at $VENV_DIR..."
-          #   uv venv $VENV_DIR -p ${pkgs.python3}/bin/python
-          # fi
-          #
-          # source "$VENV_DIR/bin/activate"
-          #
+          VENV_DIR=".venv"
+
+          if [ ! -d "$VENV_DIR" ]; then
+            echo "Creating Python virtual environment at $VENV_DIR..."
+            uv venv $VENV_DIR -p ${pkgs.python3}/bin/python
+          fi
+
+          source "$VENV_DIR/bin/activate"
+
           # uv pip install --quiet -r requirements.txt
-          #
-          # uv pip install pre-commit
-          # pre-commit install
+
+          uv pip install pre-commit
+          pre-commit install
           # zsh
         '';
       };

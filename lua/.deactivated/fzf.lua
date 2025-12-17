@@ -1,7 +1,7 @@
-MiniDeps.add({ source = "ibhagwan/fzf-lua" })
+MiniDeps.add { source = "ibhagwan/fzf-lua" }
 
-local actions = require("fzf-lua.actions")
-require("fzf-lua").setup({
+local actions = require "fzf-lua.actions"
+require("fzf-lua").setup {
     winopts = {
         -- split = "belowright new",
         fullscreen = true,
@@ -11,13 +11,13 @@ require("fzf-lua").setup({
             layout = "vertical",
             border = "noborder",
             title_pos = "center",
-            vertical = "up:60%"
+            vertical = "up:60%",
         },
     },
-})
+}
 
 -- FZF INSTALLATION & UPDATE COMMANDS
-local data_path = vim.fn.stdpath("data")
+local data_path = vim.fn.stdpath "data"
 local fzf_path = data_path .. "/fzf"
 local bin_path = fzf_path .. "/bin"
 vim.env.PATH = bin_path .. ":" .. vim.env.PATH
@@ -38,25 +38,23 @@ local function run_install_script(on_success_msg)
 end
 
 local function fzf_install()
-    if vim.fn.executable("fzf") == 1 then
+    if vim.fn.executable "fzf" == 1 then
         vim.notify("fzf is already installed and in your PATH.", vim.log.levels.INFO)
         return
     end
 
     if vim.fn.isdirectory(fzf_path) == 1 then
         vim.notify("fzf repository found locally. Running installer...", vim.log.levels.INFO)
-        run_install_script("fzf installed successfully. Added to PATH for this session.")
+        run_install_script "fzf installed successfully. Added to PATH for this session."
     else
         vim.notify("Cloning fzf...", vim.log.levels.INFO)
-        local clone_cmd = string.format(
-            "git clone --depth 1 https://github.com/junegunn/fzf.git %s",
-            vim.fn.shellescape(fzf_path)
-        )
+        local clone_cmd =
+            string.format("git clone --depth 1 https://github.com/junegunn/fzf.git %s", vim.fn.shellescape(fzf_path))
         vim.fn.jobstart(clone_cmd, {
             on_exit = function(_, exit_code)
                 if exit_code == 0 then
                     vim.notify("fzf cloned successfully.", vim.log.levels.INFO)
-                    run_install_script("fzf installed successfully. Added to PATH for this session.")
+                    run_install_script "fzf installed successfully. Added to PATH for this session."
                 else
                     vim.notify("Failed to clone fzf repository. Exit code: " .. exit_code, vim.log.levels.ERROR)
                 end
@@ -77,7 +75,7 @@ local function fzf_update()
         on_exit = function(_, exit_code)
             if exit_code == 0 then
                 vim.notify("fzf repository updated successfully.", vim.log.levels.INFO)
-                run_install_script("fzf re-installed successfully.")
+                run_install_script "fzf re-installed successfully."
             else
                 vim.notify(
                     "Failed to update fzf repository with 'git pull'. Exit code: " .. exit_code,
@@ -94,7 +92,7 @@ local function fzf_version()
         vim.notify("Failed to execute fzf", vim.log.levels.ERROR)
         return
     end
-    local version = handle:read("*a")
+    local version = handle:read "*a"
     handle:close()
     if version == "" then
         vim.notify("Failed to get fzf version", vim.log.levels.ERROR)
