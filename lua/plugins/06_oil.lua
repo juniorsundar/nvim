@@ -11,7 +11,7 @@ MiniDeps.now(function()
             show_hidden = true,
         },
         confirmation = {
-            border = "rounded",
+            border = "solid",
         },
     }
 
