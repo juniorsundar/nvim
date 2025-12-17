@@ -1,15 +1,15 @@
 ---@diagnostic disable: redundant-parameter
 MiniDeps.now(function()
-    MiniDeps.add({
+    MiniDeps.add {
         source = "hrsh7th/nvim-cmp",
         name = "nvim-cmp",
         depends = {
-            'hrsh7th/cmp-nvim-lsp',
+            "hrsh7th/cmp-nvim-lsp",
             "hrsh7th/cmp-buffer",
             "hrsh7th/cmp-nvim-lsp-signature-help",
-            'hrsh7th/cmp-path',
-        }
-    })
+            "hrsh7th/cmp-path",
+        },
+    }
     local global_snippets = {
         -- { trigger = "shebang", body = "#!/usr/bin/bash" },
     }
@@ -67,10 +67,10 @@ MiniDeps.now(function()
     local has_words_before = function()
         unpack = unpack or table.unpack
         local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-        return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+        return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match "%s" == nil
     end
 
-    local cmp = require("cmp")
+    local cmp = require "cmp"
 
     local kind_icons = {
         Text = "",
@@ -100,7 +100,7 @@ MiniDeps.now(function()
         TypeParameter = "󰅲",
     }
 
-    cmp.setup({
+    cmp.setup {
         view = {
             entries = "custom", -- can be "custom", "wildmenu" or "native"
         },
@@ -121,19 +121,19 @@ MiniDeps.now(function()
             end,
         },
         window = {
-            documentation = cmp.config.window.bordered({
+            documentation = cmp.config.window.bordered {
                 winhighlight = "Normal:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal",
-            }),
-            completion = cmp.config.window.bordered({
+            },
+            completion = cmp.config.window.bordered {
                 winhighlight = "Normal:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal",
-            }),
+            },
         },
-        mapping = cmp.mapping.preset.insert({
+        mapping = cmp.mapping.preset.insert {
             ["<C-b>"] = cmp.mapping.scroll_docs(-4),
             ["<C-f>"] = cmp.mapping.scroll_docs(4),
             ["<C-Space>"] = cmp.mapping.complete(),
             ["<C-e>"] = cmp.mapping.abort(),
-            ["<CR>"] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+            ["<CR>"] = cmp.mapping.confirm { select = true }, -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
             ["<Tab>"] = cmp.mapping(function(fallback)
                 -- Hint: if the completion menu is visible select next one
                 if cmp.visible() then
@@ -151,7 +151,7 @@ MiniDeps.now(function()
                     fallback()
                 end
             end, { "i", "s" }),
-        }),
+        },
         sources = cmp.config.sources({
             { name = "lazydev" },
             { name = "nvim_lsp" },
@@ -160,6 +160,5 @@ MiniDeps.now(function()
         }, {
             { name = "buffer" },
         }),
-    })
-end
-)
+    }
+end)
