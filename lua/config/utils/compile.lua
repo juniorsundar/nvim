@@ -220,6 +220,7 @@ vim.api.nvim_create_user_command("Compile", function(args)
         end
         local cmd = table.concat(cmd_parts, " ")
 
+        M.last_cwd = vim.fn.getcwd()
         local cwd_to_use = vim.fn.getcwd()
 
         M.executor(cmd, cwd_to_use)
