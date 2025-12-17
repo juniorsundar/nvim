@@ -6,4 +6,3 @@ return {
     root_markers = { "Dockerfile" },
     capabilities = capabilities,
 }
-

@@ -6,4 +6,3 @@ return {
     root_markers = { "project.json", "manifest.json", ".git" },
     capabilities = capabilities,
 }
-

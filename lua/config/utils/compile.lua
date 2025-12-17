@@ -237,8 +237,10 @@ vim.api.nvim_create_user_command("Compile", function(args)
     end
 
     if #fargs == 1 then
-        vim.notify("Error: Unknown argument '" .. fargs[1] .. "'. Did you mean --, with-env, or last?",
-            vim.log.levels.ERROR)
+        vim.notify(
+            "Error: Unknown argument '" .. fargs[1] .. "'. Did you mean --, with-env, or last?",
+            vim.log.levels.ERROR
+        )
     else
         vim.notify("Error: Invalid arguments. To pass a command, use :Compile -- <cmd>", vim.log.levels.ERROR)
     end
@@ -248,7 +250,7 @@ end, {
     complete = function(arglead, cmdline, _)
         local completions = { "with-env", "last", "--" }
 
-        if cmdline:find("%-%-") then
+        if cmdline:find "%-%-" then
             return {}
         end
 
