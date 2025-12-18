@@ -272,9 +272,9 @@ local function toggle_breadcrumbs()
     end
     vim.lsp.breadcrumbs.enabled = not vim.lsp.breadcrumbs.enabled
     if vim.lsp.breadcrumbs.enabled then
-        vim.notify("Auto Hover enabled", vim.log.levels.INFO, { title = "LSP" })
+        vim.notify("Breadcrumbs enabled", vim.log.levels.INFO, { title = "LSP" })
     else
-        vim.notify("Auto Hover disabled", vim.log.levels.INFO, { title = "LSP" })
+        vim.notify("Breadcrumbs disabled", vim.log.levels.INFO, { title = "LSP" })
         vim.o.winbar = ""
     end
 end
