@@ -140,6 +140,8 @@ MiniDeps.now(function()
         notifier = {
             enabled = true,
             timeout = 3000,
+            top_down = false,
+            margin = { top = 0, right = 1, bottom = 2 },
         },
         quickfile = { enabled = true },
         statuscolumn = { enabled = true },

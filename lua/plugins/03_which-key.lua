@@ -6,12 +6,12 @@ MiniDeps.now(function()
     require("which-key.colors").Normal = "NormalFloat"
 
     require("which-key").setup {
-        preset = "helix",
+        -- preset = "helix",
         icons = {
             rules = false,
         },
         win = {
-            row = -1,
+            row = -2,
             padding = { 1, 2 },
             title = true,
             title_pos = "center",
