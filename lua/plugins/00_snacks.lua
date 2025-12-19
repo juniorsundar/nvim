@@ -41,21 +41,6 @@ MiniDeps.now(function()
             })
         end,
     })
-    require("snacks.picker.config.layouts").ivy = {
-        layout = {
-            backdrop = false,
-            border = "top",
-            box = "vertical",
-            { win = "preview", title = "{preview}", height = 0.65 },
-            {
-                title = " {source} {live}",
-                win = "input",
-                height = 1.0,
-                border = "top",
-            },
-            { win = "list", height = 0.3, border = "top" },
-        },
-    }
     require("snacks.picker.config.layouts").sidebar.layout.position = "right"
 
     require("snacks").setup {
@@ -104,19 +89,11 @@ MiniDeps.now(function()
                             Snacks.dashboard.pick("files", { cwd = vim.fn.stdpath "config" })
                         end,
                     },
-                    -- { icon = " ", key = "s", desc = "Restore Session", section = "session" },
                     { icon = " ", key = "q", desc = "Quit", action = ":qa" },
                 },
             },
             sections = {
                 { section = "header" },
-                -- {
-                --     pane = 2,
-                --     section = "terminal",
-                --     cmd = "colorscript -e square",
-                --     height = 5,
-                --     padding = 1,
-                -- },
                 { section = "keys", gap = 1, padding = 1 },
                 { pane = 2, icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = 1 },
                 { pane = 2, icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
@@ -135,6 +112,47 @@ MiniDeps.now(function()
                     indent = 3,
                 },
                 -- { section = "startup" },
+            },
+        },
+        terminal = {
+            win = {
+                style = {
+                    bo = {
+                        filetype = "snacks_terminal",
+                    },
+                    wo = { winhighlight = "" },
+                    stack = true,
+                    keys = {
+                        q = "hide",
+                        gf = function(self)
+                            local f = vim.fn.findfile(vim.fn.expand "<cfile>", "**")
+                            if f == "" then
+                                Snacks.notify.warn "No file under cursor"
+                            else
+                                self:hide()
+                                vim.schedule(function()
+                                    vim.cmd("e " .. f)
+                                end)
+                            end
+                        end,
+                        term_normal = {
+                            "<esc>",
+                            function(self)
+                                self.esc_timer = self.esc_timer or (vim.uv or vim.loop).new_timer()
+                                if self.esc_timer:is_active() then
+                                    self.esc_timer:stop()
+                                    vim.cmd "stopinsert"
+                                else
+                                    self.esc_timer:start(200, 0, function() end)
+                                    return "<esc>"
+                                end
+                            end,
+                            mode = "t",
+                            expr = true,
+                            desc = "Double escape to normal mode",
+                        },
+                    },
+                },
             },
         },
         notifier = {
@@ -195,10 +213,28 @@ MiniDeps.now(function()
             },
             layout = {
                 cycle = true,
-                preset = "ivy",
-                -- preset = function()
-                --     return vim.o.columns >= 140 and "ivy" or "default"
-                -- end,
+                preset = "custom",
+            },
+            layouts = {
+                custom = {
+                    preview = "main",
+                    layout = {
+                        box = "vertical",
+                        backdrop = false,
+                        width = 0,
+                        height = 0.4,
+                        position = "bottom",
+                        border = "top",
+                        title = " {title} {live} {flags}",
+                        title_pos = "left",
+                        { win = "input", height = 1, border = "bottom" },
+                        {
+                            box = "horizontal",
+                            { win = "list", border = "none" },
+                            { win = "preview", title = "{preview}", width = 0.6, border = "left" },
+                        },
+                    },
+                },
             },
             win = {
                 input = {
