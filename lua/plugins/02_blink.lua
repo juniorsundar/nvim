@@ -45,12 +45,12 @@ MiniDeps.now(function()
                     enabled = true,
                     keymap = {
                         preset = "inherit",
+                        ["<Tab>"] = { "show", "select_next" },
+                        ["<S-Tab>"] = { "show", "select_prev" },
                     },
                     completion = {
                         menu = {
-                            auto_show = function(ctx)
-                                return vim.fn.getcmdtype() == ":"
-                            end,
+                            auto_show = false,
                         },
                         list = {
                             selection = {
@@ -78,9 +78,17 @@ MiniDeps.now(function()
                 completion = {
                     menu = {
                         -- winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
-                        border = "solid",
+                        border = "none",
                         draw = {
                             treesitter = { "lsp", "path", "snippets", "buffer", "lazydev" },
+                            columns = { { "kind_icon", "label", "label_description", gap = 1 }, { "source_name" } },
+                            components = {
+                                source_name = {
+                                    text = function(ctx)
+                                        return "[" .. string.lower(ctx.source_name) .. "]"
+                                    end,
+                                },
+                            },
                         },
                     },
                     documentation = {
