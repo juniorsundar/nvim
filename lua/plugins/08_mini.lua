@@ -1,13 +1,8 @@
-MiniDeps.add { source = "nvim-mini/mini.ai" }
 MiniDeps.add { source = "nvim-mini/mini.move" }
 vim.api.nvim_create_autocmd("BufEnter", {
     pattern = "*",
     once = true,
     callback = function()
-        require("mini.ai").setup {
-            n_lines = 500,
-        }
-
         require("mini.move").setup {
             mappings = {
                 left = "<S-left>",

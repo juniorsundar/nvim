@@ -59,78 +59,75 @@ MiniDeps.now(function()
         end,
     })
 
-    -- MiniDeps.add { source = "nvim-treesitter/nvim-treesitter-context" }
-    -- require("treesitter-context").setup {
-    --     enable = true,            -- Enable this plugin (Can be enabled/disabled later via commands)
-    --     multiwindow = false,      -- Enable multiwindow support.
-    --     max_lines = 0,            -- How many lines the window should span. Values <= 0 mean no limit.
-    --     min_window_height = 0,    -- Minimum editor window height to enable context. Values <= 0 mean no limit.
-    --     line_numbers = true,
-    --     multiline_threshold = 20, -- Maximum number of lines to show for a single context
-    --     trim_scope = "outer",     -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
-    --     mode = "cursor",         -- Line used to calculate context. Choices: 'cursor', 'topline'
-    --     -- Separator between context and content. Should be a single character string, like '-'.
-    --     -- When separator is set, the context will only show up when there are at least 2 lines above cursorline.
-    --     separator = nil,
-    --     zindex = 20,     -- The Z-index of the context window
-    --     on_attach = nil, -- (fun(buf: integer): boolean) return false to disable attaching
-    -- }
-    -- vim.cmd [[hi TreesitterContextBottom gui=underline guisp=Grey]]
-    -- vim.cmd [[hi TreesitterContextLineNumberBottom gui=underline guisp=Grey]]
-    --
-    -- vim.api.nvim_create_autocmd("LspProgress", {
-    --     group = vim.api.nvim_create_augroup("TSContextLspToggle", { clear = true }),
-    --     callback = function(ev)
-    --         -- Safely require the module
-    --         local ok, tsc = pcall(require, "treesitter-context")
-    --         if not ok then return end
-    --
-    --         -- Check the progress status (begin, report, end)
-    --         local status = ev.data.params.value.kind
-    --
-    --         if status == "begin" then
-    --             tsc.disable()
-    --         elseif status == "end" then
-    --             tsc.enable()
-    --         end
-    --     end,
-    -- })
-
     MiniDeps.add {
         source = "nvim-treesitter/nvim-treesitter-textobjects",
         checkout = "main",
     }
     require("nvim-treesitter-textobjects").setup {
+        select = {
+            lookahead = true,
+            include_surrounding_whitespace = false,
+        },
+
         move = {
             set_jumps = true,
         },
     }
 
+    -- TEXTOBJECTS
+    vim.keymap.set({ "x", "o" }, "af", function()
+        require("nvim-treesitter-textobjects.select").select_textobject("@function.outer", "textobjects")
+    end, { desc = "outer function" })
+    vim.keymap.set({ "x", "o" }, "if", function()
+        require("nvim-treesitter-textobjects.select").select_textobject("@function.inner", "textobjects")
+    end, { desc = "inner function" })
+    vim.keymap.set({ "x", "o" }, "ac", function()
+        require("nvim-treesitter-textobjects.select").select_textobject("@class.outer", "textobjects")
+    end, { desc = "outer class" })
+    vim.keymap.set({ "x", "o" }, "ic", function()
+        require("nvim-treesitter-textobjects.select").select_textobject("@class.inner", "textobjects")
+    end, { desc = "inner class" })
+    vim.keymap.set({ "x", "o" }, "ad", function()
+        require("nvim-treesitter-textobjects.select").select_textobject("@conditional.outer", "textobjects")
+    end, { desc = "outer conditional" })
+    vim.keymap.set({ "x", "o" }, "id", function()
+        require("nvim-treesitter-textobjects.select").select_textobject("@conditional.inner", "textobjects")
+    end, { desc = "inner conditional" })
+    vim.keymap.set({ "x", "o" }, "al", function()
+        require("nvim-treesitter-textobjects.select").select_textobject("@loop.outer", "textobjects")
+    end, { desc = "outer loop" })
+    vim.keymap.set({ "x", "o" }, "il", function()
+        require("nvim-treesitter-textobjects.select").select_textobject("@loop.inner", "textobjects")
+    end, { desc = "inner loop" })
+    vim.keymap.set({ "x", "o" }, "as", function()
+        require("nvim-treesitter-textobjects.select").select_textobject("@local.scope", "locals")
+    end)
+
     -- FUNCTION
-    vim.keymap.set({ "n", "x", "o" }, "]m", function()
+    vim.keymap.set({ "n", "x", "o" }, "]f", function()
         require("nvim-treesitter-textobjects.move").goto_next_start("@function.outer", "textobjects")
     end, { desc = "Next function [start]" })
-    vim.keymap.set({ "n", "x", "o" }, "]M", function()
+    vim.keymap.set({ "n", "x", "o" }, "]F", function()
         require("nvim-treesitter-textobjects.move").goto_next_end("@function.outer", "textobjects")
     end, { desc = "Next function [end]" })
-    vim.keymap.set({ "n", "x", "o" }, "[m", function()
+    vim.keymap.set({ "n", "x", "o" }, "[f", function()
         require("nvim-treesitter-textobjects.move").goto_previous_start("@function.outer", "textobjects")
     end, { desc = "Previous function [start]" })
-    vim.keymap.set({ "n", "x", "o" }, "[M", function()
+    vim.keymap.set({ "n", "x", "o" }, "[F", function()
         require("nvim-treesitter-textobjects.move").goto_previous_end("@function.outer", "textobjects")
     end, { desc = "Previous function [end]" })
 
     -- CLASS
-    vim.keymap.set({ "n", "x", "o" }, "]o", function()
+    vim.keymap.set({ "n", "x", "o" }, "]c", function()
         require("nvim-treesitter-textobjects.move").goto_next_start("@class.outer", "textobjects")
     end, { desc = "Next class [start]" })
-    vim.keymap.set({ "n", "x", "o" }, "]O", function()
+    vim.keymap.set({ "n", "x", "o" }, "]C", function()
         require("nvim-treesitter-textobjects.move").goto_next_end("@class.outer", "textobjects")
     end, { desc = "Next class [end]" })
-    vim.keymap.set({ "n", "x", "o" }, "[o", function()
+    vim.keymap.set({ "n", "x", "o" }, "[c", function()
         require("nvim-treesitter-textobjects.move").goto_previous_start("@class.outer", "textobjects")
     end, { desc = "Previous class [start]" })
-    vim.keymap.set({ "n", "x", "o" }, "[O", function()
+    vim.keymap.set({ "n", "x", "o" }, "[C", function()
         require("nvim-treesitter-textobjects.move").goto_previous_end("@class.outer", "textobjects")
     end, { desc = "Previous class [end]" })
 
@@ -171,4 +168,10 @@ MiniDeps.now(function()
     vim.keymap.set({ "n", "x", "o" }, "[d", function()
         require("nvim-treesitter-textobjects.move").goto_previous("@conditional.outer", "textobjects")
     end, { desc = "Previous conditional" })
+
+    local ts_repeat_move = require "nvim-treesitter-textobjects.repeatable_move"
+
+    -- Repeat movement with ; and ,
+    vim.keymap.set({ "n", "x", "o" }, "<end>", ts_repeat_move.repeat_last_move_next)
+    vim.keymap.set({ "n", "x", "o" }, "<home>", ts_repeat_move.repeat_last_move_previous)
 end)
