@@ -23,5 +23,5 @@ MiniDeps.later(function()
         end
         require("conform").format { async = true, lsp_fallback = true, range = range }
     end, { range = true })
-    vim.keymap.set({ "n", "v" }, "<leader>Lf", "<cmd>Format<CR>", { desc = "Format buffer (Conform)" })
+    vim.keymap.set({ "n" }, "<leader>Lf", "<cmd>Format<CR>", { desc = "Format buffer (Conform)" })
 end)
