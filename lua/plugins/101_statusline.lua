@@ -9,18 +9,11 @@ StatusLine.config = {
         names = {
             ["[LSP Eldoc]"] = true,
             ["NvimTree_1"] = true,
-            ["No Name"] = true,
         },
         buftypes = {
-            ["nofile"] = true,
-            ["nowrite"] = true,
-            ["prompt"] = true,
-            ["popup"] = true,
             ["terminal"] = true,
         },
         filetypes = {
-            -- ["fugitive"] = true,
-            -- ["oil"] = true,
             ["snacks_dashboard"] = true,
             ["qf"] = true,
         },
