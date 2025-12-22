@@ -4,74 +4,53 @@ vim.api.nvim_create_autocmd("BufEnter", {
     pattern = "*",
     once = true,
     callback = function()
-        vim.keymap.set(
-            "n",
-            "<leader>Gd",
-            "<cmd>Gitsigns diffthis HEAD<cr>",
-            { desc = "Diff", noremap = false, silent = true }
-        )
-        vim.keymap.set(
-            "n",
-            "<space>G]",
-            "<cmd>lua require('gitsigns').next_hunk()<cr>",
-            { desc = "Next Hunk", noremap = false, silent = true }
-        )
-        vim.keymap.set(
-            "n",
-            "<space>G[",
-            "<cmd>lua require('gitsigns').prev_hunk()<cr>",
-            { desc = "Previous Hunk", noremap = false, silent = true }
-        )
-        vim.keymap.set(
-            "n",
-            "<space>Gp",
-            "<cmd>lua require('gitsigns').preview_hunk()<cr>",
-            { desc = "Preview Hunk", noremap = false, silent = true }
-        )
-        vim.keymap.set(
-            "n",
-            "<space>Gr",
-            "<cmd>lua require('gitsigns').reset_hunk()<cr>",
-            { desc = "Reset Hunk", noremap = false, silent = true }
-        )
-        vim.keymap.set(
-            "n",
-            "<space>Gs",
-            "<cmd>lua require('gitsigns').stage_hunk()<cr>",
-            { desc = "Stage Hunk", noremap = false, silent = true }
-        )
-        vim.keymap.set(
-            "n",
-            "<space>Gu",
-            "<cmd>lua require('gitsigns').undo_stage_hunk()<cr>",
-            { desc = "Undo Stage Hunk", noremap = false, silent = true }
-        )
-        vim.keymap.set(
-            "n",
-            "<space>GR",
-            "<cmd>lua require('gitsigns').reset_buffer()<cr>",
-            { desc = "Reset Buffer", noremap = false, silent = true }
-        )
-        vim.keymap.set(
-            "n",
-            "<space>GB",
-            "<cmd>lua require('gitsigns').blame()<cr>",
-            { desc = "Blame", noremap = false, silent = true }
-        )
-        vim.keymap.set(
-            "n",
-            "<space>Gl",
-            "<cmd>lua require('gitsigns').blame_line()<cr>",
-            { desc = "Blame Line", noremap = false, silent = true }
-        )
+        local gs = require "gitsigns"
+        vim.keymap.set("n", "<leader>Gd", function()
+            gs.diffthis()
+        end, { desc = "Diff", noremap = false, silent = true })
+        vim.keymap.set("n", "]c", function()
+            if vim.wo.diff then
+                vim.cmd.normal { "]c", bang = true }
+            else
+                gs.nav_hunk("next", { target = "all" })
+            end
+        end, { desc = "Next Hunk", noremap = false, silent = true })
+        vim.keymap.set("n", "[c", function()
+            if vim.wo.diff then
+                vim.cmd.normal { "[c", bang = true }
+            else
+                gs.nav_hunk("prev", { target = "all" })
+            end
+        end, { desc = "Previous Hunk", noremap = false, silent = true })
+        vim.keymap.set("n", "<space>Gp", function()
+            gs.preview_hunk()
+        end, { desc = "Preview Hunk", noremap = false, silent = true })
+        vim.keymap.set("n", "<space>Gs", function()
+            gs.stage_hunk()
+        end, { desc = "Stage Hunk", noremap = false, silent = true })
+        vim.keymap.set("n", "<space>Gr", function()
+            gs.reset_hunk()
+        end, { desc = "Reset Hunk", noremap = false, silent = true })
+        vim.keymap.set("n", "<space>GS", function()
+            gs.stage_buffer()
+        end, { desc = "Stage Buffer", noremap = false, silent = true })
+        vim.keymap.set("n", "<space>GR", function()
+            gs.reset_buffer()
+        end, { desc = "Reset Buffer", noremap = false, silent = true })
+        vim.keymap.set("n", "<space>GB", function()
+            gs.blame()
+        end, { desc = "Blame", noremap = false, silent = true })
+        vim.keymap.set("n", "<space>Gl", function()
+            gs.blame_line()
+        end, { desc = "Blame Line", noremap = false, silent = true })
 
         require("gitsigns").setup {
             signs = {
                 add = { text = "┃" },
                 change = { text = "┃" },
-                delete = { text = "-" }, -- '_'
-                topdelete = { text = "" }, -- '‾'
-                changedelete = { text = "~" },
+                delete = { text = "-", show_count = true }, -- '_'
+                topdelete = { text = "", show_count = true }, -- '‾'
+                changedelete = { text = "~", show_count = true },
                 untracked = { text = "┆" },
             },
             signcolumn = true, -- Toggle with `:Gitsigns toggle_signs`
@@ -97,7 +76,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
             max_file_length = 40000, -- Disable if file is longer than this (in lines)
             preview_config = {
                 -- Options passed to nvim_open_win
-                border = "single",
+                border = "solid",
                 style = "minimal",
                 relative = "cursor",
                 row = 0,
