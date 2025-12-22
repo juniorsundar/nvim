@@ -6,5 +6,5 @@ vim.lsp.enable {
 
 local markview_present, _ = pcall(require, "markview")
 if markview_present then
-    vim.cmd[[Markview HybridEnable]]
+    vim.cmd [[Markview HybridEnable]]
 end
