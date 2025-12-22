@@ -48,9 +48,9 @@ vim.api.nvim_create_autocmd("BufEnter", {
             signs = {
                 add = { text = "┃" },
                 change = { text = "┃" },
-                delete = { text = "-", show_count = true }, -- '_'
-                topdelete = { text = "", show_count = true }, -- '‾'
-                changedelete = { text = "~", show_count = true },
+                delete = { text = "-" }, -- '_'
+                topdelete = { text = "" }, -- '‾'
+                changedelete = { text = "~" },
                 untracked = { text = "┆" },
             },
             signcolumn = true, -- Toggle with `:Gitsigns toggle_signs`

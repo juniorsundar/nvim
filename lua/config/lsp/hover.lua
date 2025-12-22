@@ -25,7 +25,7 @@ local function close_eldoc_window()
     eldoc_win_id = nil
 end
 
-local function show_documentation()
+local function eldoc()
     local bufnr = vim.api.nvim_get_current_buf()
     local clients = vim.lsp.get_clients { bufnr = bufnr }
 
@@ -120,7 +120,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
         if not vim.lsp.autohover.enabled then
             return
         end
-        show_documentation()
+        eldoc()
     end,
     desc = "Show LSP hover documentation on CursorHold (silently ignores empty responses)",
 })
@@ -160,3 +160,5 @@ vim.keymap.set(
 --     end,
 --     { desc = "Hover", noremap = false, silent = true }
 -- )
+
+vim.lsp.buf.eldoc = eldoc
