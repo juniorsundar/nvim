@@ -15,6 +15,8 @@ StatusLine.config = {
         },
         filetypes = {
             ["snacks_dashboard"] = true,
+            ["snacks_picker_list"] = true,
+            ["snacks_picker_input"] = true,
             ["qf"] = true,
         },
     },
