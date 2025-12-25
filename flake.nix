@@ -29,7 +29,7 @@
         in
         {
           default = pkgs.mkShell {
-            name = "rust-dev-shell";
+            name = "neovim-config";
             packages = [
               pkgs.uv
               pkgs.python3
