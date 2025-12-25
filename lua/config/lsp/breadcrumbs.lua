@@ -1,5 +1,5 @@
 vim.lsp.breadcrumbs = {
-    enabled = true,
+    enabled = false,
 }
 -- Safely try to load nvim-web-devicons
 ---@type boolean
