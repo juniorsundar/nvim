@@ -11,9 +11,7 @@ MiniDeps.later(function()
         },
         nes = {
             ---@type boolean|fun(buf:integer):boolean?
-            enabled = function(buf)
-                return vim.g.sidekick_nes ~= false and vim.b.sidekick_nes ~= false
-            end,
+            enabled = false,
             debounce = 100,
             trigger = {
                 -- events that trigger sidekick next edit suggestions
@@ -30,13 +28,15 @@ MiniDeps.later(function()
         },
         -- Work with AI cli tools directly from within Neovim
         cli = {
-            watch = true, -- notify Neovim of file changes done by AI CLI tools
+            watch = true,
             win = {
                 --- This is run when a new terminal is created, before starting it.
                 --- Here you can change window options `terminal.opts`.
                 config = function(terminal) end,
-                wo = {}, ---@type vim.wo
-                bo = {}, ---@type vim.bo
+                bo = {
+                    filetype = "snacks_terminal",
+                },
+                wo = { winhighlight = "" },
                 layout = "right", ---@type "float"|"left"|"bottom"|"top"|"right"
                 --- Options used when layout is "float"
                 float = {
@@ -158,46 +158,40 @@ MiniDeps.later(function()
         debug = false, -- enable debug logging
     }
 
-    vim.keymap.set({ "n", "x" }, "<leader>a", "", { desc = "Sidekick" })
-
-    vim.keymap.set("n", "<tab>", function()
-        if not require("sidekick").nes_jump_or_apply() then
-            return "<Tab>"
-        end
-    end, { desc = "Goto/Apply Next Edit Suggestion" })
+    vim.keymap.set({ "n", "x" }, "<leader>A", "", { desc = "Sidekick" })
 
     vim.keymap.set({ "n", "t", "i", "x" }, "<c-.>", function()
         require("sidekick.cli").toggle()
     end, { desc = "Sidekick Toggle" })
 
-    vim.keymap.set("n", "<leader>aa", function()
+    vim.keymap.set("n", "<leader>Aa", function()
         require("sidekick.cli").toggle()
     end, { desc = "Sidekick Toggle CLI" })
 
-    vim.keymap.set("n", "<leader>as", function()
+    vim.keymap.set("n", "<leader>As", function()
         require("sidekick.cli").select()
     end, { desc = "Select CLI" })
 
-    vim.keymap.set("n", "<leader>ad", function()
+    vim.keymap.set("n", "<leader>Ad", function()
         require("sidekick.cli").close()
     end, { desc = "Detach a CLI Session" })
 
-    vim.keymap.set({ "x", "n" }, "<leader>at", function()
+    vim.keymap.set({ "x", "n" }, "<leader>At", function()
         require("sidekick.cli").send { msg = "{this}" }
     end, { desc = "Send This" })
 
-    vim.keymap.set("n", "<leader>af", function()
+    vim.keymap.set("n", "<leader>Af", function()
         require("sidekick.cli").send { msg = "{file}" }
     end, { desc = "Send File" })
 
-    vim.keymap.set("x", "<leader>av", function()
+    vim.keymap.set("x", "<leader>Av", function()
         require("sidekick.cli").send { msg = "{selection}" }
     end, { desc = "Send Visual Selection" })
 
-    vim.keymap.set({ "n", "x" }, "<leader>ap", function()
+    vim.keymap.set({ "n", "x" }, "<leader>Ap", function()
         require("sidekick.cli").prompt()
     end, { desc = "Sidekick Select Prompt" })
-    -- "<leader>ac",
+    -- "<leader>Ac",
     -- function() require("sidekick.cli").toggle({ name = "claude", focus = true }) end,
     -- desc = "Sidekick Toggle Claude",
 end)
