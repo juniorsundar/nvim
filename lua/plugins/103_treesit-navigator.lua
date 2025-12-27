@@ -18,24 +18,83 @@ M.config = {
     },
     keymaps = {
         enable = true,
-        toggle = { desc = "show treesitter context", key = "<leader>Tt" },
-        next = { desc = "next treesitter sibling", key = "<leader>T]" },
-        prev = { desc = "prev treesitter sibling", key = "<leader>T[" },
-        parent = { desc = "parent treesitter node", key = "<leader>Tk" },
-        child = { desc = "child treesitter node", key = "<leader>Tj" },
+        prefix = "<leader>T",
+        toggle = "t",
+        next = "l",
+        prev = "h",
+        parent = "k",
+        child = "j",
+        node_start = "0",
+        node_end = "$",
+    },
+    transient_keymaps = {
+        enable = true,
     },
 }
 
 local state = {
     tree_win = nil,
     sticky_node = nil,
+    sticky_pos_type = "start",
     is_navigating = false,
+    source_buf = nil,
     ns_nav = vim.api.nvim_create_namespace "ts_nav",
     tree_grp = vim.api.nvim_create_augroup("TSTreeDisplay", { clear = true }),
 }
 
 local function clear_highlights()
-    vim.api.nvim_buf_clear_namespace(0, state.ns_nav, 0, -1)
+    if state.source_buf and vim.api.nvim_buf_is_valid(state.source_buf) then
+        vim.api.nvim_buf_clear_namespace(state.source_buf, state.ns_nav, 0, -1)
+    end
+end
+
+local function get_transient_key(name)
+    return M.config.transient_keymaps[name] or M.config.keymaps[name]
+end
+
+local function clear_transient_keymaps()
+    if not M.config.transient_keymaps.enable then
+        return
+    end
+    if state.source_buf and vim.api.nvim_buf_is_valid(state.source_buf) then
+        local keys = {
+            get_transient_key "parent",
+            get_transient_key "child",
+            get_transient_key "next",
+            get_transient_key "prev",
+            get_transient_key "node_start",
+            get_transient_key "node_end",
+        }
+        for _, key in ipairs(keys) do
+            if key then
+                for _, mode in ipairs { "n", "v" } do
+                    pcall(vim.keymap.del, mode, key, { buffer = state.source_buf })
+                end
+            end
+        end
+    end
+end
+
+local function set_transient_keymaps()
+    if not M.config.transient_keymaps.enable then
+        return
+    end
+    if state.source_buf and vim.api.nvim_buf_is_valid(state.source_buf) then
+        local opts = { buffer = state.source_buf, nowait = true, silent = true }
+        local function set(name, func)
+            local key = get_transient_key(name)
+            if type(key) == "string" then
+                vim.keymap.set({ "n", "v" }, key, func, opts)
+            end
+        end
+
+        set("parent", M.goto_parent)
+        set("child", M.goto_child)
+        set("next", M.goto_next)
+        set("prev", M.goto_prev)
+        set("node_start", M.goto_node_start)
+        set("node_end", M.goto_node_end)
+    end
 end
 
 local function close_tree_win()
@@ -44,6 +103,8 @@ local function close_tree_win()
     end
     state.tree_win = nil
     clear_highlights()
+    clear_transient_keymaps()
+    state.source_buf = nil
     vim.api.nvim_clear_autocmds { group = state.tree_grp }
 end
 
@@ -78,20 +139,50 @@ local function get_master_node()
     return dive_into_block(node)
 end
 
+local function get_node_end_pos(node, buf)
+    local _, _, er, ec = node:range()
+    if ec == 0 then
+        -- Ends at start of line, so actually ends at previous line
+        if er > 0 then
+            local r = er - 1
+            if buf and vim.api.nvim_buf_is_valid(buf) then
+                local line = vim.api.nvim_buf_get_lines(buf, r, r + 1, false)[1] or ""
+                local c = math.max(0, #line - 1)
+                return r, c
+            else
+                return r, 0
+            end
+        else
+            return 0, 0
+        end
+    else
+        return er, ec - 1
+    end
+end
+
 local function get_sticky_node()
     if not state.sticky_node then
         return nil
     end
     local ok, sr, sc = pcall(function()
-        return state.sticky_node:start()
+        return state.sticky_node:range()
     end)
     if not ok then
         state.sticky_node = nil
         return nil
     end
+
     local cursor = vim.api.nvim_win_get_cursor(0)
     local cr, cc = cursor[1] - 1, cursor[2]
-    if sr ~= cr or sc ~= cc then
+
+    local tr, tc
+    if state.sticky_pos_type == "end" then
+        tr, tc = get_node_end_pos(state.sticky_node, state.source_buf)
+    else
+        tr, tc = sr, sc
+    end
+
+    if tr ~= cr or tc ~= cc then
         state.sticky_node = nil
         return nil
     end
@@ -104,9 +195,9 @@ end
 
 local function highlight_source_node(target_node)
     clear_highlights()
-    if target_node then
+    if target_node and state.source_buf and vim.api.nvim_buf_is_valid(state.source_buf) then
         local start_row, start_col, end_row, end_col = target_node:range()
-        vim.api.nvim_buf_set_extmark(0, state.ns_nav, start_row, start_col, {
+        vim.api.nvim_buf_set_extmark(state.source_buf, state.ns_nav, start_row, start_col, {
             end_row = end_row,
             end_col = end_col,
             hl_group = M.config.highlights.source_node,
@@ -116,6 +207,11 @@ local function highlight_source_node(target_node)
 end
 
 M.ts_tree_display = function()
+    -- Initialize source buffer if starting fresh
+    if not state.tree_win then
+        state.source_buf = vim.api.nvim_get_current_buf()
+    end
+
     local node = get_nav_node()
 
     if not node then
@@ -205,9 +301,11 @@ M.ts_tree_display = function()
         state.tree_win = vim.api.nvim_open_win(buf, false, opts)
         vim.api.nvim_set_option_value("winhl", conf.highlights.tree_win_hl, { win = state.tree_win })
 
-        vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter", "BufLeave" }, {
+        set_transient_keymaps()
+
+        vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter", "BufLeave", "BufWipeout" }, {
             group = state.tree_grp,
-            buffer = 0,
+            buffer = state.source_buf,
             callback = function(ev)
                 if state.is_navigating then
                     return
@@ -227,17 +325,36 @@ M.ts_tree_display = function()
     end
 end
 
-local function update_nav(target_node)
+local function update_nav(target_node, pos_type)
     if target_node then
-        local r, c = target_node:start()
+        local r, c
+        if pos_type == "end" then
+            r, c = get_node_end_pos(target_node, state.source_buf)
+        else
+            r, c = target_node:start()
+        end
+
         state.is_navigating = true
+        state.sticky_pos_type = pos_type or "start"
         vim.api.nvim_win_set_cursor(0, { r + 1, c })
         state.sticky_node = target_node
         highlight_source_node(target_node)
-        if state.tree_win and vim.api.nvim_win_is_valid(state.tree_win) then
-            M.ts_tree_display()
-        end
+        M.ts_tree_display()
         state.is_navigating = false
+    end
+end
+
+M.goto_node_start = function()
+    local node = get_nav_node()
+    if node then
+        update_nav(node, "start")
+    end
+end
+
+M.goto_node_end = function()
+    local node = get_nav_node()
+    if node then
+        update_nav(node, "end")
     end
 end
 
@@ -253,7 +370,7 @@ M.goto_parent = function()
     while parent do
         local p_row, p_col = parent:start()
         if p_row ~= start_row or p_col ~= start_col then
-            update_nav(parent)
+            update_nav(parent, "start")
             return
         end
         parent = parent:parent()
@@ -290,7 +407,7 @@ M.goto_child = function()
 
     if target then
         target = dive_into_block(target)
-        update_nav(target)
+        update_nav(target, "start")
     end
 end
 
@@ -303,7 +420,7 @@ M.goto_next = function()
     local next = node:next_named_sibling()
     if next then
         next = dive_into_block(next)
-        update_nav(next)
+        update_nav(next, "start")
     end
 end
 
@@ -316,7 +433,7 @@ M.goto_prev = function()
     local prev = node:prev_named_sibling()
     if prev then
         prev = dive_into_block(prev)
-        update_nav(prev)
+        update_nav(prev, "start")
     end
 end
 
@@ -325,17 +442,25 @@ M.setup = function(opts)
 
     if M.config.keymaps.enable then
         local km = M.config.keymaps
+        local prefix = km.prefix or ""
+
+        if prefix ~= "" then
+            vim.keymap.set({ "n", "v" }, prefix, "<nop>", { desc = "Treesit Navigator" })
+        end
+
         local set = function(key, func, desc)
             if key then
-                vim.keymap.set({ "n", "v" }, key, func, { desc = desc })
+                vim.keymap.set({ "n", "v" }, prefix .. key, func, { desc = desc })
             end
         end
 
-        set(km.toggle.key, M.ts_tree_display, km.toggle.desc)
-        set(km.next.key, M.goto_next, km.next.desc)
-        set(km.prev.key, M.goto_prev, km.prev.desc)
-        set(km.parent.key, M.goto_parent, km.parent.desc)
-        set(km.child.key, M.goto_child, km.child.desc)
+        set(km.toggle, M.ts_tree_display, "show treesitter context")
+        set(km.next, M.goto_next, "next treesitter sibling")
+        set(km.prev, M.goto_prev, "prev treesitter sibling")
+        set(km.parent, M.goto_parent, "parent treesitter node")
+        set(km.child, M.goto_child, "child treesitter node")
+        set(km.node_start, M.goto_node_start, "start of treesitter node")
+        set(km.node_end, M.goto_node_end, "end of treesitter node")
     end
 end
 
