@@ -1,5 +1,15 @@
+---@class TreesitNavigatorConfig
+---@field highlights { source_node: string, tree_node: string, tree_win_hl: string }
+---@field icons { branch_mid: string, branch_end: string, indent_mid: string, indent_end: string }
+---@field window { border: string, width_padding: number }
+---@field keymaps { enable: boolean, prefix: string, toggle: string, next: string, prev: string, parent: string, child: string, node_start: string, node_end: string }
+---@field transient_keymaps { enable: boolean }
+
+---@class TreesitNavigator
 local M = {}
 
+---Default configuration
+---@type TreesitNavigatorConfig
 M.config = {
     highlights = {
         source_node = "Visual",
@@ -32,6 +42,14 @@ M.config = {
     },
 }
 
+---@class TreesitNavigatorState
+---@field tree_win? integer Window ID of the tree view
+---@field sticky_node? TSNode The node currently stuck to (navigating relative to)
+---@field sticky_pos_type "start"|"end" Where the cursor is stuck relative to the node
+---@field is_navigating boolean Flag to prevent recursive updates
+---@field source_buf? integer Buffer ID of the source code
+---@field ns_nav integer Namespace ID for highlighting
+---@field tree_grp integer Autocommand group ID
 local state = {
     tree_win = nil,
     sticky_node = nil,
@@ -118,7 +136,7 @@ local function dive_into_block(node)
             local count = node:child_count()
             for i = 0, count - 1 do
                 local child = node:child(i)
-                if child:named() then
+                if child and child:named() then
                     node = child
                     found_child = true
                     break
@@ -206,6 +224,7 @@ local function highlight_source_node(target_node)
     end
 end
 
+---Displays the treesitter tree view for the current node.
 M.ts_tree_display = function()
     -- Initialize source buffer if starting fresh
     if not state.tree_win then
@@ -241,7 +260,7 @@ M.ts_tree_display = function()
     local children = {}
     for i = 0, root_of_view:child_count() - 1 do
         local child = root_of_view:child(i)
-        if child:named() then
+        if child and child:named() then
             table.insert(children, child)
         end
     end
@@ -260,7 +279,7 @@ M.ts_tree_display = function()
             local grandchildren = {}
             for j = 0, child:child_count() - 1 do
                 local grandchild = child:child(j)
-                if grandchild:named() then
+                if grandchild and grandchild:named() then
                     table.insert(grandchildren, grandchild)
                 end
             end
@@ -344,6 +363,7 @@ local function update_nav(target_node, pos_type)
     end
 end
 
+---Moves the cursor to the start of the current navigation node.
 M.goto_node_start = function()
     local node = get_nav_node()
     if node then
@@ -351,6 +371,7 @@ M.goto_node_start = function()
     end
 end
 
+---Moves the cursor to the end of the current navigation node.
 M.goto_node_end = function()
     local node = get_nav_node()
     if node then
@@ -358,6 +379,7 @@ M.goto_node_end = function()
     end
 end
 
+---Moves the cursor to the parent of the current navigation node.
 M.goto_parent = function()
     local node = get_nav_node()
     if not node then
@@ -381,7 +403,7 @@ local function find_first_child_jump(node, root_start_row, root_start_col)
     local count = node:child_count()
     for i = 0, count - 1 do
         local child = node:child(i)
-        if child:named() then
+        if child and child:named() then
             local r, c = child:start()
             if r ~= root_start_row or c ~= root_start_col then
                 return child
@@ -396,6 +418,7 @@ local function find_first_child_jump(node, root_start_row, root_start_col)
     return nil
 end
 
+---Moves the cursor to the first child of the current navigation node.
 M.goto_child = function()
     local node = get_nav_node()
     if not node then
@@ -411,6 +434,7 @@ M.goto_child = function()
     end
 end
 
+---Moves the cursor to the next named sibling of the current navigation node.
 M.goto_next = function()
     local node = get_nav_node()
     if not node then
@@ -424,6 +448,7 @@ M.goto_next = function()
     end
 end
 
+---Moves the cursor to the previous named sibling of the current navigation node.
 M.goto_prev = function()
     local node = get_nav_node()
     if not node then
@@ -437,6 +462,8 @@ M.goto_prev = function()
     end
 end
 
+---Setup function to initialize the plugin with user options.
+---@param opts? table Partial configuration to merge with defaults.
 M.setup = function(opts)
     M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 
