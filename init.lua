@@ -95,7 +95,7 @@ vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode"
 
 -- COLORSCHEME ======================================================
 
-require("theme").set_colorscheme()
+-- require("theme").set_colorscheme()
 
 -- PLUGINS ==========================================================
 local path_package = vim.fn.stdpath "data" .. "/site/"

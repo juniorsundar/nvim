@@ -1,38 +1,5 @@
 return {
     {
-        "nvim-orgmode/orgmode",
-        enabled = false,
-        dependencies = {
-            "chipsenkbeil/org-roam.nvim",
-            config = function()
-                require("org-roam").setup {
-                    directory = "~/Dropbox/org/pages/",
-                    bindings = {
-                        prefix = "<leader><leader>on",
-                    },
-                    extensions = {
-                        dailies = {
-                            directory = "~/Dropbox/org/journals/",
-                        },
-                    },
-                }
-            end,
-        },
-        event = "VeryLazy",
-        config = function()
-            -- Setup orgmode
-            require("orgmode").setup {
-                org_agenda_files = "~/Dropbox/org/**/*",
-                org_todo_keywords = { "TODO", "DOING", "|", "DONE", "CANCELLED" },
-                org_hide_leading_stars = true,
-                org_log_done = "time",
-                mappings = {
-                    prefix = "<leader><leader>o",
-                },
-            }
-        end,
-    },
-    {
         "nvim-neorg/neorg",
         enabled = false,
         event = "VeryLazy",
