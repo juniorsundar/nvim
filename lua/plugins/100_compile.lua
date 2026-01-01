@@ -205,6 +205,22 @@ M.executor = function(cmd, cwd)
     })
 end
 
+--- Wraps a base command (e.g., "git") into a function suitable for a user command.
+--- Usage: vim.api.nvim_create_user_command("G", require("plugins.100_compile").wrap("git"), { nargs = "*" })
+--- @param base_cmd string
+--- @return function
+M.wrap = function(base_cmd)
+    return function(opts)
+        local args = opts.fargs
+        local cmd_parts = { base_cmd }
+        for _, arg in ipairs(args) do
+            table.insert(cmd_parts, arg)
+        end
+        local cmd = table.concat(cmd_parts, " ")
+        M.executor(cmd, vim.fn.getcwd())
+    end
+end
+
 vim.api.nvim_create_user_command("Compile", function(args)
     local fargs = args.fargs
 
@@ -264,3 +280,10 @@ end, {
         return filtered
     end,
 })
+
+vim.api.nvim_create_user_command("JJ", M.wrap "jj", {
+    nargs = "*",
+    desc = "Wrapper for git via Compile",
+})
+
+return M
