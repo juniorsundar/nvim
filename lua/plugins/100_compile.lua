@@ -1,289 +1,95 @@
---- @module 'compile'
---- Interactive compilation runner for Neovim with .env support and output navigation.
-local M = {}
+-- local compile = require "compile"
+MiniDeps.add { source = "juniorsundar/cling.nvim" }
+local compile = require "cling"
 
---- @type string|nil
---- The last shell command executed by the user.
-M.last_cmd = nil
---- @type string|nil
---- The last working directory used for compilation.
-M.last_cwd = nil
---- @type string|nil
---- Path to the last .env file used (consumed once per execution).
-M.last_env = nil
---- @type integer|nil
---- Handle to the current compile output window, if open.
-M.compile_window = nil
---- @type integer|nil
---- Handle to the current compile output buffer, if open.
-M.compile_buffer = nil
-
---- Closes the active compile output window and resets its handle.
---- Does nothing if no compile window is open.
---- @return nil
-M.close_compile_window = function()
-    if M.compile_buffer and vim.api.nvim_buf_is_valid(M.compile_buffer) then
-        vim.api.nvim_buf_delete(M.compile_buffer, { force = true })
-    end
-    M.compile_buffer = nil
-
-    if M.compile_window and vim.api.nvim_win_is_valid(M.compile_window) then
-        vim.api.nvim_win_close(M.compile_window, true)
-    end
-    M.compile_window = nil
+local function strip_ansi(str)
+    return str:gsub("\27%[[0-9;]*m", "")
 end
 
---- Prompts the user for a compilation command and working directory,
---- then executes the command via `M.executor`.
---- Uses `M.last_cmd` and `M.last_cwd` as defaults in prompts.
---- @return nil
-M.command = function()
-    local cmd = vim.fn.input("Compile command: ", M.last_cmd or "")
-
-    if cmd == nil or cmd == "" then
-        vim.notify("Compilation cancelled", vim.log.levels.WARN)
-        return
+local function get_file_from_line(line)
+    local clean = strip_ansi(line)
+    local file = clean:match "^Modified regular file (.*):$"
+    if file then
+        return file, "Modified"
     end
-
-    local default_cwd = M.last_cwd or vim.fn.getcwd()
-    local cwd = vim.fn.input("CWD: ", default_cwd, "dir")
-
-    if cwd == nil or cwd == "" then
-        vim.notify("Compilation cancelled", vim.log.levels.WARN)
-        return
+    file = clean:match "^Added regular file (.*):$"
+    if file then
+        return file, "Added"
     end
-
-    M.executor(cmd, cwd)
+    file = clean:match "^Removed regular file (.*):$"
+    if file then
+        return file, "Removed"
+    end
+    file = clean:match "^Renamed .* to (.*):$"
+    if file then
+        return file, "Renamed"
+    end
+    local _, b = clean:match "^diff %-%-git a/(.*) b/(.*)"
+    if b then
+        return b, "Git Diff"
+    end
+    return nil
 end
 
---- Re-executes the last compilation command and working directory.
---- Shows an error if no prior command exists.
---- @return nil
-M.run_last = function()
-    if not M.last_cmd then
-        vim.notify("No last command to run. Use :Compile first.", vim.log.levels.ERROR)
-        return
-    end
-    M.executor(M.last_cmd, M.last_cwd)
-end
+local function populate_quickfix(buf)
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    local qf_list = {}
+    local current_file = nil
+    local current_type = nil
+    local last_was_gap = true
 
---- Prompts the user for a `.env` file path (defaulting to `./.env`),
---- stores it in `M.last_env`, then invokes `M.command()`.
---- The `.env` file is sourced once during the next execution and then cleared.
---- @return nil
-M.with_env = function()
-    local env_file = vim.fn.input("Path to .env file: ", M.last_env or vim.fs.joinpath(vim.fn.getcwd(), ".env"), "file")
-    if env_file == nil or env_file == "" then
-        vim.notify("Cancelled", vim.log.levels.WARN)
-        return
-    end
-    M.last_env = env_file
-    M.command()
-end
+    for _, raw_line in ipairs(lines) do
+        local line = strip_ansi(raw_line)
+        local file, type = get_file_from_line(line)
 
---- Executes a shell command in a given working directory and streams output
---- to a dedicated scratch window named `[Compile]`.
---- - Closes any existing compile window.
---- - Sources `M.last_env` (if set) before the command and then unsets it.
---- - Supports clickable file paths (e.g., `file:line`) via `<CR>` mapping.
---- - Press `q` to close the window.
---- @param cmd string Shell command to execute.
---- @param cwd string Working directory for the command.
---- @return nil
-M.executor = function(cmd, cwd)
-    if M.compile_window ~= nil then
-        M.close_compile_window()
-    end
-
-    if not cmd then
-        vim.notify("No command to execute", vim.log.levels.ERROR)
-        return
-    end
-    M.last_cmd = cmd
-    M.last_cwd = cwd
-    if M.last_env then
-        cmd = ". " .. M.last_env .. " && " .. cmd
-        M.last_env = nil -- reset last_env since it may not be necessary all the time
-    end
-
-    local original_window = vim.api.nvim_get_current_win()
-    local actual_cwd = cwd or vim.fn.getcwd()
-    local full_command_string = "cd " .. vim.fn.shellescape(actual_cwd, true) .. " && "
-
-    if M.last_env then
-        full_command_string = full_command_string .. ". " .. vim.fn.shellescape(M.last_env, true) .. " && "
-        M.last_env = nil
-    end
-
-    full_command_string = full_command_string .. cmd
-    local term_command = "sh -c " .. vim.fn.shellescape(full_command_string, true)
-    local escaped_cmd = vim.fn.fnameescape(term_command)
-
-    if not cmd or cmd == "" then
-        vim.notify("Error: 'cmd' is required.", vim.log.levels.ERROR)
-        return
-    end
-
-    vim.cmd("bot split term://" .. escaped_cmd)
-
-    M.compile_buffer = vim.api.nvim_get_current_buf()
-    M.compile_window = vim.api.nvim_get_current_win()
-    vim.api.nvim_buf_set_name(M.compile_buffer, "[Compile]")
-
-    vim.api.nvim_buf_set_keymap(M.compile_buffer, "n", "<CR>", "", {
-        callback = function()
-            local line = vim.api.nvim_get_current_line()
-
-            local cfile = vim.fn.expand "<cfile>"
-            local start_idx = line:find(cfile, 1, true)
-            if not start_idx then
-                print "Path not found on current line"
-                return
+        if file then
+            current_file = vim.trim(file)
+            current_type = type
+            last_was_gap = true
+        elseif line:match "^%s*%.%.%.%s*$" then
+            last_was_gap = true
+        elseif current_file then
+            local old, new = line:match "^%s*([0-9]*)%s+([0-9]*):"
+            if old or new then
+                if last_was_gap then
+                    local lnum = tonumber(new) or tonumber(old) or 1
+                    local text = line:sub((line:find ":" or 0) + 1)
+                    table.insert(qf_list, {
+                        filename = current_file,
+                        lnum = lnum,
+                        text = string.format("[%s] %s", current_type or "Change", vim.trim(text)),
+                    })
+                    last_was_gap = false
+                end
             end
-            local trimmed_line = line:sub(start_idx)
-
-            -- Pipe this all into quickfix to take advantage of the errorformatting that it does
-            local original_qf_state = vim.fn.getqflist { all = 0 }
-            local original_efm = vim.go.errorformat
-
-            local temp_efm = table.concat({
-                "%f:%l:%c:%m",
-                "%f:%l:%c",
-                "%f:%l",
-            }, ",")
-            vim.go.errorformat = temp_efm .. "," .. original_efm
-            vim.fn.setqflist({}, "r", { lines = { trimmed_line } })
-            local qf_items = vim.fn.getqflist()
-
-            vim.go.errorformat = original_efm
-            vim.fn.setqflist({}, "r", {
-                items = original_qf_state.items,
-                title = original_qf_state.title,
-            })
-
-            local lnum = qf_items[1].lnum
-            local col = qf_items[1].col
-
-            local full_path = vim.fs.normalize(vim.fs.joinpath(actual_cwd, cfile))
-            if not vim.uv.fs_stat(full_path) and vim.uv.fs_stat(cfile) then
-                full_path = vim.fs.normalize(cfile)
-            end
-            if not vim.uv.fs_stat(full_path) then
-                return nil
-            end
-
-            if not vim.api.nvim_win_is_valid(original_window) then
-                vim.notify("Original window is no longer valid", vim.log.levels.ERROR)
-                return
-            end
-
-            local open_to_cmd = "edit +" .. lnum .. " " .. vim.fn.fnameescape(full_path)
-            if type(col) == "number" and col > 0 then
-                open_to_cmd = open_to_cmd .. " | normal! " .. col .. "|"
-            end
-
-            vim.fn.win_execute(original_window, open_to_cmd)
-            vim.api.nvim_set_current_win(original_window)
-        end,
-        noremap = true,
-        silent = true,
-    })
-    vim.api.nvim_buf_set_keymap(M.compile_buffer, "n", "q", "", {
-        callback = function()
-            M.close_compile_window()
-        end,
-        noremap = true,
-        silent = true,
-    })
-
-    vim.api.nvim_create_autocmd("BufWipeout", {
-        buffer = M.compile_buffer,
-        once = true,
-        callback = function()
-            M.compile_window = nil
-        end,
-    })
-end
-
---- Wraps a base command (e.g., "git") into a function suitable for a user command.
---- Usage: vim.api.nvim_create_user_command("G", require("plugins.100_compile").wrap("git"), { nargs = "*" })
---- @param base_cmd string
---- @return function
-M.wrap = function(base_cmd)
-    return function(opts)
-        local args = opts.fargs
-        local cmd_parts = { base_cmd }
-        for _, arg in ipairs(args) do
-            table.insert(cmd_parts, arg)
         end
-        local cmd = table.concat(cmd_parts, " ")
-        M.executor(cmd, vim.fn.getcwd())
-    end
-end
-
-vim.api.nvim_create_user_command("Compile", function(args)
-    local fargs = args.fargs
-
-    if #fargs == 0 then
-        M.command()
-        return
     end
 
-    if fargs[1] == "--" then
-        local cmd_parts = {}
-        for i = 2, #fargs do
-            table.insert(cmd_parts, fargs[i])
-        end
-        local cmd = table.concat(cmd_parts, " ")
-
-        M.last_cwd = vim.fn.getcwd()
-        local cwd_to_use = vim.fn.getcwd()
-
-        M.executor(cmd, cwd_to_use)
-        return
-    end
-
-    if #fargs == 1 and fargs[1] == "with-env" then
-        M.with_env()
-        return
-    end
-
-    if #fargs == 1 and fargs[1] == "last" then
-        M.run_last()
-        return
-    end
-
-    if #fargs == 1 then
-        vim.notify(
-            "Error: Unknown argument '" .. fargs[1] .. "'. Did you mean --, with-env, or last?",
-            vim.log.levels.ERROR
-        )
+    if #qf_list > 0 then
+        vim.fn.setqflist(qf_list, "r")
+        vim.notify("Quickfix populated with " .. #qf_list .. " entries", vim.log.levels.INFO)
+        vim.cmd "copen"
     else
-        vim.notify("Error: Invalid arguments. To pass a command, use :Compile -- <cmd>", vim.log.levels.ERROR)
+        vim.notify("No file headers or hunks found", vim.log.levels.WARN)
     end
-end, {
-    nargs = "*",
-    desc = "Compiles the project (supports -- <cmd>, with-env, last)",
-    complete = function(arglead, cmdline, _)
-        local completions = { "with-env", "last", "--" }
+end
 
-        if cmdline:find "%-%-" then
-            return {}
-        end
-
-        local filtered = {}
-        for _, item in ipairs(completions) do
-            if vim.startswith(item, arglead) then
-                table.insert(filtered, item)
-            end
-        end
-        return filtered
-    end,
-})
-
-vim.api.nvim_create_user_command("JJ", M.wrap "jj", {
-    nargs = "*",
-    desc = "Wrapper for git via Compile",
-})
-
-return M
+compile.setup {
+    wrappers = {
+        {
+            binary = "docker",
+            command = "Docker",
+            help_cmd = "--help",
+        },
+        {
+            binary = "jj",
+            command = "JJ",
+            completion_cmd = "jj util completion bash",
+            keymaps = function(buf)
+                vim.keymap.set("n", "<C-q>", function()
+                    populate_quickfix(buf)
+                end, { buffer = buf, silent = true, desc = "JJ: Populate Quickfix" })
+            end,
+        },
+    },
+}
