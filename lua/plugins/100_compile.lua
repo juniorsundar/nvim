@@ -1,5 +1,5 @@
 -- local compile = require "compile"
-MiniDeps.add { source = "juniorsundar/cling.nvim" }
+MiniDeps.add { source = "juniorsundar/cling.nvim", checkout = "feat/parallel" }
 local compile = require "cling"
 
 local function strip_ansi(str)
@@ -79,6 +79,11 @@ compile.setup {
         {
             binary = "docker",
             command = "Docker",
+            completion_cmd = "docker completion bash",
+        },
+        {
+            binary = "eza",
+            command = "Eza",
             help_cmd = "--help",
         },
         {
