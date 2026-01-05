@@ -82,6 +82,11 @@ compile.setup {
             completion_cmd = "docker completion bash",
         },
         {
+            binary = "nh",
+            command = "NH",
+            help_cmd = "--help",
+        },
+        {
             binary = "eza",
             command = "Eza",
             help_cmd = "--help",
