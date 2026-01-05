@@ -1,5 +1,3 @@
--- local compile = require "compile"
-MiniDeps.add { source = "juniorsundar/cling.nvim" }
 local compile = require "cling"
 
 local function strip_ansi(str)

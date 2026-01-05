@@ -115,6 +115,11 @@ if not vim.loop.fs_stat(mini_path) then
 end
 require("mini.deps").setup { path = { package = path_package } }
 
+local plugin_base = vim.fn.expand "~/.config/nvim_plugins"
+for _, path in ipairs(vim.fn.glob(plugin_base .. "/*", false, true)) do
+    vim.opt.rtp:append(path)
+end
+
 vim.keymap.set("n", "<leader>P", "", { desc = "MiniDeps", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>Pu", function()
     MiniDeps.update()
