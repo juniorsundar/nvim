@@ -89,6 +89,14 @@ MiniDeps.now(function()
                             Snacks.dashboard.pick("files", { cwd = vim.fn.stdpath "config" })
                         end,
                     },
+                    {
+                        icon = "󱧘",
+                        key = "u",
+                        desc = "Update Packages",
+                        action = function()
+                            require("mini.deps").update()
+                        end,
+                    },
                     { icon = " ", key = "q", desc = "Quit", action = ":qa" },
                 },
             },
