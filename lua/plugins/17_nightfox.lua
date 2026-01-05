@@ -40,7 +40,7 @@ MiniDeps.now(function()
         palettes = {},
         specs = {},
         groups = {
-            carbonfox = {
+            all = {
                 SnacksPickerListBorder = { fg = palette.fg0 },
                 SnacksPickerPreviewBorder = { fg = palette.fg0 },
                 SnacksPickerInputBorder = { fg = palette.fg0 },
@@ -52,15 +52,16 @@ MiniDeps.now(function()
                 SnacksPickerCol = { fg = palette.fg0 },
                 StatusLine = { bg = palette.bg1 },
                 StatusLineNC = { bg = palette.bg1 },
-                BlinkCmpMenu = { fg = palette.fg0, bg = palette.bg0 },
-                BlinkCmpMenuBorder = { fg = palette.fg0, bg = palette.bg0 },
-                BlinkCmpSignatureHelp = { fg = palette.fg0, bg = palette.bg0 },
-                BlinkCmpSignatureHelpBorder = { fg = palette.fg0, bg = palette.bg0 },
-                BlinkCmpDoc = { fg = palette.fg0, bg = palette.bg0 },
-                BlinkCmpDocBorder = { fg = palette.fg0, bg = palette.bg0 },
+                BlinkCmpMenu = { fg = palette.fg0, bg = palette.bg2 },
+                BlinkCmpMenuBorder = { fg = palette.fg0, bg = palette.bg2 },
+                BlinkCmpSignatureHelp = { fg = palette.fg0, bg = palette.bg2 },
+                BlinkCmpSignatureHelpBorder = { fg = palette.fg0, bg = palette.bg2 },
+                BlinkCmpDoc = { fg = palette.fg0, bg = palette.bg2 },
+                BlinkCmpDocBorder = { fg = palette.fg0, bg = palette.bg2 },
                 BlinkCmpKind = { fg = palette.fg0 },
-                BlinkCmpDocSeparator = { fg = palette.fg0, bg = palette.bg0 },
-                FloatBorder = { bg = palette.bg0 },
+                BlinkCmpDocSeparator = { fg = palette.fg0, bg = palette.bg2 },
+                FloatBorder = { bg = palette.bg2 },
+                NormalFloat = { bg = palette.bg2 },
             },
         },
     }

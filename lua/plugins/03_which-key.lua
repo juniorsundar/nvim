@@ -6,7 +6,10 @@ MiniDeps.now(function()
     require("which-key.colors").Normal = "NormalFloat"
 
     require("which-key").setup {
-        -- preset = "helix",
+        preset = "helix",
+        delay = function(ctx)
+            return ctx.plugin and 0 or 1000
+        end,
         icons = {
             rules = false,
         },

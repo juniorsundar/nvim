@@ -87,9 +87,9 @@ compile.setup {
             completion_cmd = "nh completions bash",
         },
         {
-            binary = "eza",
-            command = "Eza",
-            help_cmd = "--help",
+            binary = "uv",
+            command = "UV",
+            completion_cmd = "uv generate-shell-completion bash",
         },
         {
             binary = "jj",
