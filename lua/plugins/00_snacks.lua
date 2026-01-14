@@ -50,19 +50,27 @@ MiniDeps.now(function()
             preset = {
                 keys = {
                     {
-                        icon = " ",
-                        key = "f",
-                        desc = "Find File",
-                        action = function()
-                            Snacks.picker.files { hidden = true }
-                        end,
-                    },
-                    {
                         icon = " ",
                         key = "n",
                         desc = "New File",
                         action = function()
                             vim.cmd ":ene | startinsert"
+                        end,
+                    },
+                    {
+                        icon = " ",
+                        key = "o",
+                        desc = "Open Folder",
+                        action = function()
+                            require("oil").open()
+                        end,
+                    },
+                    {
+                        icon = " ",
+                        key = "f",
+                        desc = "Find File",
+                        action = function()
+                            Snacks.picker.files { hidden = true }
                         end,
                     },
                     {
@@ -74,14 +82,6 @@ MiniDeps.now(function()
                         end,
                     },
                     {
-                        icon = " ",
-                        key = "r",
-                        desc = "Recent Files",
-                        action = function()
-                            Snacks.dashboard.pick "oldfiles"
-                        end,
-                    },
-                    {
                         icon = " ",
                         key = "c",
                         desc = "Config",
@@ -90,7 +90,7 @@ MiniDeps.now(function()
                         end,
                     },
                     {
-                        icon = "󱧘",
+                        icon = "󱧘 ",
                         key = "u",
                         desc = "Update Packages",
                         action = function()
