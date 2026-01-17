@@ -11,7 +11,7 @@ MiniDeps.now(function()
     require("nvim-treesitter").setup {
         install_dir = vim.fn.stdpath "data" .. "/site",
     }
-    require("nvim-treesitter").install {
+    local languages = {
         "bash",
         "c",
         "c3",
@@ -30,29 +30,15 @@ MiniDeps.now(function()
         "toml",
         "yaml",
         "zig",
+        "html",
+        "latex",
+        "regex",
     }
 
+    require("nvim-treesitter").install(languages)
+
     vim.api.nvim_create_autocmd("FileType", {
-        pattern = {
-            "bash",
-            "c",
-            "c3",
-            "cpp",
-            "d",
-            "go",
-            "gomod",
-            "javascript",
-            "json",
-            "lua",
-            "markdown",
-            "nix",
-            "odin",
-            "python",
-            "rust",
-            "toml",
-            "yaml",
-            "zig",
-        },
+        pattern = languages,
         callback = function()
             vim.treesitter.start()
             vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
