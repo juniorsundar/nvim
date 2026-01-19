@@ -180,7 +180,29 @@ MiniDeps.now(function()
             },
         },
         scroll = { enabled = false },
-        indent = { enabled = false },
+        indent = {
+            indent = {
+                priority = 1,
+                enabled = false, -- enable indent guides
+                char = "│",
+                only_scope = true, -- only show indent guides of the scope
+                only_current = true, -- only show indent guides in the current window
+            },
+            scope = {
+                enabled = false,
+            },
+            chunk = {
+                enabled = false,
+                only_current = true,
+                char = {
+                    corner_top = "╭",
+                    corner_bottom = "╰",
+                    horizontal = "─",
+                    vertical = "│",
+                    arrow = ">",
+                },
+            },
+        },
         words = { enabled = true },
         styles = {
             notification = {
