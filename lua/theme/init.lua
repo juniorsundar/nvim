@@ -513,6 +513,7 @@ M.set_colorscheme = function()
         set_hl("SnacksPickerInput", { fg = palette.fg, bg = palette.bg })
         set_hl("SnacksPickerBox", { fg = palette.fg, bg = palette.bg })
         set_hl("SnacksPickerCol", { fg = palette.fg })
+        set_hl("SnacksIndentChunk", { fg = palette.blue })
     end
 
     if config.plugins.indent_blankline then

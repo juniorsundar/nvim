@@ -101,3 +101,5 @@ compile.setup {
         },
     },
 }
+
+vim.keymap.set("n", "<C-c><C-c>", "<cmd>Cling<cr>", { desc = "Cling" })
