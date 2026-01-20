@@ -157,14 +157,6 @@ return {
         end,
     },
     {
-        "vague2k/vague.nvim",
-        enabled = false,
-        priority = 1000,
-        config = function()
-            require("vague").setup {}
-        end,
-    },
-    {
         "dgox16/oldworld.nvim",
         lazy = false,
         enabled = false,
