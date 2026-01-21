@@ -102,4 +102,4 @@ compile.setup {
     },
 }
 
-vim.keymap.set("n", "<C-c><C-c>", "<cmd>Cling<cr>", { desc = "Cling" })
+vim.keymap.set("n", "<leader>c", "<cmd>Cling<cr>", { desc = "Cling" })
