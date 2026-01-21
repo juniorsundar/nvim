@@ -121,11 +121,11 @@ MiniDeps.now(function()
             end,
         },
         window = {
-            documentation = cmp.config.window.bordered {
-                winhighlight = "Normal:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal",
+            documentation = {
+                winhighlight = "Float:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal",
             },
-            completion = cmp.config.window.bordered {
-                winhighlight = "Normal:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal",
+            completion = {
+                winhighlight = "Float:CmpPmenu,CursorLine:PmenuSel,Search:None,FloatBorder:Normal",
             },
         },
         mapping = cmp.mapping.preset.insert {

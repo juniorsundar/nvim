@@ -28,6 +28,7 @@ local config = {
         whichkey = if_nil(vim.g.doom_one_plugin_whichkey, true),
         snacks = if_nil(vim.g.doom_one_plugin_snacks, true),
         blink = if_nil(vim.g.doom_one_plugin_blink, true),
+        nvim_cmp = if_nil(vim.g.doom_one_plugin_nvim_cmp, true),
         indent_blankline = if_nil(vim.g.doom_one_plugin_indent_blankline, true),
         vim_illuminate = if_nil(vim.g.doom_one_plugin_vim_illuminate, true),
         lspsaga = if_nil(vim.g.doom_one_plugin_lspsaga, false),
@@ -465,6 +466,35 @@ M.set_colorscheme = function()
 
     --- Plugins integrations
     ------------------------
+    if config.plugins.nvim_cmp then
+        -- Customization for Pmenu
+        set_hl("CmpItemKindText", { link = "TextNormal" })
+        set_hl("CmpItemKindMethod", { link = "Method" })
+        set_hl("CmpItemKindFunction", { link = "Function" })
+        set_hl("CmpItemKindConstructor", { link = "Constructor" })
+        set_hl("CmpItemKindField", { link = "Field" })
+        set_hl("CmpItemKindVariable", { link = "Variable" })
+        set_hl("CmpItemKindClass", { link = "Class" })
+        set_hl("CmpItemKindInterface", { fg = palette.yellow })
+        set_hl("CmpItemKindModule", { fg = palette.blue })
+        set_hl("CmpItemKindProperty", { link = "Property" })
+        set_hl("CmpItemKindUnit", { fg = palette.green })
+        set_hl("CmpItemKindValue", { fg = palette.peach })
+        set_hl("CmpItemKindEnum", { link = "Enum" })
+        set_hl("CmpItemKindKeyword", { link = "Keyword" })
+        set_hl("CmpItemKindSnippet", { fg = palette.magenta })
+        set_hl("CmpItemKindColor", { fg = palette.red })
+        set_hl("CmpItemKindFile", { link = "File" })
+        set_hl("CmpItemKindReference", { fg = palette.red })
+        set_hl("CmpItemKindFolder", { fg = palette.blue })
+        set_hl("CmpItemKindEnumMember", { fg = palette.teal })
+        set_hl("CmpItemKindConstant", { link = "Constant" })
+        set_hl("CmpItemKindStruct", { link = "Structure" })
+        set_hl("CmpItemKindEvent", { fg = palette.blue })
+        set_hl("CmpItemKindOperator", { link = "Operator" })
+        set_hl("CmpItemKindTypeParameter", { fg = palette.violet })
+        set_hl("CmpItemKindCopilot", { fg = palette.teal })
+    end
     if config.plugins.blink then
         set_hl("BlinkCmpMenu", { fg = palette.fg, bg = palette.bg_alt })
         set_hl("BlinkCmpMenuBorder", { fg = palette.fg, bg = palette.bg_alt })

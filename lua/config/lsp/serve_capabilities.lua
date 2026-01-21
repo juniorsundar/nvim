@@ -16,8 +16,6 @@ M.capabilities.textDocument.foldingRange = {
     lineFoldingOnly = true,
 }
 
----@alias blink_loaded boolean
----@alias blink blink.cmp.API
 local blink_loaded, blink = pcall(require, "blink.cmp")
 -- local cmp_loaded, cmp = pcall(require, "cmp_nvim_lsp")
 if blink_loaded then
