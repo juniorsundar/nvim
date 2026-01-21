@@ -32,6 +32,7 @@ local config = {
         indent_blankline = if_nil(vim.g.doom_one_plugin_indent_blankline, true),
         vim_illuminate = if_nil(vim.g.doom_one_plugin_vim_illuminate, true),
         lspsaga = if_nil(vim.g.doom_one_plugin_lspsaga, false),
+        multicursor = if_nil(vim.g.doom_one_plugin_multicursor, true),
     },
 }
 
@@ -728,6 +729,16 @@ M.set_colorscheme = function()
         set_hl("LspSagaCodeActionBorder", { link = "Bold" })
         set_hl("LspSagaDefPreviewBorder", { link = "Bold" })
         set_hl("LspLinesDiagBorder", { link = "Bold" })
+    end
+
+    if config.plugins.multicursor then
+        set_hl("MultiCursorCursor", { reverse = true })
+        set_hl("MultiCursorVisual", { link = "Visual" })
+        set_hl("MultiCursorSign", { link = "SignColumn" })
+        set_hl("MultiCursorMatchPreview", { link = "Search" })
+        set_hl("MultiCursorDisabledCursor", { reverse = true })
+        set_hl("MultiCursorDisabledVisual", { link = "Visual" })
+        set_hl("MultiCursorDisabledSign", { link = "SignColumn" })
     end
 end
 
