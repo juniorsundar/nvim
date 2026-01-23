@@ -1,0 +1,36 @@
+MiniDeps.add { source = "dgox16/oldworld.nvim" }
+require("oldworld").setup {
+    terminal_colors = true,
+    variant = "default",
+    styles = {
+        comments = {},
+        keywords = {},
+        identifiers = {},
+        functions = {},
+        variables = {},
+        booleans = {},
+    },
+    integrations = {
+        alpha = true,
+        cmp = true,
+        flash = true,
+        gitsigns = true,
+        hop = false,
+        indent_blankline = true,
+        lazy = true,
+        lsp = true,
+        markdown = true,
+        mason = true,
+        navic = false,
+        neo_tree = false,
+        neogit = false,
+        neorg = false,
+        noice = true,
+        notify = true,
+        rainbow_delimiters = true,
+        telescope = true,
+        treesitter = true,
+    },
+    highlight_overrides = {},
+}
+vim.cmd.colorscheme "oldworld"
