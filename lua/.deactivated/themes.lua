@@ -200,15 +200,6 @@ return {
         end,
     },
     {
-        "EdenEast/nightfox.nvim",
-        lazy = false,
-        enabled = false,
-        priority = 1000,
-        config = function()
-            vim.cmd "colorscheme nightfox"
-        end,
-    },
-    {
         "AstroNvim/astrotheme",
         enabled = false,
         priority = 1000,
