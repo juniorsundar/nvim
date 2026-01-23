@@ -35,6 +35,7 @@ vim.opt.scrolloff = 0
 vim.o.grepprg = "rg --vimgrep"
 vim.o.grepformat = "%f:%l:%c:%m"
 vim.o.foldlevel = 0
+vim.cmd [[set fillchars+=eob:\ ]]
 
 vim.api.nvim_create_autocmd("TextYankPost", {
     desc = "Highlight when yanking (copying) text",
