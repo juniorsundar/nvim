@@ -64,6 +64,9 @@ MiniDeps.now(function()
                 -- elsewhere in your config, without redefining it, due to `opts_extend`
                 sources = {
                     default = { "lsp", "path", "snippets", "buffer" },
+                    per_filetype = {
+                        minibuffer_input = {},
+                    },
                     -- per_filetype = {
                     --     markdown = { "obsidian", "obsidian_new", "obsidian_tags" },
                     -- },

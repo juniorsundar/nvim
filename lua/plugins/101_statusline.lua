@@ -19,6 +19,8 @@ StatusLine.config = {
             ["snacks_dashboard"] = true,
             ["snacks_picker_list"] = true,
             ["snacks_picker_input"] = true,
+            ["minibuffer_input"] = true,
+            ["minibuffer_results"] = true,
             ["qf"] = true,
         },
     },
@@ -345,6 +347,11 @@ function StatusLine.autoscroll()
         return
     end
 
+    local buf = vim.api.nvim_get_current_buf()
+    if StatusLine.is_ignored(buf) then
+        return
+    end
+
     local current_line = vim.fn.line "."
     local last_line = vim.fn.line "$"
 
@@ -352,7 +359,7 @@ function StatusLine.autoscroll()
         local win_height = vim.api.nvim_win_get_height(win)
         local cursor_win_line = vim.fn.winline()
         if math.abs(cursor_win_line - win_height) <= 1 then
-            vim.cmd "normal! \5" -- \5 is CTRL-E (Scroll window down)
+            vim.cmd "normal! \5"
         end
     end
 end
