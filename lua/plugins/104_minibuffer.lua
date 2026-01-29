@@ -229,7 +229,7 @@ function M.pick(items_or_provider, on_select, opts)
 
     -- Close
     map("<Esc>", close)
-    map("<C-c>", close)
+    map("<C-c>", vim.cmd "stopinsert")
 
     -- Initial setup
     local group = api.nvim_create_augroup("MinibufferLive", { clear = true })
@@ -244,9 +244,12 @@ function M.pick(items_or_provider, on_select, opts)
 end
 
 vim.keymap.set("n", "<A-x>", function()
-    local all_commands = vim.fn.getcompletion("", "command")
-
-    M.pick(all_commands, function(input_text)
+    M.pick(function(input)
+        if input == "" then
+            return vim.fn.getcompletion("", "command")
+        end
+        return vim.fn.getcompletion(input, "cmdline")
+    end, function(input_text)
         vim.cmd(input_text)
     end, { prompt = "M-x > " })
 end, { desc = "Minibuffer Command Palette" })
