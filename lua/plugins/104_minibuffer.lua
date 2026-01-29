@@ -1,5 +1,6 @@
 local M = {}
 local api = vim.api
+local has_blink, blink_fuzzy = pcall(require, "blink.cmp.fuzzy.rust")
 
 local function simple_fuzzy_score(str, pattern)
     if pattern == "" then
@@ -69,6 +70,15 @@ function M.pick(items_or_provider, on_select, opts)
     opts = opts or {}
     local prompt_text = opts.prompt or "> "
     local custom_sorter = opts.sorter
+
+    local use_blink = has_blink and type(items_or_provider) == "table" and not custom_sorter
+    local blink_items = {}
+    if use_blink then
+        for i, item in ipairs(items_or_provider) do
+            table.insert(blink_items, { label = item, sortText = item })
+        end
+        blink_fuzzy.set_provider_items("minibuffer", blink_items)
+    end
 
     local ns_id = api.nvim_create_namespace "minibuffer"
 
@@ -161,6 +171,20 @@ function M.pick(items_or_provider, on_select, opts)
             else
                 if custom_sorter then
                     current_matches = custom_sorter(items_or_provider, input)
+                elseif use_blink then
+                    local _, matched_indices, _, _ = blink_fuzzy.fuzzy(input, #input, { "minibuffer" }, {
+                        max_typos = 0,
+                        use_frecency = false,
+                        use_proximity = false,
+                        nearby_words = {},
+                        match_suffix = false,
+                        snippet_score_offset = 0,
+                        sorts = { "score", "sort_text" },
+                    })
+                    current_matches = {}
+                    for _, idx in ipairs(matched_indices) do
+                        table.insert(current_matches, items_or_provider[idx + 1])
+                    end
                 else
                     local scored = {}
                     for _, item in ipairs(items_or_provider) do
