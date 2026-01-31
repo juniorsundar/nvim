@@ -20,14 +20,14 @@ function UI:create_windows()
     vim.bo[self.results_buf].filetype = "minibuffer_results"
 
     -- Create Results Window
-    vim.cmd "botright 10new"
+    vim.cmd "botright 10split"
     self.results_win = api.nvim_get_current_win()
     api.nvim_win_set_buf(self.results_win, self.results_buf)
 
     self:_configure_window(self.results_win)
 
     -- Create Input Window
-    vim.cmd "leftabove 1new"
+    vim.cmd "leftabove 1split"
     self.input_win = api.nvim_get_current_win()
     api.nvim_win_set_buf(self.input_win, self.input_buf)
 
