@@ -32,7 +32,9 @@ function M.references()
             local col = loc.range.start.character + 1
 
             local relative_path = util.get_relative_path(filename)
-            local entry = string.format("%s:%d:%d", relative_path, lnum, col)
+            local line_content = util.get_line_content(filename, lnum)
+
+            local entry = string.format("%s:%d:%d\t%s", relative_path, lnum, col, line_content)
             table.insert(items, entry)
         end
 
@@ -61,7 +63,6 @@ function M.definitions()
             return
         end
 
-        -- 'result' can be a single Location or a list of Locations
         if not vim.islist(result) then
             result = { result }
         end
@@ -78,7 +79,9 @@ function M.definitions()
                 local col = range.start.character + 1
 
                 local relative_path = util.get_relative_path(filename)
-                local entry = string.format("%s:%d:%d", relative_path, lnum, col)
+                local line_content = util.get_line_content(filename, lnum)
+
+                local entry = string.format("%s:%d:%d\t%s", relative_path, lnum, col, line_content)
                 table.insert(items, entry)
             end
         end

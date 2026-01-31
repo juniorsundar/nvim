@@ -19,12 +19,27 @@ function M.jump_to_location(selection)
         return
     end
 
-    local filename, lnum, col = selection:match "^(.*):(%d+):(%d+)$"
+    local filename, lnum, col = selection:match "^(.-):(%d+):(%d+)"
 
     if filename and lnum and col then
         vim.cmd("edit " .. filename)
         vim.api.nvim_win_set_cursor(0, { tonumber(lnum), tonumber(col) - 1 })
     end
+end
+
+function M.get_line_content(filename, lnum)
+    if vim.fn.filereadable(filename) == 0 then
+        return ""
+    end
+
+    local bufnr = vim.fn.bufnr(filename)
+    if bufnr ~= -1 and vim.api.nvim_buf_is_loaded(bufnr) then
+        local lines = vim.api.nvim_buf_get_lines(bufnr, lnum - 1, lnum, false)
+        return lines[1] or ""
+    end
+
+    local lines = vim.fn.readfile(filename, "", lnum)
+    return lines[lnum] or ""
 end
 
 return M
