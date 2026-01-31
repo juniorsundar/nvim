@@ -2,6 +2,25 @@ local fuzzy = require "minibuffer.fuzzy"
 local UI = require "minibuffer.ui"
 local api = vim.api
 
+local active_ui = nil
+
+local function close_existing()
+    if active_ui then
+        active_ui:close()
+        active_ui = nil
+    end
+
+    for _, win in ipairs(api.nvim_list_wins()) do
+        if api.nvim_win_is_valid(win) then
+            local buf = api.nvim_win_get_buf(win)
+            local ft = vim.bo[buf].filetype
+            if ft == "minibuffer_input" or ft == "minibuffer_results" then
+                api.nvim_win_close(win, true)
+            end
+        end
+    end
+end
+
 local M = {}
 
 local function complete_line(input, selection)
@@ -14,6 +33,8 @@ local function complete_line(input, selection)
 end
 
 function M.pick(items_or_provider, on_select, opts)
+    close_existing()
+
     opts = opts or {}
     local prompt_text = opts.prompt or "> "
     local custom_sorter = opts.sorter
@@ -26,6 +47,7 @@ function M.pick(items_or_provider, on_select, opts)
     end
 
     local ui = UI.new(prompt_text)
+    active_ui = ui
     local input_buf, _ = ui:create_windows()
 
     local current_matches = {}
@@ -76,6 +98,9 @@ function M.pick(items_or_provider, on_select, opts)
     map("<CR>", function()
         local current_input = api.nvim_get_current_line()
         ui:close()
+        if active_ui == ui then
+            active_ui = nil
+        end
 
         if on_select and current_input ~= "" then
             on_select(current_input)
@@ -84,6 +109,9 @@ function M.pick(items_or_provider, on_select, opts)
 
     map("<Esc>", function()
         ui:close()
+        if active_ui == ui then
+            active_ui = nil
+        end
     end)
     map("<C-c>", vim.cmd "stopinsert")
 
@@ -93,6 +121,17 @@ function M.pick(items_or_provider, on_select, opts)
         buffer = input_buf,
         group = group,
         callback = refresh,
+    })
+
+    api.nvim_create_autocmd("WinLeave", {
+        buffer = input_buf,
+        group = group,
+        callback = function()
+            ui:close()
+            if active_ui == ui then
+                active_ui = nil
+            end
+        end,
     })
 
     refresh()

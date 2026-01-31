@@ -26,11 +26,9 @@ local function simple_fuzzy_score(str, pattern)
         end -- Character not found in order
 
         -- Scoring:
-        -- 1. Distance penalty (farther apart = lower score)
         local distance = found_idx - str_idx
         local score = 100 - distance
 
-        -- 2. Consecutive match bonus
         if distance == 0 then
             run = run + 10
             score = score + run
@@ -38,12 +36,10 @@ local function simple_fuzzy_score(str, pattern)
             run = 0
         end
 
-        -- 3. Start of word bonus (e.g. match 'b' in 'foo_bar')
         if found_idx == 1 or str:sub(found_idx - 1, found_idx - 1):match "[^%w]" then
             score = score + 20
         end
 
-        -- 4. CamelCase bonus (e.g. match 'B' in 'fooBar')
         if found_idx > 1 and str:sub(found_idx, found_idx):match "%u" then
             score = score + 20
         end
@@ -82,17 +78,14 @@ end
 function M.filter(items_or_provider, query, opts)
     opts = opts or {}
 
-    -- DYNAMIC PROVIDER (Function)
     if type(items_or_provider) == "function" then
         return items_or_provider(query)
     end
 
-    -- EMPTY QUERY -> Return all
     if query == "" then
         return items_or_provider
     end
 
-    -- CUSTOM SORTER
     if opts.sorter then
         return opts.sorter(items_or_provider, query)
     end
