@@ -1,4 +1,5 @@
 local api = vim.api
+local highlight = require "minibuffer.highlight"
 
 local M = {}
 local UI = {}
@@ -65,40 +66,7 @@ function UI:render(matches, selected_index)
 
     for i, line in ipairs(matches) do
         local line_idx = i - 1
-
-        local suffix_start = line:find ":%d+:%d+"
-        local path_end = suffix_start and (suffix_start - 1) or #line
-        local path_part = line:sub(1, path_end)
-
-        local dir_str = path_part:match "^(.*/)"
-        if dir_str then
-            api.nvim_buf_set_extmark(
-                self.results_buf,
-                self.ns_id,
-                line_idx,
-                0,
-                { end_row = line_idx, end_col = #dir_str, hl_group = "Comment", priority = 100 }
-            )
-        end
-
-        if suffix_start then
-            local s, e = line:find(":%d+:", suffix_start)
-            if s then
-                api.nvim_buf_set_extmark(
-                    self.results_buf,
-                    self.ns_id,
-                    line_idx,
-                    s,
-                    { end_row = line_idx, end_col = e - 1, hl_group = "String", priority = 100 }
-                )
-            end
-
-            -- Highlight content after coordinates (if any)
-            local coords_end = line:find(":%d+:%d+", suffix_start)
-            if coords_end then
-                local content_start = line:find("\t", coords_end)
-            end
-        end
+        highlight.highlight_entry(self.results_buf, self.ns_id, line_idx, line, i <= 200)
     end
 
     if selected_index > 0 and selected_index <= #matches then
