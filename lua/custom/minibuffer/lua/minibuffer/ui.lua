@@ -63,6 +63,44 @@ function UI:render(matches, selected_index)
     api.nvim_buf_set_lines(self.results_buf, 0, -1, false, matches)
     api.nvim_buf_clear_namespace(self.results_buf, self.ns_id, 0, -1)
 
+    for i, line in ipairs(matches) do
+        local line_idx = i - 1
+
+        local suffix_start = line:find ":%d+:%d+"
+        local path_end = suffix_start and (suffix_start - 1) or #line
+        local path_part = line:sub(1, path_end)
+
+        local dir_str = path_part:match "^(.*/)"
+        if dir_str then
+            api.nvim_buf_set_extmark(
+                self.results_buf,
+                self.ns_id,
+                line_idx,
+                0,
+                { end_row = line_idx, end_col = #dir_str, hl_group = "Comment", priority = 100 }
+            )
+        end
+
+        if suffix_start then
+            local s, e = line:find(":%d+:", suffix_start)
+            if s then
+                api.nvim_buf_set_extmark(
+                    self.results_buf,
+                    self.ns_id,
+                    line_idx,
+                    s,
+                    { end_row = line_idx, end_col = e - 1, hl_group = "String", priority = 100 }
+                )
+            end
+
+            -- Highlight content after coordinates (if any)
+            local coords_end = line:find(":%d+:%d+", suffix_start)
+            if coords_end then
+                local content_start = line:find("\t", coords_end)
+            end
+        end
+    end
+
     if selected_index > 0 and selected_index <= #matches then
         local selected_text = matches[selected_index]
 
@@ -78,7 +116,6 @@ end
 
 function UI:set_prompt(text)
     self.prompt_text = text
-    -- Update extmark if window exists
     if self.input_buf and api.nvim_buf_is_valid(self.input_buf) then
         api.nvim_buf_clear_namespace(self.input_buf, self.prompt_ns, 0, -1)
         api.nvim_buf_set_extmark(self.input_buf, self.prompt_ns, 0, 0, {
