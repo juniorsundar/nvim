@@ -31,6 +31,27 @@ local function get_lang(filename)
 end
 
 function M.highlight_entry(buf, ns, line_idx, line, highlight_code)
+    local bufnr = line:match "^(%d+): "
+    if bufnr then
+        vim.api.nvim_buf_set_extmark(buf, ns, line_idx, 0, {
+            end_col = #bufnr,
+            hl_group = "WarningMsg",
+            priority = 100,
+        })
+
+        local path_start = #bufnr + 3
+        local path_part = line:sub(path_start)
+        local dir_str = path_part:match "^(.*/)"
+        if dir_str then
+            vim.api.nvim_buf_set_extmark(buf, ns, line_idx, path_start - 1, {
+                end_col = path_start - 1 + #dir_str,
+                hl_group = "Comment",
+                priority = 100,
+            })
+        end
+        return
+    end
+
     local suffix_start = line:find ":%d+:%d+"
     local path_end = suffix_start and (suffix_start - 1) or #line
     local path_part = line:sub(1, path_end)
@@ -82,7 +103,6 @@ function M.highlight_code(buf, ns, row, start_col, content, filename)
         return
     end
 
-    -- Iterate captures and set extmarks
     for id, node, _ in query:iter_captures(root, content, 0, -1) do
         local capture_name = query.captures[id]
         local hl_group = "@" .. capture_name

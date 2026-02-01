@@ -120,7 +120,6 @@ local function load_module()
         return nil
     end
 
-    -- The Rust module entry point is named "luaopen_blink_cmp_fuzzy"
     local open_func, err = package.loadlib(lib_path, "luaopen_blink_cmp_fuzzy")
     if not open_func then
         if not is_downloading then
