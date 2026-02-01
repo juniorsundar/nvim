@@ -19,6 +19,7 @@ local function get_lang(filename)
         return nil
     end
 
+    ---@type string|nil
     local lang = vim.treesitter.language.get_lang(ft) or ft
     local has_lang = pcall(vim.treesitter.language.add, lang)
     if not has_lang then
@@ -56,7 +57,7 @@ function M.highlight_entry(buf, ns, line_idx, line, highlight_code)
         if highlight_code then
             local _, coords_end = line:find(":%d+:%d+", suffix_start)
             if coords_end then
-                local content_start = line:find("\t", coords_end)
+                local content_start = line:find(":", coords_end)
                 if content_start then
                     local content = line:sub(content_start + 1)
                     M.highlight_code(buf, ns, line_idx, content_start, content, path_part)
@@ -86,7 +87,7 @@ function M.highlight_code(buf, ns, row, start_col, content, filename)
         local capture_name = query.captures[id]
         local hl_group = "@" .. capture_name
 
-        local r1, c1, r2, c2 = node:range()
+        local _, c1, _, c2 = node:range()
 
         vim.api.nvim_buf_set_extmark(buf, ns, row, start_col + c1, {
             end_col = start_col + c2,

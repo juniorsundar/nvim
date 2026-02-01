@@ -35,7 +35,6 @@ function UI:create_windows()
     self:_configure_window(self.input_win)
     vim.cmd "resize 1"
 
-    -- Set Prompt
     api.nvim_buf_set_extmark(self.input_buf, self.prompt_ns, 0, 0, {
         virt_text = { { self.prompt_text, "Title" } },
         virt_text_pos = "inline",
@@ -48,14 +47,14 @@ end
 function UI:_configure_window(win_id)
     vim.wo[win_id].number = false
     vim.wo[win_id].relativenumber = false
-    vim.wo[win_id].signcolumn = "no"
+    vim.wo[win_id].signcolumn = "yes"
     vim.wo[win_id].cursorline = false
     vim.wo[win_id].foldcolumn = "0"
     vim.wo[win_id].spell = false
     vim.wo[win_id].list = false
 end
 
-function UI:render(matches, selected_index)
+function UI:render(matches, selected_index, marked)
     if #matches == 0 then
         api.nvim_buf_set_lines(self.results_buf, 0, -1, false, { " " })
         return
@@ -67,6 +66,14 @@ function UI:render(matches, selected_index)
     for i, line in ipairs(matches) do
         local line_idx = i - 1
         highlight.highlight_entry(self.results_buf, self.ns_id, line_idx, line, i <= 200)
+
+        if marked and marked[line] then
+            api.nvim_buf_set_extmark(self.results_buf, self.ns_id, line_idx, 0, {
+                sign_text = "●",
+                sign_hl_group = "String",
+                priority = 105,
+            })
+        end
     end
 
     if selected_index > 0 and selected_index <= #matches then

@@ -11,6 +11,7 @@ function M.references()
         return
     end
 
+    ---@class lsp.TextDocumentPositionParams
     local params = vim.lsp.util.make_position_params(0, client.offset_encoding)
     params.context = { includeDeclaration = true }
 
@@ -34,11 +35,17 @@ function M.references()
             local relative_path = util.get_relative_path(filename)
             local line_content = util.get_line_content(filename, lnum)
 
-            local entry = string.format("%s:%d:%d\t%s", relative_path, lnum, col, line_content)
+            local entry = string.format("%s:%d:%d:%s", relative_path, lnum, col, line_content)
             table.insert(items, entry)
         end
 
-        minibuffer.pick(items, util.jump_to_location, { prompt = "References > " })
+        minibuffer.pick(items, util.jump_to_location, {
+            prompt = "References > ",
+            keymaps = {
+                ["<Tab>"] = "toggle_mark",
+                ["<CR>"] = "select_entry",
+            },
+        })
     end)
 end
 
@@ -81,12 +88,18 @@ function M.definitions()
                 local relative_path = util.get_relative_path(filename)
                 local line_content = util.get_line_content(filename, lnum)
 
-                local entry = string.format("%s:%d:%d\t%s", relative_path, lnum, col, line_content)
+                local entry = string.format("%s:%d:%d:%s", relative_path, lnum, col, line_content)
                 table.insert(items, entry)
             end
         end
 
-        minibuffer.pick(items, util.jump_to_location, { prompt = "Definitions > " })
+        minibuffer.pick(items, util.jump_to_location, {
+            prompt = "Definitions > ",
+            keymaps = {
+                ["<Tab>"] = "toggle_mark",
+                ["<CR>"] = "select_entry",
+            },
+        })
     end)
 end
 

@@ -51,6 +51,7 @@ function M.pick(items_or_provider, on_select, opts)
     local input_buf, _ = ui:create_windows()
 
     local current_matches = {}
+    local marked = {}
     local selected_index = 1
 
     local function refresh()
@@ -62,15 +63,27 @@ function M.pick(items_or_provider, on_select, opts)
         })
 
         selected_index = 1
-        ui:render(current_matches, selected_index)
+        ui:render(current_matches, selected_index, marked)
     end
 
-    -- Mappings
-    local function map(key, func)
-        vim.keymap.set("i", key, func, { buffer = input_buf })
+    -- Actions
+    local actions = {}
+
+    function actions.next_item()
+        if #current_matches > 0 then
+            selected_index = (selected_index % #current_matches) + 1
+            ui:render(current_matches, selected_index, marked)
+        end
     end
 
-    map("<Tab>", function()
+    function actions.prev_item()
+        if #current_matches > 0 then
+            selected_index = ((selected_index - 2) % #current_matches) + 1
+            ui:render(current_matches, selected_index, marked)
+        end
+    end
+
+    function actions.complete_selection()
         local selection = current_matches[selected_index]
         local input = api.nvim_get_current_line()
 
@@ -79,23 +92,17 @@ function M.pick(items_or_provider, on_select, opts)
             ui:update_input { new_line }
             refresh()
         end
-    end)
+    end
 
-    map("<C-n>", function()
-        if selected_index < #current_matches then
-            selected_index = selected_index + 1
-            ui:render(current_matches, selected_index)
+    function actions.toggle_mark()
+        local selection = current_matches[selected_index]
+        if selection then
+            marked[selection] = not marked[selection]
+            ui:render(current_matches, selected_index, marked)
         end
-    end)
+    end
 
-    map("<C-p>", function()
-        if selected_index > 1 then
-            selected_index = selected_index - 1
-            ui:render(current_matches, selected_index)
-        end
-    end)
-
-    map("<CR>", function()
+    function actions.select_input()
         local current_input = api.nvim_get_current_line()
         ui:close()
         if active_ui == ui then
@@ -105,15 +112,53 @@ function M.pick(items_or_provider, on_select, opts)
         if on_select and current_input ~= "" then
             on_select(current_input)
         end
-    end)
+    end
 
-    map("<Esc>", function()
+    function actions.select_entry()
+        local selection = current_matches[selected_index]
+        if selection then
+            ui:close()
+            if active_ui == ui then
+                active_ui = nil
+            end
+            on_select(selection)
+        end
+    end
+
+    function actions.close()
         ui:close()
         if active_ui == ui then
             active_ui = nil
         end
-    end)
-    map("<C-c>", vim.cmd "stopinsert")
+    end
+
+    -- Mappings
+    local default_keymaps = {
+        ["<Tab>"] = "complete_selection",
+        ["<C-n>"] = "next_item",
+        ["<C-p>"] = "prev_item",
+        ["<Down>"] = "next_item",
+        ["<Up>"] = "prev_item",
+        ["<CR>"] = "select_input",
+        ["<Esc>"] = "close",
+        ["<C-c>"] = "close",
+    }
+
+    local keymaps = vim.tbl_extend("force", default_keymaps, opts.keymaps or {})
+
+    local function map(key, func)
+        vim.keymap.set("i", key, func, { buffer = input_buf })
+    end
+
+    for key, action in pairs(keymaps) do
+        if type(action) == "string" then
+            if actions[action] then
+                map(key, actions[action])
+            end
+        elseif type(action) == "function" then
+            map(key, action)
+        end
+    end
 
     -- Autocmds
     local group = api.nvim_create_augroup("MinibufferLive", { clear = true })
