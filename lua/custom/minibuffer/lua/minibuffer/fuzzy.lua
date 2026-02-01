@@ -22,9 +22,8 @@ local function simple_fuzzy_score(str, pattern)
 
         if not found_idx then
             return nil
-        end -- Character not found in order
+        end
 
-        -- Scoring:
         local distance = found_idx - str_idx
         local score = 100 - distance
 
