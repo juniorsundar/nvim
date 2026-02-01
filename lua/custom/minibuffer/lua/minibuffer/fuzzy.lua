@@ -1,7 +1,6 @@
 local M = {}
 
--- Check for Blink (Rust fuzzy) availability
-local has_blink, blink_fuzzy = pcall(require, "blink.cmp.fuzzy.rust")
+local blink = require "minibuffer.blink"
 
 -- Pure Lua fuzzy scorer (fallback)
 local function simple_fuzzy_score(str, pattern)
@@ -58,7 +57,7 @@ end
 --- Register items with Blink's Rust engine if available
 ---@param items table List of strings
 function M.register_items(items)
-    if not has_blink then
+    if not blink.is_available() then
         return false
     end
 
@@ -66,7 +65,7 @@ function M.register_items(items)
     for _, item in ipairs(items) do
         table.insert(blink_items, { label = item, sortText = item })
     end
-    blink_fuzzy.set_provider_items("minibuffer", blink_items)
+    blink.set_provider_items("minibuffer", blink_items)
     return true
 end
 
@@ -91,22 +90,16 @@ function M.filter(items_or_provider, query, opts)
     end
 
     -- BLINK (RUST) MATCHING
-    if opts.use_blink and has_blink then
-        local _, matched_indices, _, _ = blink_fuzzy.fuzzy(query, #query, { "minibuffer" }, {
-            max_typos = 0,
-            use_frecency = false,
-            use_proximity = false,
-            nearby_words = {},
-            match_suffix = false,
-            snippet_score_offset = 0,
-            sorts = { "score", "sort_text" },
-        })
+    if opts.use_blink and blink.is_available() then
+        local _, matched_indices = blink.fuzzy(query, "minibuffer")
 
-        local matches = {}
-        for _, idx in ipairs(matched_indices) do
-            table.insert(matches, items_or_provider[idx + 1])
+        if matched_indices then
+            local matches = {}
+            for _, idx in ipairs(matched_indices) do
+                table.insert(matches, items_or_provider[idx + 1])
+            end
+            return matches
         end
-        return matches
     end
 
     -- LUA FALLBACK
@@ -129,7 +122,7 @@ function M.filter(items_or_provider, query, opts)
 end
 
 function M.has_blink()
-    return has_blink
+    return blink.is_available()
 end
 
 return M
