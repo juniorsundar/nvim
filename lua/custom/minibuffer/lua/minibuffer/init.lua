@@ -1,5 +1,6 @@
 local fuzzy = require "minibuffer.fuzzy"
 local UI = require "minibuffer.ui"
+local util = require "minibuffer.util"
 local api = vim.api
 
 local active_ui = nil
@@ -33,6 +34,10 @@ local function complete_line(input, selection)
 end
 
 function M.pick(items_or_provider, on_select, opts)
+    local original_win = api.nvim_get_current_win()
+    local original_buf = api.nvim_win_get_buf(original_win)
+    local original_cursor = api.nvim_win_get_cursor(original_win)
+
     close_existing()
 
     opts = opts or {}
@@ -53,6 +58,61 @@ function M.pick(items_or_provider, on_select, opts)
     local current_matches = {}
     local marked = {}
     local selected_index = 1
+    local is_previewing = false
+
+    local function preview()
+        if #current_matches == 0 then
+            return
+        end
+        local selection = current_matches[selected_index]
+        if not selection then
+            return
+        end
+
+        local filename, lnum, col = util.parse_selection(selection)
+        if filename and api.nvim_win_is_valid(original_win) then
+            is_previewing = true
+            api.nvim_win_call(original_win, function()
+                local bufnr = vim.fn.bufnr(filename)
+                if bufnr ~= -1 and api.nvim_buf_is_loaded(bufnr) then
+                    if api.nvim_win_get_buf(original_win) ~= bufnr then
+                        api.nvim_win_set_buf(original_win, bufnr)
+                    end
+                else
+                    local buf = api.nvim_create_buf(false, true)
+                    vim.bo[buf].bufhidden = "wipe"
+                    vim.bo[buf].buftype = "nofile"
+                    vim.bo[buf].swapfile = false
+
+                    local existing = vim.fn.bufnr(filename)
+                    if existing == -1 then
+                        pcall(api.nvim_buf_set_name, buf, filename)
+                    else
+                        pcall(api.nvim_buf_set_name, buf, filename .. " (Preview)")
+                    end
+
+                    local lines = {}
+                    if vim.fn.filereadable(filename) == 1 then
+                        lines = vim.fn.readfile(filename)
+                    end
+                    api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+
+                    local ft = vim.filetype.match { filename = filename }
+                    if ft then
+                        vim.bo[buf].filetype = ft
+                    end
+
+                    api.nvim_win_set_buf(original_win, buf)
+                end
+
+                if lnum and col then
+                    pcall(api.nvim_win_set_cursor, original_win, { lnum, col - 1 })
+                    vim.cmd "normal! zz"
+                end
+            end)
+            is_previewing = false
+        end
+    end
 
     local function refresh()
         local input = api.nvim_get_current_line()
@@ -64,6 +124,7 @@ function M.pick(items_or_provider, on_select, opts)
 
         selected_index = 1
         ui:render(current_matches, selected_index, marked)
+        preview()
     end
 
     -- Actions
@@ -73,6 +134,7 @@ function M.pick(items_or_provider, on_select, opts)
         if #current_matches > 0 then
             selected_index = (selected_index % #current_matches) + 1
             ui:render(current_matches, selected_index, marked)
+            preview()
         end
     end
 
@@ -80,6 +142,7 @@ function M.pick(items_or_provider, on_select, opts)
         if #current_matches > 0 then
             selected_index = ((selected_index - 2) % #current_matches) + 1
             ui:render(current_matches, selected_index, marked)
+            preview()
         end
     end
 
@@ -126,6 +189,12 @@ function M.pick(items_or_provider, on_select, opts)
     end
 
     function actions.close()
+        -- Restore original view if valid
+        if api.nvim_win_is_valid(original_win) and api.nvim_buf_is_valid(original_buf) then
+            api.nvim_win_set_buf(original_win, original_buf)
+            api.nvim_win_set_cursor(original_win, original_cursor)
+        end
+
         ui:close()
         if active_ui == ui then
             active_ui = nil
@@ -172,6 +241,16 @@ function M.pick(items_or_provider, on_select, opts)
         buffer = input_buf,
         group = group,
         callback = function()
+            if is_previewing then
+                return
+            end
+
+            -- Restore original view if valid
+            if api.nvim_win_is_valid(original_win) and api.nvim_buf_is_valid(original_buf) then
+                api.nvim_win_set_buf(original_win, original_buf)
+                api.nvim_win_set_cursor(original_win, original_cursor)
+            end
+
             ui:close()
             if active_ui == ui then
                 active_ui = nil
