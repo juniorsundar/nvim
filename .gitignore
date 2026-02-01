@@ -1,1 +1,2 @@
 .direnv
+lua/custom/minibuffer/lua/minibuffer/libblink_cmp_fuzzy.so
