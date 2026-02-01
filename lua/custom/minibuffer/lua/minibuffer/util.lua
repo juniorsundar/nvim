@@ -14,16 +14,23 @@ function M.get_relative_path(filename)
     return filename
 end
 
-function M.jump_to_location(selection)
+function M.parse_selection(selection)
     if not selection or selection == "" then
-        return
+        return nil, nil, nil
     end
 
     local filename, lnum, col = selection:match "^(.-):(%d+):(%d+)"
-
     if filename and lnum and col then
+        return filename, tonumber(lnum), tonumber(col)
+    end
+    return nil, nil, nil
+end
+
+function M.jump_to_location(selection)
+    local filename, lnum, col = M.parse_selection(selection)
+    if filename then
         vim.cmd("edit " .. filename)
-        vim.api.nvim_win_set_cursor(0, { tonumber(lnum), tonumber(col) - 1 })
+        vim.api.nvim_win_set_cursor(0, { lnum, col - 1 })
     end
 end
 

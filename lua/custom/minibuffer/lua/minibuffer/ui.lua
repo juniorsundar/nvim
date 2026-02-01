@@ -2,9 +2,11 @@ local api = vim.api
 local highlight = require "minibuffer.highlight"
 
 local M = {}
+---@class MinibufferUI
 local UI = {}
 UI.__index = UI
 
+---@return MinibufferUI
 function M.new(prompt_text)
     local self = setmetatable({}, UI)
     self.prompt_text = prompt_text
@@ -54,6 +56,9 @@ function UI:_configure_window(win_id)
     vim.wo[win_id].list = false
 end
 
+---@param matches table
+---@param selected_index number
+---@param marked table|nil
 function UI:render(matches, selected_index, marked)
     if #matches == 0 then
         api.nvim_buf_set_lines(self.results_buf, 0, -1, false, { " " })
