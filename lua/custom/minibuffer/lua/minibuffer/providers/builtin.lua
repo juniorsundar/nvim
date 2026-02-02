@@ -23,6 +23,12 @@ function M.buffers()
             if name ~= "" then
                 local relative_path = util.get_relative_path(name)
                 local row_col = vim.api.nvim_buf_get_mark(bufnr, '"')
+                if row_col[1] == 0 then
+                    row_col[1] = 1
+                end
+                if row_col[2] == 0 then
+                    row_col[2] = 1
+                end
                 local entry = string.format("%d: %s:%d:%d", bufnr, relative_path, row_col[1], row_col[2])
                 table.insert(items, entry)
             end

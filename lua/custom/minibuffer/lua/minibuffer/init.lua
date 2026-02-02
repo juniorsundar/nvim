@@ -191,7 +191,7 @@ function M.pick(items_or_provider, on_select, opts)
             if active_ui == ui then
                 active_ui = nil
             end
-            on_select(selection)
+            on_select(selection, selection_format)
         end
     end
 
