@@ -13,7 +13,7 @@ StatusLine.config = {
         buftypes = {
             ["terminal"] = true,
             ["prompt"] = true,
-            ["nofile"] = true,
+            -- ["nofile"] = true,
         },
         filetypes = {
             ["snacks_dashboard"] = true,

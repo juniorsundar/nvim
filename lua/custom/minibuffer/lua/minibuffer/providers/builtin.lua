@@ -18,24 +18,49 @@ function M.buffers()
     local items = {}
 
     for _, bufnr in ipairs(bufs) do
-        if vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].buflisted then
+        if vim.bo[bufnr].buflisted then
             local name = vim.api.nvim_buf_get_name(bufnr)
             if name ~= "" then
                 local relative_path = util.get_relative_path(name)
-                local entry = string.format("%d: %s", bufnr, relative_path)
+                local row_col = vim.api.nvim_buf_get_mark(bufnr, '"')
+                local entry = string.format("%d: %s:%d:%d", bufnr, relative_path, row_col[1], row_col[2])
                 table.insert(items, entry)
             end
         end
     end
 
-    minibuffer.pick(items, function(selection)
-        util.jump_to_location(selection)
-    end, {
+    minibuffer.pick(items, util.jump_to_location, {
         prompt = "Buffers > ",
         keymaps = {
             ["<Tab>"] = "toggle_mark",
             ["<CR>"] = "select_entry",
+            ["<C-x>"] = function(selection, builtin)
+                local data = util.parse_selection(selection, "buffer")
+                if data and data.bufnr then
+                    local win = builtin.parameters.original_win
+                    if win and vim.api.nvim_win_is_valid(win) then
+                        local current_view_buf = vim.api.nvim_win_get_buf(win)
+                        if current_view_buf == data.bufnr then
+                            local scratch = vim.api.nvim_create_buf(false, true)
+                            vim.bo[scratch].bufhidden = "wipe"
+                            vim.api.nvim_win_set_buf(win, scratch)
+                        end
+                    end
+
+                    pcall(vim.api.nvim_buf_delete, data.bufnr, { force = true })
+
+                    for i, item in ipairs(items) do
+                        if item == selection then
+                            table.remove(items, i)
+                            break
+                        end
+                    end
+
+                    builtin.actions.refresh()
+                end
+            end,
         },
+        selection_format = "buffer",
     })
 end
 
