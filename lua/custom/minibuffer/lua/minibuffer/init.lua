@@ -43,6 +43,7 @@ function M.pick(items_or_provider, on_select, opts)
     opts = opts or {}
     local prompt_text = opts.prompt or "> "
     local custom_sorter = opts.sorter
+    local selection_format = opts.selection_format or "lsp"
 
     -- Determine if we can use blink
     local use_blink = fuzzy.has_blink() and type(items_or_provider) == "table" and not custom_sorter
@@ -69,8 +70,12 @@ function M.pick(items_or_provider, on_select, opts)
             return
         end
 
-        local filename, lnum, col = util.parse_selection(selection)
-        if filename and api.nvim_win_is_valid(original_win) then
+        local data = util.parse_selection(selection, selection_format)
+        if data and data.filename and api.nvim_win_is_valid(original_win) then
+            local filename = data.filename
+            local lnum = data.lnum or 1
+            local col = data.col or 1
+
             is_previewing = true
             api.nvim_win_call(original_win, function()
                 local bufnr = vim.fn.bufnr(filename)
@@ -130,6 +135,8 @@ function M.pick(items_or_provider, on_select, opts)
     -- Actions
     local actions = {}
 
+    actions.refresh = refresh
+
     function actions.next_item()
         if #current_matches > 0 then
             selected_index = (selected_index % #current_matches) + 1
@@ -173,7 +180,7 @@ function M.pick(items_or_provider, on_select, opts)
         end
 
         if on_select and current_input ~= "" then
-            on_select(current_input)
+            on_select(current_input, selection_format)
         end
     end
 
@@ -189,7 +196,6 @@ function M.pick(items_or_provider, on_select, opts)
     end
 
     function actions.close()
-        -- Restore original view if valid
         if api.nvim_win_is_valid(original_win) and api.nvim_buf_is_valid(original_buf) then
             api.nvim_win_set_buf(original_win, original_buf)
             api.nvim_win_set_cursor(original_win, original_cursor)
@@ -200,6 +206,12 @@ function M.pick(items_or_provider, on_select, opts)
             active_ui = nil
         end
     end
+
+    local parameters = {
+        original_win = original_win,
+        original_buf = original_buf,
+        original_cursor = original_cursor,
+    }
 
     -- Mappings
     local default_keymaps = {
@@ -219,13 +231,22 @@ function M.pick(items_or_provider, on_select, opts)
         vim.keymap.set("i", key, func, { buffer = input_buf })
     end
 
-    for key, action in pairs(keymaps) do
-        if type(action) == "string" then
-            if actions[action] then
-                map(key, actions[action])
+    for key, handler in pairs(keymaps) do
+        if type(handler) == "string" then
+            if actions[handler] then
+                map(key, actions[handler])
             end
-        elseif type(action) == "function" then
-            map(key, action)
+        elseif type(handler) == "function" then
+            map(key, function()
+                local selection = current_matches[selected_index]
+                if selection then
+                    local builtin = {
+                        actions = actions,
+                        parameters = parameters,
+                    }
+                    handler(selection, builtin)
+                end
+            end)
         end
     end
 
