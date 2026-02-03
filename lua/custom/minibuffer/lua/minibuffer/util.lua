@@ -75,17 +75,30 @@ function M.parse_selection(selection, format)
     return result
 end
 
-function M.jump_to_location(selection, format)
-    local data = M.parse_selection(selection, format)
+M.parsers = {
+    file = function(selection)
+        return M.parse_selection(selection, "file")
+    end,
+    grep = function(selection)
+        return M.parse_selection(selection, "grep")
+    end,
+    lsp = function(selection)
+        return M.parse_selection(selection, "lsp")
+    end,
+    buffer = function(selection)
+        return M.parse_selection(selection, "buffer")
+    end,
+}
+
+function M.jump_to_location(selection, data_or_format)
+    local data = data_or_format
+
+    if type(data_or_format) == "string" then
+        data = M.parse_selection(selection, data_or_format)
+    end
 
     if data and data.filename then
-        local bufnr = data.bufnr or vim.fn.bufnr(data.filename)
-
-        if bufnr ~= -1 and vim.api.nvim_buf_is_valid(bufnr) then
-            vim.cmd("buffer " .. bufnr)
-        else
-            vim.cmd("edit " .. data.filename)
-        end
+        vim.cmd("edit " .. data.filename)
 
         if data.lnum and data.col then
             vim.api.nvim_win_set_cursor(0, { data.lnum, data.col - 1 })

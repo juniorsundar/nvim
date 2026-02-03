@@ -45,7 +45,7 @@ function M.references()
                 ["<Tab>"] = "toggle_mark",
                 ["<CR>"] = "select_entry",
             },
-            selection_format = "lsp",
+            parser = util.parsers.lsp,
         })
     end)
 end
@@ -100,7 +100,7 @@ function M.definitions()
                 ["<Tab>"] = "toggle_mark",
                 ["<CR>"] = "select_entry",
             },
-            selection_format = "lsp",
+            parser = util.parsers.lsp,
         })
     end)
 end

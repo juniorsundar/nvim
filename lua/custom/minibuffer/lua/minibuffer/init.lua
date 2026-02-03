@@ -43,7 +43,16 @@ function M.pick(items_or_provider, on_select, opts)
     opts = opts or {}
     local prompt_text = opts.prompt or "> "
     local custom_sorter = opts.sorter
-    local selection_format = opts.selection_format or "lsp"
+
+    local parser = opts.parser
+    if not parser and opts.selection_format then
+        parser = function(s)
+            return util.parse_selection(s, opts.selection_format)
+        end
+    end
+    -- Default fallback if neither is provided?
+    -- parser = parser or util.parsers.file
+    -- Better to leave it nil if unspecified, so no preview/parsing happens unexpectedly.
 
     -- Determine if we can use blink
     local use_blink = fuzzy.has_blink() and type(items_or_provider) == "table" and not custom_sorter
@@ -70,7 +79,7 @@ function M.pick(items_or_provider, on_select, opts)
             return
         end
 
-        local data = util.parse_selection(selection, selection_format)
+        local data = parser and parser(selection)
         if data and data.filename and api.nvim_win_is_valid(original_win) then
             local filename = data.filename
             local lnum = data.lnum or 1
@@ -121,6 +130,24 @@ function M.pick(items_or_provider, on_select, opts)
 
     local function refresh()
         local input = api.nvim_get_current_line()
+
+        if opts.on_change then
+            selected_index = 1
+            opts.on_change(input, function(matches)
+                current_matches = matches or {}
+
+                if selected_index > #current_matches then
+                    selected_index = #current_matches
+                end
+                if selected_index < 1 and #current_matches > 0 then
+                    selected_index = 1
+                end
+
+                ui:render(current_matches, selected_index, marked)
+                preview()
+            end)
+            return
+        end
 
         current_matches = fuzzy.filter(items_or_provider, input, {
             sorter = custom_sorter,
@@ -180,7 +207,8 @@ function M.pick(items_or_provider, on_select, opts)
         end
 
         if on_select and current_input ~= "" then
-            on_select(current_input, selection_format)
+            -- For input selection, we don't typically have a parser for free text
+            on_select(current_input, nil)
         end
     end
 
@@ -191,7 +219,9 @@ function M.pick(items_or_provider, on_select, opts)
             if active_ui == ui then
                 active_ui = nil
             end
-            on_select(selection, selection_format)
+
+            local data = parser and parser(selection)
+            on_select(selection, data)
         end
     end
 
