@@ -9,7 +9,7 @@ UI.__index = UI
 ---@return MinibufferUI
 function M.new(prompt_text)
     local self = setmetatable({}, UI)
-    self.prompt_text = prompt_text
+    self.base_prompt = prompt_text
     self.ns_id = api.nvim_create_namespace "minibuffer"
     self.prompt_ns = api.nvim_create_namespace "minibuffer_prompt"
     return self
@@ -37,11 +37,7 @@ function UI:create_windows()
     self:_configure_window(self.input_win)
     vim.cmd "resize 1"
 
-    api.nvim_buf_set_extmark(self.input_buf, self.prompt_ns, 0, 0, {
-        virt_text = { { self.prompt_text, "Title" } },
-        virt_text_pos = "inline",
-        right_gravity = false,
-    })
+    self:update_prompt_virtual_text(self.base_prompt)
 
     return self.input_buf, self.input_win
 end
@@ -56,11 +52,35 @@ function UI:_configure_window(win_id)
     vim.wo[win_id].list = false
 end
 
+-- Helper to update the virtual text prompt safely
+function UI:update_prompt_virtual_text(text)
+    if self.input_buf and api.nvim_buf_is_valid(self.input_buf) then
+        api.nvim_buf_clear_namespace(self.input_buf, self.prompt_ns, 0, -1)
+        api.nvim_buf_set_extmark(self.input_buf, self.prompt_ns, 0, 0, {
+            virt_text = { { text, "Title" } },
+            virt_text_pos = "inline",
+            right_gravity = false,
+        })
+    end
+end
+
 ---@param matches table
 ---@param selected_index number
 ---@param marked table|nil
 function UI:render(matches, selected_index, marked)
-    if #matches == 0 then
+    local total = #matches
+    local current = selected_index
+
+    local count_str = ""
+    if total > 0 then
+        count_str = string.format("%d/%d ", current, total)
+    else
+        count_str = "0/0 "
+    end
+
+    self:update_prompt_virtual_text(count_str .. self.base_prompt)
+
+    if total == 0 then
         api.nvim_buf_set_lines(self.results_buf, 0, -1, false, { " " })
         return
     end
@@ -81,7 +101,7 @@ function UI:render(matches, selected_index, marked)
         end
     end
 
-    if selected_index > 0 and selected_index <= #matches then
+    if selected_index > 0 and selected_index <= total then
         local selected_text = matches[selected_index]
 
         api.nvim_buf_set_extmark(self.results_buf, self.ns_id, selected_index - 1, 0, {
@@ -95,15 +115,8 @@ function UI:render(matches, selected_index, marked)
 end
 
 function UI:set_prompt(text)
-    self.prompt_text = text
-    if self.input_buf and api.nvim_buf_is_valid(self.input_buf) then
-        api.nvim_buf_clear_namespace(self.input_buf, self.prompt_ns, 0, -1)
-        api.nvim_buf_set_extmark(self.input_buf, self.prompt_ns, 0, 0, {
-            virt_text = { { self.prompt_text, "Title" } },
-            virt_text_pos = "inline",
-            right_gravity = false,
-        })
-    end
+    self.base_prompt = text
+    self:update_prompt_virtual_text(text)
 end
 
 function UI:update_input(lines)

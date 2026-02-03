@@ -41,7 +41,8 @@ function M.buffers()
             ["<Tab>"] = "toggle_mark",
             ["<CR>"] = "select_entry",
             ["<C-x>"] = function(selection, builtin)
-                local data = util.parse_selection(selection, "buffer")
+                local parser = util.parsers.buffer
+                local data = parser(selection)
                 if data and data.bufnr then
                     local win = builtin.parameters.original_win
                     if win and vim.api.nvim_win_is_valid(win) then
@@ -66,7 +67,30 @@ function M.buffers()
                 end
             end,
         },
-        selection_format = "buffer",
+        parser = util.parsers.buffer,
+    })
+end
+
+function M.old_files()
+    local results = {}
+
+    for _, file in ipairs(vim.v.oldfiles) do
+        if vim.fn.filereadable(file) == 1 then
+            table.insert(results, file)
+        end
+    end
+
+    minibuffer.pick(results, nil, {
+        prompt = "Recent Files > ",
+        keymaps = {
+            ["<Tab>"] = "toggle_mark",
+            ["<CR>"] = "select_entry",
+        },
+        parser = util.parsers.file,
+        on_select = function(selection, data)
+            util.jump_to_location(selection, data)
+            pcall(vim.cmd, 'normal! g`"')
+        end,
     })
 end
 
