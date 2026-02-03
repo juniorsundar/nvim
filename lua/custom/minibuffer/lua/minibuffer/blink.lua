@@ -110,6 +110,11 @@ end
 ---Load the Rust module
 ---@return table|nil
 local function load_module()
+    local has_blink, blink = pcall(require, "blink.cmp.fuzzy.rust")
+    if has_blink then
+        return blink
+    end
+
     if has_loaded then
         return rust_module
     end
