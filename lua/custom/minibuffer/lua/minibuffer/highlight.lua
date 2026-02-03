@@ -94,7 +94,11 @@ function M.highlight_code(buf, ns, row, start_col, content, filename)
         return
     end
 
-    local parser = vim.treesitter.get_string_parser(content, lang)
+    local ok, parser = pcall(vim.treesitter.get_string_parser, content, lang)
+    if not ok or not parser then
+        return
+    end
+
     local tree = parser:parse()[1]
     local root = tree:root()
 

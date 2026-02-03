@@ -168,8 +168,8 @@ function M.fuzzy(query, id)
 
     -- Blink fuzzy signature: fuzzy(query, query_len, providers_list, opts)
     return mod.fuzzy(query, #query, { id }, {
-        max_typos = 0,
-        use_frecency = false,
+        max_typos = 1,
+        use_frecency = true,
         use_proximity = false,
         nearby_words = {},
         match_suffix = false,
