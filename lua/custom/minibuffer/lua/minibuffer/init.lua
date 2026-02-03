@@ -41,6 +41,8 @@ function M.pick(items_or_provider, on_select, opts)
     close_existing()
 
     opts = opts or {}
+    on_select = on_select or opts.on_select
+
     local prompt_text = opts.prompt or "> "
     local custom_sorter = opts.sorter
 
@@ -50,11 +52,7 @@ function M.pick(items_or_provider, on_select, opts)
             return util.parse_selection(s, opts.selection_format)
         end
     end
-    -- Default fallback if neither is provided?
-    -- parser = parser or util.parsers.file
-    -- Better to leave it nil if unspecified, so no preview/parsing happens unexpectedly.
 
-    -- Determine if we can use blink
     local use_blink = fuzzy.has_blink() and type(items_or_provider) == "table" and not custom_sorter
 
     if use_blink then
@@ -107,8 +105,15 @@ function M.pick(items_or_provider, on_select, opts)
 
                     local lines = {}
                     if vim.fn.filereadable(filename) == 1 then
-                        lines = vim.fn.readfile(filename)
+                        lines = vim.fn.readfile(filename, "", 1000)
                     end
+
+                    for i, line in ipairs(lines) do
+                        if line:find "[\r\n]" then
+                            lines[i] = line:gsub("[\r\n]", " ")
+                        end
+                    end
+
                     api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
                     local ft = vim.filetype.match { filename = filename }

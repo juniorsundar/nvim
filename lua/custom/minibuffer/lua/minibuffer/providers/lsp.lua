@@ -40,7 +40,7 @@ function M.references()
         end
 
         minibuffer.pick(items, util.jump_to_location, {
-            prompt = "References > ",
+            prompt = "LSP References > ",
             keymaps = {
                 ["<Tab>"] = "toggle_mark",
                 ["<CR>"] = "select_entry",
@@ -95,7 +95,7 @@ function M.definitions()
         end
 
         minibuffer.pick(items, util.jump_to_location, {
-            prompt = "Definitions > ",
+            prompt = "LSP Definitions > ",
             keymaps = {
                 ["<Tab>"] = "toggle_mark",
                 ["<CR>"] = "select_entry",
