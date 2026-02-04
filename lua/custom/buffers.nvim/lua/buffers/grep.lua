@@ -20,7 +20,7 @@ setup_highlights()
 
 local ns_id = api.nvim_create_namespace "buffers_grep_syntax"
 
--- Table to store metadata: buffer_data[bufnr][line_idx] = { filename, lnum, col }
+-- Table to store metadata: buffer_data[bufnr][extmark_id] = { filename, lnum, col, original_text }
 M.buffer_data = {}
 
 ---Parse a grep line
@@ -57,11 +57,9 @@ local function parse_line(line)
     local text_start = e_col + 2
     local text = line:sub(text_start)
 
-    -- Calculate directory length for highlighting in virtual text
     local dir_part = filename:match "^(.*[/\\])"
     local dir_len = dir_part and #dir_part or 0
 
-    -- Construct the prefix string exactly as it appeared
     local prefix_str = line:sub(1, e_col + 1)
 
     return {
@@ -75,7 +73,7 @@ local function parse_line(line)
 end
 
 ---Highlights the buffer using virtual text and treesitter
----TRANSFORMS the buffer content by stripping the prefix
+---TRANSFORMS the buffer content by stripping the prefix if present
 function M.highlight_buffer(bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
 
@@ -84,121 +82,128 @@ function M.highlight_buffer(bufnr)
         return
     end
 
-    local updates = {} -- { {start_row, end_row, replacement_lines} }
-    local metadata_updates = {} -- { [row] = meta }
-    local needs_update = false
-
     M.buffer_data[bufnr] = M.buffer_data[bufnr] or {}
 
-    for i, line in ipairs(lines) do
-        local parsed = parse_line(line)
-        if parsed then
-            needs_update = true
-            metadata_updates[i - 1] = {
-                filename = parsed.filename,
-                lnum = parsed.lnum,
-                col = parsed.col,
-                dir_len = parsed.dir_len,
-                prefix_str = parsed.prefix_str,
-            }
+    -- Check if we need to transform (look for raw format in first few lines)
+    local needs_transform = false
+    for i = 1, math.min(#lines, 5) do
+        if parse_line(lines[i]) then
+            needs_transform = true
+            break
         end
     end
 
-    if not needs_update then
-        M.refresh_virt_text(bufnr)
-        return
-    end
+    if needs_transform then
+        local new_lines = {}
+        local metas = {}
 
-    -- Apply buffer transformations
-    -- We construct a new table of lines
-    local new_lines = {}
-    for i, line in ipairs(lines) do
-        if metadata_updates[i - 1] then
+        M.buffer_data[bufnr] = {}
+        api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
+
+        for i, line in ipairs(lines) do
             local parsed = parse_line(line)
-            table.insert(new_lines, parsed.text)
-            M.buffer_data[bufnr][i - 1] = metadata_updates[i - 1]
-        else
-            table.insert(new_lines, line)
-            M.buffer_data[bufnr][i - 1] = nil
+            if parsed then
+                table.insert(new_lines, parsed.text)
+                table.insert(metas, {
+                    filename = parsed.filename,
+                    lnum = parsed.lnum,
+                    col = parsed.col,
+                    original_text = parsed.text,
+                    dir_len = parsed.dir_len,
+                    prefix_str = parsed.prefix_str,
+                })
+            else
+                table.insert(new_lines, line)
+                table.insert(metas, nil)
+            end
+        end
+
+        -- Update buffer content
+        api.nvim_buf_set_lines(bufnr, 0, -1, false, new_lines)
+
+        for i, meta in ipairs(metas) do
+            if meta then
+                local row = i - 1
+                local id = api.nvim_buf_set_extmark(bufnr, ns_id, row, 0, {})
+                M.buffer_data[bufnr][id] = meta
+            end
         end
     end
 
-    -- Update buffer content (atomic)
-    -- We use pcall to avoid issues if buffer changed
-    local ok = pcall(api.nvim_buf_set_lines, bufnr, 0, -1, false, new_lines)
-    if not ok then
-        return
-    end
-
-    -- Now apply virtual text and highlights
     M.refresh_virt_text(bufnr)
 end
 
----Refreshes virtual text and TS highlights based on stored metadata
+---Refreshes virtual text and TS highlights based on stored metadata (via extmarks)
 function M.refresh_virt_text(bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
-    api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
 
-    local lines = api.nvim_buf_get_lines(bufnr, 0, -1, false)
-    local metas = M.buffer_data[bufnr] or {}
+    local extmarks = api.nvim_buf_get_extmarks(bufnr, ns_id, 0, -1, { details = true })
+    local buf_data = M.buffer_data[bufnr] or {}
 
-    for i, line in ipairs(lines) do
-        local row = i - 1
-        local meta = metas[row]
+    for _, extmark in ipairs(extmarks) do
+        local id = extmark[1]
+        local row = extmark[2]
+        local col = extmark[3]
 
+        local meta = buf_data[id]
         if meta then
             local virt_chunks = {}
-
-            -- Directory
             if meta.dir_len > 0 then
                 table.insert(virt_chunks, { meta.filename:sub(1, meta.dir_len), "GrepFile" })
             end
-
-            -- Filename Base
             table.insert(virt_chunks, { meta.filename:sub(meta.dir_len + 1), "GrepFileBase" })
-
-            -- Separator
             table.insert(virt_chunks, { ":", "GrepSep" })
-
-            -- Lnum
             table.insert(virt_chunks, { tostring(meta.lnum), "GrepLine" })
-
-            -- Separator
             table.insert(virt_chunks, { ":", "GrepSep" })
-
-            -- Col
             table.insert(virt_chunks, { tostring(meta.col), "GrepCol" })
-
-            -- Separator
             table.insert(virt_chunks, { ":", "GrepSep" })
 
-            -- Set Extmark with Inline Virtual Text
-            api.nvim_buf_set_extmark(bufnr, ns_id, row, 0, {
+            api.nvim_buf_set_extmark(bufnr, ns_id, row, col, {
+                id = id, -- Keep same ID
                 virt_text = virt_chunks,
                 virt_text_pos = "inline",
-                -- virt_text_pos = "overlay", -- Fallback if inline not supported? Inline is best.
                 hl_mode = "combine",
             })
+        end
+    end
 
-            if #line > 0 then
+    M.refresh_syntax(bufnr)
+end
+
+local syntax_ns_id = api.nvim_create_namespace "buffers_grep_syntax_highlight"
+
+function M.refresh_syntax(bufnr)
+    api.nvim_buf_clear_namespace(bufnr, syntax_ns_id, 0, -1)
+
+    local extmarks = api.nvim_buf_get_extmarks(bufnr, ns_id, 0, -1, {})
+    local buf_data = M.buffer_data[bufnr] or {}
+
+    for _, extmark in ipairs(extmarks) do
+        local id = extmark[1]
+        local row = extmark[2]
+
+        local meta = buf_data[id]
+        if meta then
+            local line = api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+            if line and #line > 0 then
                 local ft = vim.filetype.match { filename = meta.filename }
                 if ft then
                     local lang = vim.treesitter.language.get_lang(ft)
                     if lang then
-                        local parser_passed, parser = pcall(vim.treesitter.get_string_parser, line, lang)
-                        if parser_passed and parser then
-                            local tree_passed, tree = pcall(function()
+                        local ok, parser = pcall(vim.treesitter.get_string_parser, line, lang)
+                        if ok and parser then
+                            local ok_tree, tree = pcall(function()
                                 return parser:parse()[1]
                             end)
-                            if tree_passed and tree then
+                            if ok_tree and tree then
                                 local query = vim.treesitter.query.get(lang, "highlights")
                                 if query then
-                                    for id, node, _ in query:iter_captures(tree:root(), line, 0, -1) do
-                                        local name = query.captures[id]
+                                    for capture_id, node, _ in query:iter_captures(tree:root(), line, 0, -1) do
+                                        local name = query.captures[capture_id]
                                         local hl_group = "@" .. name .. "." .. lang
                                         local _, s_col, _, e_col = node:range()
 
-                                        api.nvim_buf_set_extmark(bufnr, ns_id, row, s_col, {
+                                        api.nvim_buf_set_extmark(bufnr, syntax_ns_id, row, s_col, {
                                             end_col = e_col,
                                             hl_group = hl_group,
                                             priority = 100,
@@ -214,20 +219,21 @@ function M.refresh_virt_text(bufnr)
     end
 end
 
----Navigates to the location using stored metadata
+---Navigates to the location under cursor
 function M.nav_to_match()
     local bufnr = api.nvim_get_current_buf()
     local row = api.nvim_win_get_cursor(0)[1] - 1
 
-    local metas = M.buffer_data[bufnr]
-    if not metas then
-        vim.notify("No metadata found for this buffer", vim.log.levels.WARN)
+    local extmarks = api.nvim_buf_get_extmarks(bufnr, ns_id, { row, 0 }, { row, -1 }, { limit = 1 })
+    if #extmarks == 0 then
+        vim.notify("No grep result on this line", vim.log.levels.WARN)
         return
     end
 
-    local meta = metas[row]
+    local id = extmarks[1][1]
+    local meta = M.buffer_data[bufnr][id]
+
     if not meta then
-        vim.notify("Not a valid grep result", vim.log.levels.WARN)
         return
     end
 
@@ -237,18 +243,97 @@ function M.nav_to_match()
     end
 
     vim.cmd.edit(meta.filename)
-
     pcall(api.nvim_win_set_cursor, 0, { meta.lnum, meta.col - 1 })
     vim.cmd "normal! zz"
 end
 
----Creates a new grep buffer with the provided lines
----@param lines string[]
+---Creates a new grep buffer
 function M.create_buffer(lines)
     local buf = api.nvim_create_buf(false, true)
     api.nvim_buf_set_lines(buf, 0, -1, false, lines)
     vim.bo[buf].filetype = "grep"
     vim.cmd.buffer(buf)
+end
+
+---Apply edits to files
+---@param mode "direct"|"conflict"
+function M.apply_edits(mode)
+    local bufnr = api.nvim_get_current_buf()
+    local buf_data = M.buffer_data[bufnr]
+    if not buf_data then
+        return
+    end
+
+    local extmarks = api.nvim_buf_get_extmarks(bufnr, ns_id, 0, -1, { details = true })
+
+    local file_edits = {}
+
+    for _, extmark in ipairs(extmarks) do
+        local id = extmark[1]
+        local row = extmark[2]
+        local meta = buf_data[id]
+
+        if meta then
+            local current_text = api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+            if current_text and current_text ~= meta.original_text then
+                file_edits[meta.filename] = file_edits[meta.filename] or {}
+                table.insert(file_edits[meta.filename], {
+                    lnum = meta.lnum,
+                    original = meta.original_text,
+                    new = current_text,
+                })
+            end
+        end
+    end
+
+    for filename, edits in pairs(file_edits) do
+        table.sort(edits, function(a, b)
+            return a.lnum > b.lnum
+        end)
+
+        local file_lines = {}
+        if vim.fn.filereadable(filename) == 1 then
+            file_lines = vim.fn.readfile(filename)
+        else
+            vim.notify("File missing: " .. filename, vim.log.levels.ERROR)
+            goto continue
+        end
+
+        local modified_count = 0
+
+        for _, edit in ipairs(edits) do
+            local idx = edit.lnum
+
+            local file_content = file_lines[idx]
+            if not file_content or not file_content:find(edit.original, 1, true) then
+                vim.notify(string.format("Conflict in %s:%d. Skipping.", filename, idx), vim.log.levels.WARN)
+            else
+                if mode == "direct" then
+                    file_lines[idx] = edit.new
+                elseif mode == "conflict" then
+                    local conflict_block = {
+                        "<<<<<<< LOCAL",
+                        file_lines[idx],
+                        "=======",
+                        edit.new,
+                        ">>>>>>> REMOTE",
+                    }
+                    table.remove(file_lines, idx)
+                    for k = #conflict_block, 1, -1 do
+                        table.insert(file_lines, idx, conflict_block[k])
+                    end
+                end
+                modified_count = modified_count + 1
+            end
+        end
+
+        if modified_count > 0 then
+            vim.fn.writefile(file_lines, filename)
+            vim.notify(string.format("Applied %d changes to %s", modified_count, filename))
+        end
+
+        ::continue::
+    end
 end
 
 return M
