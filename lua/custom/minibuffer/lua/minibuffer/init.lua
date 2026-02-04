@@ -230,6 +230,36 @@ function M.pick(items_or_provider, on_select, opts)
         end
     end
 
+    function actions.send_to_grep()
+        local lines = {}
+        for item, is_marked in pairs(marked) do
+            if is_marked then
+                table.insert(lines, item)
+            end
+        end
+
+        if #lines == 0 then
+            local selection = current_matches[selected_index]
+            if selection then
+                table.insert(lines, selection)
+            end
+        end
+
+        if #lines > 0 then
+            ui:close()
+            if active_ui == ui then
+                active_ui = nil
+            end
+
+            local ok, grep_buf = pcall(require, "buffers.grep")
+            if ok then
+                grep_buf.create_buffer(lines)
+            else
+                vim.notify("buffers.grep module not found", vim.log.levels.WARN)
+            end
+        end
+    end
+
     function actions.close()
         if api.nvim_win_is_valid(original_win) and api.nvim_buf_is_valid(original_buf) then
             api.nvim_win_set_buf(original_win, original_buf)
@@ -258,6 +288,7 @@ function M.pick(items_or_provider, on_select, opts)
         ["<CR>"] = "select_input",
         ["<Esc>"] = "close",
         ["<C-c>"] = "close",
+        ["<C-g>"] = "send_to_grep",
     }
 
     local keymaps = vim.tbl_extend("force", default_keymaps, opts.keymaps or {})
@@ -278,6 +309,7 @@ function M.pick(items_or_provider, on_select, opts)
                     local builtin = {
                         actions = actions,
                         parameters = parameters,
+                        marked = marked,
                     }
                     handler(selection, builtin)
                 end
