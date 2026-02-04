@@ -77,6 +77,12 @@ end
 function M.highlight_buffer(bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
 
+    -- If already processed, just refresh highlights and exit
+    if vim.b[bufnr].grep_processed then
+        M.refresh_virt_text(bufnr)
+        return
+    end
+
     local lines = api.nvim_buf_get_lines(bufnr, 0, -1, false)
     if #lines == 0 then
         return
@@ -86,7 +92,8 @@ function M.highlight_buffer(bufnr)
 
     -- Check if we need to transform (look for raw format in first few lines)
     local needs_transform = false
-    for i = 1, math.min(#lines, 5) do
+    -- Scan deeper (e.g. 50 lines) to account for possible headers
+    for i = 1, math.min(#lines, 50) do
         if parse_line(lines[i]) then
             needs_transform = true
             break
@@ -94,9 +101,22 @@ function M.highlight_buffer(bufnr)
     end
 
     if needs_transform then
-        local new_lines = {}
-        local metas = {}
+        vim.b[bufnr].grep_processed = true
 
+        local header = {
+            "# GREP EDIT BUFFER",
+            "# ------------------",
+            "# <CR>        -> Jump to match",
+            "# <C-c><C-c>  -> Apply edits (Direct)",
+            "# <C-c><C-s>  -> Apply edits (Conflict Markers)",
+            "",
+        }
+
+        local new_lines = vim.deepcopy(header)
+        local metas = {} -- Temporary storage ordered by index
+        local header_offset = #header
+
+        -- Clear existing data for this buffer if we are re-parsing
         M.buffer_data[bufnr] = {}
         api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
 
@@ -113,6 +133,9 @@ function M.highlight_buffer(bufnr)
                     prefix_str = parsed.prefix_str,
                 })
             else
+                -- Don't preserve lines that don't parse (unless they aren't header lines?)
+                -- If we are transforming, we assume input is raw grep output.
+                -- Grep output might have garbage, let's keep it.
                 table.insert(new_lines, line)
                 table.insert(metas, nil)
             end
@@ -121,9 +144,11 @@ function M.highlight_buffer(bufnr)
         -- Update buffer content
         api.nvim_buf_set_lines(bufnr, 0, -1, false, new_lines)
 
+        -- Create Extmarks and store metadata
         for i, meta in ipairs(metas) do
             if meta then
-                local row = i - 1
+                -- Row index is i-1 (from iteration) + header_offset
+                local row = (i - 1) + header_offset
                 local id = api.nvim_buf_set_extmark(bufnr, ns_id, row, 0, {})
                 M.buffer_data[bufnr][id] = meta
             end

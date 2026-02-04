@@ -202,6 +202,7 @@ function M.pick(items_or_provider, on_select, opts)
             marked[selection] = not marked[selection]
             ui:render(current_matches, selected_index, marked)
         end
+        actions.next_item()
     end
 
     function actions.select_input()
