@@ -13,13 +13,17 @@ function M.files()
 
     local fd_result = vim.system(cmd, { text = true }):wait()
     files_list = vim.split(fd_result.stdout, "\n", { trimempty = true })
-    minibuffer.pick(files_list, util.jump_to_location, {
+    minibuffer.pick(files_list, nil, {
         prompt = "Files > ",
         keymaps = {
             ["<Tab>"] = "toggle_mark",
             ["<CR>"] = "select_entry",
         },
         parser = util.parsers.file,
+        on_select = function(selection, data)
+            util.jump_to_location(selection, data)
+            pcall(vim.cmd, 'normal! g`"')
+        end,
     })
 end
 
