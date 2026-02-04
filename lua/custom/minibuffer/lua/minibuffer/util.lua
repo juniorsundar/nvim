@@ -98,7 +98,7 @@ function M.jump_to_location(selection, data_or_format)
     end
 
     if data and data.filename then
-        vim.cmd("edit " .. data.filename)
+        vim.cmd("edit " .. vim.fn.fnameescape(data.filename))
 
         if data.lnum and data.col then
             vim.api.nvim_win_set_cursor(0, { data.lnum, data.col - 1 })
