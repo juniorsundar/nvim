@@ -109,6 +109,7 @@ function M.highlight_buffer(bufnr)
             "# <CR>        -> Jump to match",
             "# <C-c><C-c>  -> Apply edits (Direct)",
             "# <C-c><C-s>  -> Apply edits (Conflict Markers)",
+            "# <C-c><C-r>  -> Refresh content from disk",
             "",
         }
 
@@ -358,6 +359,68 @@ function M.apply_edits(mode)
         end
 
         ::continue::
+    end
+end
+
+---Refreshes the buffer content from disk
+function M.refresh_content()
+    local bufnr = api.nvim_get_current_buf()
+    local buf_data = M.buffer_data[bufnr]
+    if not buf_data then
+        return
+    end
+
+    local extmarks = api.nvim_buf_get_extmarks(bufnr, ns_id, 0, -1, { details = true })
+
+    local files_to_read = {}
+    for _, extmark in ipairs(extmarks) do
+        local id = extmark[1]
+        local meta = buf_data[id]
+        if meta and not files_to_read[meta.filename] then
+            files_to_read[meta.filename] = true
+        end
+    end
+
+    local file_cache = {}
+    for filename, _ in pairs(files_to_read) do
+        if vim.fn.filereadable(filename) == 1 then
+            file_cache[filename] = vim.fn.readfile(filename)
+        end
+    end
+
+    local updates_made = false
+
+    for _, extmark in ipairs(extmarks) do
+        local id = extmark[1]
+        local row = extmark[2]
+        local meta = buf_data[id]
+
+        if meta then
+            local file_lines = file_cache[meta.filename]
+            if file_lines then
+                local current_file_text = file_lines[meta.lnum]
+                if current_file_text then
+                    local buffer_line = api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+                    if buffer_line ~= current_file_text then
+                        api.nvim_buf_set_lines(bufnr, row, row + 1, false, { current_file_text })
+
+                        api.nvim_buf_set_extmark(bufnr, ns_id, row, 0, { id = id })
+
+                        meta.original_text = current_file_text
+                        M.buffer_data[bufnr][id] = meta
+                        updates_made = true
+                    end
+                else
+                end
+            end
+        end
+    end
+
+    if updates_made then
+        vim.notify("Buffer content refreshed from disk", vim.log.levels.INFO)
+        M.refresh_virt_text(bufnr)
+    else
+        vim.notify("No changes found on disk", vim.log.levels.INFO)
     end
 end
 

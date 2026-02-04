@@ -24,6 +24,10 @@ vim.keymap.set("n", "<C-c><C-s>", function()
     require("buffers.grep").apply_edits "conflict"
 end, { buffer = bufnr, silent = true, desc = "Apply grep edits (Conflict Markers)" })
 
+vim.keymap.set("n", "<C-c><C-r>", function()
+    require("buffers.grep").refresh_content()
+end, { buffer = bufnr, silent = true, desc = "Refresh content from disk" })
+
 require("buffers.grep").highlight_buffer(bufnr)
 
 vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
