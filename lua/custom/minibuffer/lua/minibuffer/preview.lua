@@ -1,18 +1,20 @@
 local api = vim.api
 local util = require "minibuffer.util"
 
+---@class PreviewModule
 local M = {}
 
+---@type number|nil Cached preview buffer handle
 local preview_buf = nil
 
 ---@class PreviewOpts
----@field filename string
----@field lnum? number
----@field col? number
----@field target_win number
+---@field filename string File path to preview
+---@field lnum? number Line number to jump to (1-indexed)
+---@field col? number Column number to jump to (1-indexed)
+---@field target_win number Window handle to show preview in
 
 ---Show preview in the target window
----@param opts PreviewOpts
+---@param opts PreviewOpts Preview options
 function M.show(opts)
     local filename = opts.filename
     local lnum = opts.lnum or 1
@@ -75,6 +77,7 @@ function M.show(opts)
     end)
 end
 
+---Clean up the preview buffer
 function M.cleanup()
     if preview_buf and api.nvim_buf_is_valid(preview_buf) then
         api.nvim_buf_delete(preview_buf, { force = true })

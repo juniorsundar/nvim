@@ -4,11 +4,64 @@ local UI = require "minibuffer.ui"
 local fuzzy = require "minibuffer.fuzzy"
 local preview = require "minibuffer.preview"
 
+---@class ActionTable
+---@field refresh fun() Refresh the picker
+---@field next_item fun() Move to next item
+---@field prev_item fun() Move to previous item
+---@field complete_selection fun() Complete current selection
+---@field toggle_mark fun() Toggle mark on current item
+---@field select_input fun() Select raw input
+---@field select_entry fun() Select current entry
+---@field send_to_grep fun() Send marked items to grep buffer
+---@field send_to_qf fun() Send marked items to quickfix
+---@field close fun() Close the picker
+---@field cycle_sorter fun() Cycle through available sorters
+
+---@class BuiltinContext
+---@field actions ActionTable Available actions
+---@field parameters table Original window/buffer/cursor info
+---@field marked table<string, boolean> Marked items
+
+---@class MinibufferOptions
+---@field prompt? string Prompt text (default: "> ")
+---@field on_select? fun(selection: string, data: SelectionData|nil) Callback when item selected
+---@field on_close? fun() Callback when picker closes
+---@field on_change? fun(query: string, callback: fun(matches: table)) Live query handler
+---@field parser? fun(selection: string): SelectionData|nil Parse selection into structured data
+---@field selection_format? string Predefined format: "file", "grep", "lsp", "buffer"
+---@field sorter? string|fun(items: table, query: string): table Custom sorter function or name
+---@field available_sorters? table<string> List of sorter names (default: {"blink", "mini", "native", "lua"})
+---@field keymaps? table<string, string|fun(selection: string, builtin: BuiltinContext)> Keymap definitions
+---@field percent? number Window height percentage (default: 0.4)
+
+---@class Picker
+---@field items_or_provider table|fun(query: string): table
+---@field opts MinibufferOptions
+---@field on_select fun(selection: string, data: SelectionData|nil)|nil
+---@field original_win number
+---@field original_buf number
+---@field original_cursor number[]
+---@field available_sorters table<string>
+---@field sorter_idx number
+---@field custom_sorter fun(items: table, query: string): table|string|nil
+---@field parser fun(selection: string): SelectionData|nil|nil
+---@field use_blink boolean
+---@field current_matches table<string>
+---@field marked table<string, boolean>
+---@field selected_index number
+---@field is_previewing boolean
+---@field debounce_timer uv.uv_timer_t|nil
+---@field preview_timer uv.uv_timer_t|nil
+---@field ui MinibufferUI
+---@field input_buf number|nil
+---@field actions ActionTable
 local Picker = {}
 Picker.__index = Picker
 
+---@type Picker|nil Currently active picker instance
 local active_picker = nil
 
+---Close any existing picker and clean up windows
 function Picker.close_existing()
     if active_picker then
         active_picker:close()
@@ -26,9 +79,14 @@ function Picker.close_existing()
     end
 end
 
+---Create a new Picker instance
+---@param items_or_provider table|fun(query: string): table List of strings or provider function
+---@param opts MinibufferOptions|nil Configuration options
+---@return Picker picker New picker instance
 function Picker.new(items_or_provider, opts)
     Picker.close_existing()
 
+    ---@type Picker
     local self = setmetatable({}, Picker)
 
     self.items_or_provider = items_or_provider
@@ -71,6 +129,7 @@ function Picker.new(items_or_provider, opts)
     return self
 end
 
+---Show the picker UI
 function Picker:show()
     local input_buf, _ = self.ui:create_windows()
     self.input_buf = input_buf
@@ -84,6 +143,7 @@ function Picker:show()
     vim.cmd "startinsert"
 end
 
+---Close the picker and clean up resources
 function Picker:close()
     if self.debounce_timer then
         self.debounce_timer:stop()
@@ -114,6 +174,7 @@ function Picker:close()
     self.marked = nil
 end
 
+---Cancel picker and restore original state
 function Picker:cancel()
     if api.nvim_win_is_valid(self.original_win) and api.nvim_buf_is_valid(self.original_buf) then
         api.nvim_win_set_buf(self.original_win, self.original_buf)
@@ -122,6 +183,7 @@ function Picker:cancel()
     self:close()
 end
 
+---Update preview window with current selection
 function Picker:update_preview()
     if #self.current_matches == 0 then
         return
@@ -167,11 +229,13 @@ function Picker:update_preview()
     )
 end
 
+---Render current matches to the UI
 function Picker:render()
     self.ui:render(self.current_matches, self.selected_index, self.marked)
     self:update_preview()
 end
 
+---Refresh matches based on current input
 function Picker:refresh()
     if self.debounce_timer then
         self.debounce_timer:stop()
@@ -223,6 +287,7 @@ function Picker:refresh()
     )
 end
 
+---Setup all picker actions
 function Picker:setup_actions()
     self.actions = {}
 
@@ -373,6 +438,8 @@ function Picker:setup_actions()
     end
 end
 
+---Update the items in the picker
+---@param new_items table New list of items
 function Picker:set_items(new_items)
     self.items_or_provider = new_items
     if self.use_blink then
@@ -381,6 +448,7 @@ function Picker:set_items(new_items)
     self:refresh()
 end
 
+---Setup keymaps for the picker
 function Picker:setup_keymaps()
     local default_keymaps = {
         ["<Tab>"] = "complete_selection",
@@ -398,6 +466,8 @@ function Picker:setup_keymaps()
 
     local keymaps = vim.tbl_extend("force", default_keymaps, self.opts.keymaps or {})
 
+    ---@param key string Key to map
+    ---@param func function Callback function
     local function map(key, func)
         vim.keymap.set("i", key, func, { buffer = self.input_buf })
     end
@@ -417,6 +487,7 @@ function Picker:setup_keymaps()
             map(key, function()
                 local selection = self.current_matches[self.selected_index]
                 if selection then
+                    ---@type BuiltinContext
                     local builtin = {
                         actions = self.actions,
                         parameters = parameters,
@@ -429,6 +500,7 @@ function Picker:setup_keymaps()
     end
 end
 
+---Setup autocommands for the picker
 function Picker:setup_autocmds()
     local group = api.nvim_create_augroup("MinibufferLive", { clear = true })
 

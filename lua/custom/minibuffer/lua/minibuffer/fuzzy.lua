@@ -2,7 +2,12 @@ local M = {}
 
 local blink = require "minibuffer.blink"
 
+---@alias MinibufferSorterFn fun(items: table, query: string): table
+
 -- Pure Lua fuzzy scorer (fallback)
+---@param str string String to score
+---@param pattern string Pattern to match
+---@return number|nil score Score or nil if no match
 local function simple_fuzzy_score(str, pattern)
     if pattern == "" then
         return 0
@@ -53,7 +58,11 @@ local function simple_fuzzy_score(str, pattern)
     return total_score
 end
 
+---@type table<string, MinibufferSorterFn> Available sorter functions
 M.sorters = {
+    ---Blink fuzzy sorter using Rust engine
+    ---@type MinibufferSorterFn
+    ---@return table|nil matched_indices
     blink = function(items, query)
         if not blink.is_available() then
             return nil
@@ -69,6 +78,9 @@ M.sorters = {
         return matches
     end,
 
+    ---Mini.fuzzy sorter
+    ---@type MinibufferSorterFn
+    ---@return table|nil matched_indices
     mini = function(items, query)
         local has_mini, mini = pcall(require, "mini.fuzzy")
         if not has_mini then
@@ -78,6 +90,9 @@ M.sorters = {
         return matches
     end,
 
+    ---Native vim matchfuzzy sorter
+    ---@type MinibufferSorterFn
+    ---@return table|nil matched_indices
     native = function(items, query)
         if vim.fn.exists "*matchfuzzy" == 1 then
             return vim.fn.matchfuzzy(items, query)
@@ -85,6 +100,9 @@ M.sorters = {
         return items
     end,
 
+    ---Pure Lua fuzzy sorter
+    ---@type MinibufferSorterFn
+    ---@return table|nil matched_indices
     lua = function(items, query)
         local tokens = {}
         for token in query:gmatch "%S+" do
@@ -126,8 +144,9 @@ M.sorters = {
     end,
 }
 
---- Register items with Blink's Rust engine if available
+---Register items with Blink's Rust engine if available
 ---@param items table List of strings
+---@return boolean success Whether registration succeeded
 function M.register_items(items)
     if not blink.is_available() then
         return false
@@ -141,8 +160,8 @@ function M.register_items(items)
     return true
 end
 
---- Filter items based on query
----@param items_or_provider table|function List of strings or a function(query)
+---Filter items based on query
+---@param items_or_provider table|fun(query: string): table List of strings or a provider function
 ---@param query string The search query
 ---@param opts table Options { sorter = function, use_blink = boolean }
 ---@return table matches List of matching strings
@@ -176,6 +195,8 @@ function M.filter(items_or_provider, query, opts)
     return M.sorters.lua(items_or_provider, query)
 end
 
+---Check if Blink fuzzy matcher is available
+---@return boolean available Whether blink is available
 function M.has_blink()
     return blink.is_available()
 end

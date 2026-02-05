@@ -1,7 +1,11 @@
+---@class BuiltinProvider
 local M = {}
+
 local minibuffer = require "minibuffer"
 local util = require "minibuffer.util"
 
+---Open command picker (like M-x in Emacs)
+---Shows all available vim commands with completion
 function M.commands()
     minibuffer.pick(function(input)
         if input == "" then
@@ -13,6 +17,9 @@ function M.commands()
     end, { prompt = "M-x > " })
 end
 
+---Open buffer picker
+---Shows all listed buffers with bufnr, path, and cursor position
+---Keymap <C-x> closes the selected buffer
 function M.buffers()
     local bufs = vim.api.nvim_list_bufs()
     local items = {}
@@ -71,6 +78,8 @@ function M.buffers()
     })
 end
 
+---Open recent files picker
+---Shows files from v:oldfiles that are still readable
 function M.old_files()
     local results = {}
 

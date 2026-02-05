@@ -1,7 +1,11 @@
+---@class LSPProvider
 local M = {}
+
 local minibuffer = require "minibuffer"
 local util = require "minibuffer.util"
 
+---Find references to symbol under cursor using LSP
+---Shows filename, line, column, and content for each reference
 function M.references()
     local clients = vim.lsp.get_clients { bufnr = 0 }
     local client = clients[1]
@@ -50,6 +54,8 @@ function M.references()
     end)
 end
 
+---Find definitions of symbol under cursor using LSP
+---Shows filename, line, column, and content for each definition
 function M.definitions()
     local clients = vim.lsp.get_clients { bufnr = 0 }
     local client = clients[1]

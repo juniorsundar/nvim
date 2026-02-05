@@ -2,12 +2,25 @@ local api = vim.api
 local highlight = require "minibuffer.highlight"
 
 local M = {}
+
 ---@class MinibufferUI
+---@field base_prompt string The prompt text to display
+---@field opts table Options table
+---@field ns_id number Namespace ID for extmarks
+---@field prompt_ns number Namespace ID for prompt extmark
+---@field input_buf number|nil Input buffer handle
+---@field input_win number|nil Input window handle
+---@field results_buf number|nil Results buffer handle
+---@field results_win number|nil Results window handle
 local UI = {}
 UI.__index = UI
 
----@return MinibufferUI
+---Create a new UI instance
+---@param prompt_text string The prompt text
+---@param opts table|nil Options table
+---@return MinibufferUI ui New UI instance
 function M.new(prompt_text, opts)
+    ---@type MinibufferUI
     local self = setmetatable({}, UI)
     self.base_prompt = prompt_text
     self.opts = opts or {}
@@ -16,6 +29,9 @@ function M.new(prompt_text, opts)
     return self
 end
 
+---Calculate window height based on item count
+---@param count number Number of items to display
+---@return number height Calculated height
 function UI:get_height(count)
     local percent = self.opts.percent or 0.4
     local max_height = math.floor(vim.o.lines * percent)
@@ -23,6 +39,9 @@ function UI:get_height(count)
     return math.max(1, height)
 end
 
+---Create picker windows
+---@return number input_buf Input buffer handle
+---@return number input_win Input window handle
 function UI:create_windows()
     self.input_buf = api.nvim_create_buf(false, true)
     self.results_buf = api.nvim_create_buf(false, true)
@@ -49,6 +68,8 @@ function UI:create_windows()
     return self.input_buf, self.input_win
 end
 
+---Configure window options
+---@param win_id number Window handle
 function UI:_configure_window(win_id)
     vim.wo[win_id].number = false
     vim.wo[win_id].relativenumber = false
@@ -59,7 +80,8 @@ function UI:_configure_window(win_id)
     vim.wo[win_id].list = false
 end
 
--- Helper to update the virtual text prompt safely
+---Update the virtual text prompt
+---@param text string Text to display as prompt
 function UI:update_prompt_virtual_text(text)
     if self.input_buf and api.nvim_buf_is_valid(self.input_buf) then
         api.nvim_buf_clear_namespace(self.input_buf, self.prompt_ns, 0, -1)
@@ -71,9 +93,10 @@ function UI:update_prompt_virtual_text(text)
     end
 end
 
----@param matches table
----@param selected_index number
----@param marked table|nil
+---Render matches to the results window
+---@param matches table<string> List of match strings
+---@param selected_index number Currently selected index
+---@param marked table<string, boolean>|nil Map of marked items
 function UI:render(matches, selected_index, marked)
     local total = #matches
     local current = selected_index
@@ -149,16 +172,21 @@ function UI:render(matches, selected_index, marked)
     end
 end
 
+---Set a new prompt text
+---@param text string New prompt text
 function UI:set_prompt(text)
     self.base_prompt = text
     self:update_prompt_virtual_text(text)
 end
 
+---Update input buffer with new lines
+---@param lines table<string> Lines to set
 function UI:update_input(lines)
     api.nvim_buf_set_lines(self.input_buf, 0, -1, false, lines)
     api.nvim_win_set_cursor(self.input_win, { 1, #lines[1] })
 end
 
+---Close all picker windows and buffers
 function UI:close()
     if self.results_win and api.nvim_win_is_valid(self.results_win) then
         pcall(api.nvim_win_close, self.results_win, true)
