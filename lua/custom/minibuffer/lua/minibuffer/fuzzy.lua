@@ -166,6 +166,13 @@ function M.filter(items_or_provider, query, opts)
         return sorter(items_or_provider, query)
     end
 
+    if opts.use_blink then
+        local matches = M.sorters.blink(items_or_provider, query)
+        if matches then
+            return matches
+        end
+    end
+
     return M.sorters.lua(items_or_provider, query)
 end
 
