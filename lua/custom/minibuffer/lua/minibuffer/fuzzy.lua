@@ -1,7 +1,7 @@
 local M = {}
 
 local blink = require "minibuffer.blink"
-
+--
 -- Pure Lua fuzzy scorer (fallback)
 local function simple_fuzzy_score(str, pattern)
     if pattern == "" then
@@ -53,6 +53,70 @@ local function simple_fuzzy_score(str, pattern)
     return total_score
 end
 
+M.sorters = {
+    blink = function(items, query)
+        if not blink.is_available() then
+            return nil
+        end
+        local _, matched_indices = blink.fuzzy(query, "minibuffer")
+        if not matched_indices then
+            return {}
+        end
+        local matches = {}
+        for _, idx in ipairs(matched_indices) do
+            table.insert(matches, items[idx + 1])
+        end
+        return matches
+    end,
+
+    native = function(items, query)
+        if vim.fn.exists "*matchfuzzy" == 1 then
+            return vim.fn.matchfuzzy(items, query)
+        end
+        return items
+    end,
+
+    lua = function(items, query)
+        local tokens = {}
+        for token in query:gmatch "%S+" do
+            table.insert(tokens, token)
+        end
+
+        if #tokens == 0 then
+            return items
+        end
+
+        local scored = {}
+        for _, item in ipairs(items) do
+            local total_score = 0
+            local all_tokens_match = true
+
+            for _, token in ipairs(tokens) do
+                local s = simple_fuzzy_score(item, token)
+                if not s then
+                    all_tokens_match = false
+                    break
+                end
+                total_score = total_score + s
+            end
+
+            if all_tokens_match then
+                table.insert(scored, { item = item, score = total_score })
+            end
+        end
+
+        table.sort(scored, function(a, b)
+            return a.score > b.score
+        end)
+
+        local matches = {}
+        for _, entry in ipairs(scored) do
+            table.insert(matches, entry.item)
+        end
+        return matches
+    end,
+}
+
 --- Register items with Blink's Rust engine if available
 ---@param items table List of strings
 function M.register_items(items)
@@ -84,40 +148,16 @@ function M.filter(items_or_provider, query, opts)
         return items_or_provider
     end
 
-    if opts.sorter then
-        return opts.sorter(items_or_provider, query)
+    local sorter = opts.sorter
+    if type(sorter) == "string" then
+        sorter = M.sorters[sorter]
     end
 
-    -- BLINK (RUST) MATCHING
-    if opts.use_blink and blink.is_available() then
-        local _, matched_indices = blink.fuzzy(query, "minibuffer")
-
-        if matched_indices then
-            local matches = {}
-            for _, idx in ipairs(matched_indices) do
-                table.insert(matches, items_or_provider[idx + 1])
-            end
-            return matches
-        end
+    if sorter then
+        return sorter(items_or_provider, query)
     end
 
-    -- LUA FALLBACK
-    local scored = {}
-    for _, item in ipairs(items_or_provider) do
-        local score = simple_fuzzy_score(item, query)
-        if score then
-            table.insert(scored, { item = item, score = score })
-        end
-    end
-    table.sort(scored, function(a, b)
-        return a.score > b.score
-    end)
-
-    local matches = {}
-    for _, entry in ipairs(scored) do
-        table.insert(matches, entry.item)
-    end
-    return matches
+    return M.sorters.lua(items_or_provider, query)
 end
 
 function M.has_blink()

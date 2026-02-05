@@ -5,6 +5,16 @@ local api = vim.api
 
 local active_ui = nil
 
+local function is_binary(path)
+    local f = io.open(path, "rb")
+    if not f then
+        return false
+    end
+    local chunk = f:read(1024)
+    f:close()
+    return chunk and chunk:find "\0"
+end
+
 local function close_existing()
     if active_ui then
         active_ui:close()
@@ -43,6 +53,8 @@ function M.pick(items_or_provider, on_select, opts)
     opts = opts or {}
     on_select = on_select or opts.on_select
 
+    local available_sorters = opts.available_sorters or { "blink", "native", "lua" }
+    local sorter_idx = 1
     local prompt_text = opts.prompt or "> "
     local custom_sorter = opts.sorter
 
@@ -103,22 +115,26 @@ function M.pick(items_or_provider, on_select, opts)
                         pcall(api.nvim_buf_set_name, buf, filename .. " (Preview)")
                     end
 
-                    local lines = {}
-                    if vim.fn.filereadable(filename) == 1 then
-                        lines = vim.fn.readfile(filename, "", 1000)
-                    end
-
-                    for i, line in ipairs(lines) do
-                        if line:find "[\r\n]" then
-                            lines[i] = line:gsub("[\r\n]", " ")
+                    if is_binary(filename) then
+                        api.nvim_buf_set_lines(buf, 0, -1, false, { "[Binary File - Preview Disabled]" })
+                    else
+                        local lines = {}
+                        if vim.fn.filereadable(filename) == 1 then
+                            lines = vim.fn.readfile(filename, "", 1000)
                         end
-                    end
 
-                    api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+                        for i, line in ipairs(lines) do
+                            if line:find "[\r\n]" then
+                                lines[i] = line:gsub("[\r\n]", " ")
+                            end
+                        end
 
-                    local ft = vim.filetype.match { filename = filename }
-                    if ft then
-                        vim.bo[buf].filetype = ft
+                        api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+
+                        local ft = vim.filetype.match { filename = filename }
+                        if ft then
+                            vim.bo[buf].filetype = ft
+                        end
                     end
 
                     api.nvim_win_set_buf(original_win, buf)
@@ -273,6 +289,17 @@ function M.pick(items_or_provider, on_select, opts)
         end
     end
 
+    function actions.cycle_sorter()
+        sorter_idx = (sorter_idx % #available_sorters) + 1
+        local name = available_sorters[sorter_idx]
+
+        opts.sorter = fuzzy.sorters[name]
+
+        vim.notify("Sorter switched to: " .. name, vim.log.levels.INFO)
+
+        refresh()
+    end
+
     local parameters = {
         original_win = original_win,
         original_buf = original_buf,
@@ -290,6 +317,7 @@ function M.pick(items_or_provider, on_select, opts)
         ["<Esc>"] = "close",
         ["<C-c>"] = "close",
         ["<C-g>"] = "send_to_grep",
+        ["<C-s>"] = "cycle_sorter",
     }
 
     local keymaps = vim.tbl_extend("force", default_keymaps, opts.keymaps or {})

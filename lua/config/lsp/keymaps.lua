@@ -74,10 +74,10 @@ vim.keymap.set("n", "<leader>LDd", function()
     Snacks.picker.diagnostics_buffer()
 end, { desc = "Document Diagnostics", noremap = false, silent = true })
 
-vim.keymap.set("n", "<leader>Ld", function()
-    Snacks.picker.lsp_definitions()
-    -- lsp_function "definition"
-end, { desc = "Definition", noremap = false, silent = true })
+-- vim.keymap.set("n", "<leader>Ld", function()
+--     Snacks.picker.lsp_definitions()
+--     -- lsp_function "definition"
+-- end, { desc = "Definition", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>Lc", function()
     Snacks.picker.lsp_declarations()
     -- lsp_function "declaration"
@@ -87,9 +87,9 @@ vim.keymap.set("n", "<leader>Li", function()
     -- lsp_function "implementation"
 end, { desc = "Implementation", noremap = false, silent = true })
 
-vim.keymap.set("n", "<leader>Lr", function()
-    Snacks.picker.lsp_references()
-end, { desc = "References", noremap = false, silent = true })
+-- vim.keymap.set("n", "<leader>Lr", function()
+--     Snacks.picker.lsp_references()
+-- end, { desc = "References", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>Lt", function()
     Snacks.picker.lsp_type_definitions()
 end, { desc = "Type Definition", noremap = false, silent = true })
