@@ -2,7 +2,14 @@ local M = {}
 local minibuffer = require "minibuffer"
 local util = require "minibuffer.util"
 
+local current_fd_job = nil
+
 function M.files()
+    if current_fd_job then
+        current_fd_job:kill()
+        current_fd_job = nil
+    end
+
     local files_list = {}
     local ignored_dirs = { ".git", ".jj", "node_modules", ".cache" }
     local cmd = { "fd", "-H", "--type", "f" }
@@ -22,13 +29,23 @@ function M.files()
             util.jump_to_location(selection, data)
             pcall(vim.cmd, 'normal! g`"')
         end,
+        on_close = function()
+            if current_fd_job then
+                current_fd_job:kill()
+                current_fd_job = nil
+            end
+        end,
     })
 
-    vim.system(cmd, { text = true }, function(out)
+    current_fd_job = vim.system(cmd, { text = true }, function(out)
+        current_fd_job = nil
         if out.code ~= 0 then
-            vim.schedule(function()
-                vim.notify("fd command failed: " .. (out.stderr or ""), vim.log.levels.ERROR)
-            end)
+            -- If killed (code 143), don't show error
+            if out.code ~= 143 then
+                vim.schedule(function()
+                    vim.notify("fd command failed: " .. (out.stderr or ""), vim.log.levels.ERROR)
+                end)
+            end
             return
         end
         local lines = vim.split(out.stdout, "\n", { trimempty = true })

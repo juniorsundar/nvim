@@ -7,10 +7,6 @@ local function safe_extmark(buf, ns, line, col, opts)
 end
 
 local function get_lang(filename)
-    if lang_cache[filename] then
-        return lang_cache[filename]
-    end
-
     local ft = vim.filetype.match { filename = filename }
     if not ft then
         local ext = vim.fn.fnamemodify(filename, ":e")
@@ -23,6 +19,10 @@ local function get_lang(filename)
         return nil
     end
 
+    if lang_cache[ft] then
+        return lang_cache[ft]
+    end
+
     ---@type string|nil
     local lang = vim.treesitter.language.get_lang(ft) or ft
     local has_lang = pcall(vim.treesitter.language.add, lang)
@@ -30,7 +30,7 @@ local function get_lang(filename)
         lang = nil
     end
 
-    lang_cache[filename] = lang
+    lang_cache[ft] = lang
     return lang
 end
 
