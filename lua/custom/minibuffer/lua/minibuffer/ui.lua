@@ -161,10 +161,10 @@ end
 
 function UI:close()
     if self.results_win and api.nvim_win_is_valid(self.results_win) then
-        api.nvim_win_close(self.results_win, true)
+        pcall(api.nvim_win_close, self.results_win, true)
     end
     if self.input_win and api.nvim_win_is_valid(self.input_win) then
-        api.nvim_win_close(self.input_win, true)
+        pcall(api.nvim_win_close, self.input_win, true)
     end
 
     if self.results_buf and api.nvim_buf_is_valid(self.results_buf) then

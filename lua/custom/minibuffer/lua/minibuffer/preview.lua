@@ -75,4 +75,11 @@ function M.show(opts)
     end)
 end
 
+function M.cleanup()
+    if preview_buf and api.nvim_buf_is_valid(preview_buf) then
+        api.nvim_buf_delete(preview_buf, { force = true })
+    end
+    preview_buf = nil
+end
+
 return M
