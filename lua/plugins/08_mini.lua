@@ -17,12 +17,3 @@ vim.api.nvim_create_autocmd("BufEnter", {
         }
     end,
 })
-
-MiniDeps.add { source = "nvim-mini/mini.fuzzy" }
-vim.api.nvim_create_autocmd("BufEnter", {
-    pattern = "*",
-    once = true,
-    callback = function()
-        require("mini.fuzzy").setup {}
-    end,
-})
