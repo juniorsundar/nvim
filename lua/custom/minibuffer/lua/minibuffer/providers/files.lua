@@ -11,10 +11,8 @@ function M.files()
         table.insert(cmd, dir)
     end
 
-    local fd_result = vim.system(cmd, { text = true }):wait()
-    files_list = vim.split(fd_result.stdout, "\n", { trimempty = true })
-    minibuffer.pick(files_list, nil, {
-        prompt = "Files > ",
+    local picker = minibuffer.pick({}, nil, {
+        prompt = "Files (Loading...) > ",
         keymaps = {
             ["<Tab>"] = "toggle_mark",
             ["<CR>"] = "select_entry",
@@ -25,6 +23,22 @@ function M.files()
             pcall(vim.cmd, 'normal! g`"')
         end,
     })
+
+    vim.system(cmd, { text = true }, function(out)
+        if out.code ~= 0 then
+            vim.schedule(function()
+                vim.notify("fd command failed: " .. (out.stderr or ""), vim.log.levels.ERROR)
+            end)
+            return
+        end
+        local lines = vim.split(out.stdout, "\n", { trimempty = true })
+        vim.schedule(function()
+            if picker and picker.ui then
+                picker.ui:set_prompt "Files > "
+                picker:set_items(lines)
+            end
+        end)
+    end)
 end
 
 local current_job = nil

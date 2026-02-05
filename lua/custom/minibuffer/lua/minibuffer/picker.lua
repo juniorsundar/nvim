@@ -39,7 +39,7 @@ function Picker.new(items_or_provider, opts)
     self.original_buf = api.nvim_win_get_buf(self.original_win)
     self.original_cursor = api.nvim_win_get_cursor(self.original_win)
 
-    self.available_sorters = self.opts.available_sorters or { "blink", "native", "lua", "mini" }
+    self.available_sorters = self.opts.available_sorters or { "blink", "mini", "native", "lua" }
     self.sorter_idx = 1
     self.custom_sorter = self.opts.sorter
 
@@ -61,8 +61,10 @@ function Picker.new(items_or_provider, opts)
     self.marked = {}
     self.selected_index = 1
     self.is_previewing = false
+    self.debounce_timer = nil
+    self.preview_timer = nil
 
-    self.ui = UI.new(self.opts.prompt or "> ")
+    self.ui = UI.new(self.opts.prompt or "> ", self.opts)
     self.input_buf = nil
 
     active_picker = self
@@ -83,14 +85,33 @@ function Picker:show()
 end
 
 function Picker:close()
+    if self.debounce_timer then
+        self.debounce_timer:stop()
+        self.debounce_timer:close()
+        self.debounce_timer = nil
+    end
+    if self.preview_timer then
+        self.preview_timer:stop()
+        self.preview_timer:close()
+        self.preview_timer = nil
+    end
+
     if not self.ui then
         return
+    end
+
+    if self.opts.on_close then
+        self.opts.on_close()
     end
 
     self.ui:close()
     if active_picker == self then
         active_picker = nil
     end
+
+    self.current_matches = nil
+    self.items_or_provider = nil
+    self.marked = nil
 end
 
 function Picker:cancel()
@@ -106,22 +127,44 @@ function Picker:update_preview()
         return
     end
 
-    local selection = self.current_matches[self.selected_index]
-    if not selection then
-        return
+    if self.preview_timer then
+        self.preview_timer:stop()
+    else
+        self.preview_timer = vim.uv.new_timer()
     end
 
-    local data = self.parser and self.parser(selection)
-    if data and data.filename and api.nvim_win_is_valid(self.original_win) then
-        self.is_previewing = true
-        preview.show {
-            filename = data.filename,
-            lnum = data.lnum,
-            col = data.col,
-            target_win = self.original_win,
-        }
-        self.is_previewing = false
-    end
+    self.preview_timer:start(
+        50,
+        0,
+        vim.schedule_wrap(function()
+            if self.preview_timer then
+                self.preview_timer:stop()
+                self.preview_timer:close()
+                self.preview_timer = nil
+            end
+
+            if not active_picker or active_picker ~= self then
+                return
+            end
+
+            local selection = self.current_matches[self.selected_index]
+            if not selection then
+                return
+            end
+
+            local data = self.parser and self.parser(selection)
+            if data and data.filename and api.nvim_win_is_valid(self.original_win) then
+                self.is_previewing = true
+                preview.show {
+                    filename = data.filename,
+                    lnum = data.lnum,
+                    col = data.col,
+                    target_win = self.original_win,
+                }
+                self.is_previewing = false
+            end
+        end)
+    )
 end
 
 function Picker:render()
@@ -130,32 +173,54 @@ function Picker:render()
 end
 
 function Picker:refresh()
-    local input = api.nvim_get_current_line()
-
-    if self.opts.on_change then
-        self.selected_index = 1
-        self.opts.on_change(input, function(matches)
-            self.current_matches = matches or {}
-
-            if self.selected_index > #self.current_matches then
-                self.selected_index = #self.current_matches
-            end
-            if self.selected_index < 1 and #self.current_matches > 0 then
-                self.selected_index = 1
-            end
-
-            self:render()
-        end)
-        return
+    if self.debounce_timer then
+        self.debounce_timer:stop()
+    else
+        self.debounce_timer = vim.uv.new_timer()
     end
 
-    self.current_matches = fuzzy.filter(self.items_or_provider, input, {
-        sorter = self.custom_sorter,
-        use_blink = self.use_blink,
-    })
+    local input = api.nvim_get_current_line()
 
-    self.selected_index = 1
-    self:render()
+    self.debounce_timer:start(
+        20, -- 20ms debounce for filtering
+        0,
+        vim.schedule_wrap(function()
+            if self.debounce_timer then
+                self.debounce_timer:stop()
+                self.debounce_timer:close()
+                self.debounce_timer = nil
+            end
+
+            if not active_picker or active_picker ~= self then
+                return
+            end
+
+            if self.opts.on_change then
+                self.opts.on_change(input, function(matches)
+                    if api.nvim_get_current_line() ~= input then
+                        return
+                    end
+
+                    if active_picker ~= self then
+                        return
+                    end
+
+                    self.current_matches = matches or {}
+                    self.selected_index = 1
+                    self:render()
+                end)
+                return
+            end
+
+            self.current_matches = fuzzy.filter(self.items_or_provider, input, {
+                sorter = self.custom_sorter,
+                use_blink = self.use_blink,
+            })
+
+            self.selected_index = 1
+            self:render()
+        end)
+    )
 end
 
 function Picker:setup_actions()
@@ -306,6 +371,14 @@ function Picker:setup_actions()
         vim.notify("Sorter switched to: " .. name, vim.log.levels.INFO)
         self:refresh()
     end
+end
+
+function Picker:set_items(new_items)
+    self.items_or_provider = new_items
+    if self.use_blink then
+        fuzzy.register_items(new_items)
+    end
+    self:refresh()
 end
 
 function Picker:setup_keymaps()

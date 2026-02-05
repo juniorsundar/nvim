@@ -15,6 +15,7 @@ function M.pick(items_or_provider, on_select, opts)
 
     local picker = Picker.new(items_or_provider, opts)
     picker:show()
+    return picker
 end
 
 return M
