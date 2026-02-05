@@ -2,6 +2,10 @@ local M = {}
 
 local lang_cache = {}
 
+local function safe_extmark(buf, ns, line, col, opts)
+    return pcall(vim.api.nvim_buf_set_extmark, buf, ns, line, col, opts)
+end
+
 local function get_lang(filename)
     if lang_cache[filename] then
         return lang_cache[filename]
@@ -33,7 +37,7 @@ end
 function M.highlight_entry(buf, ns, line_idx, line, highlight_code)
     local bufnr = line:match "^(%d+): "
     if bufnr then
-        vim.api.nvim_buf_set_extmark(buf, ns, line_idx, 0, {
+        safe_extmark(buf, ns, line_idx, 0, {
             end_col = #bufnr,
             hl_group = "WarningMsg",
             priority = 100,
@@ -43,7 +47,7 @@ function M.highlight_entry(buf, ns, line_idx, line, highlight_code)
         local path_part = line:sub(path_start)
         local dir_str = path_part:match "^(.*/)"
         if dir_str then
-            vim.api.nvim_buf_set_extmark(buf, ns, line_idx, path_start - 1, {
+            safe_extmark(buf, ns, line_idx, path_start - 1, {
                 end_col = path_start - 1 + #dir_str,
                 hl_group = "Comment",
                 priority = 100,
@@ -58,7 +62,7 @@ function M.highlight_entry(buf, ns, line_idx, line, highlight_code)
 
     local dir_str = path_part:match "^(.*/)"
     if dir_str then
-        vim.api.nvim_buf_set_extmark(buf, ns, line_idx, 0, {
+        safe_extmark(buf, ns, line_idx, 0, {
             end_col = #dir_str,
             hl_group = "Comment",
             priority = 100,
@@ -68,7 +72,7 @@ function M.highlight_entry(buf, ns, line_idx, line, highlight_code)
     if suffix_start then
         local s, e = line:find(":%d+:", suffix_start)
         if s then
-            vim.api.nvim_buf_set_extmark(buf, ns, line_idx, s, {
+            safe_extmark(buf, ns, line_idx, s, {
                 end_col = e - 1,
                 hl_group = "String",
                 priority = 100,
@@ -113,7 +117,7 @@ function M.highlight_code(buf, ns, row, start_col, content, filename)
 
         local _, c1, _, c2 = node:range()
 
-        vim.api.nvim_buf_set_extmark(buf, ns, row, start_col + c1, {
+        safe_extmark(buf, ns, row, start_col + c1, {
             end_col = start_col + c2,
             hl_group = hl_group,
             priority = 110,

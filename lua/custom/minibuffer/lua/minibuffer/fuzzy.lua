@@ -1,7 +1,7 @@
 local M = {}
 
 local blink = require "minibuffer.blink"
---
+
 -- Pure Lua fuzzy scorer (fallback)
 local function simple_fuzzy_score(str, pattern)
     if pattern == "" then

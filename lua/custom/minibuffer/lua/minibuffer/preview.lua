@@ -3,6 +3,8 @@ local util = require "minibuffer.util"
 
 local M = {}
 
+local preview_buf = nil
+
 ---@class PreviewOpts
 ---@field filename string
 ---@field lnum? number
@@ -24,24 +26,22 @@ function M.show(opts)
     api.nvim_win_call(target_win, function()
         local bufnr = vim.fn.bufnr(filename)
 
-        -- Reuse existing loaded buffer if possible
         if bufnr ~= -1 and api.nvim_buf_is_loaded(bufnr) then
             if api.nvim_win_get_buf(target_win) ~= bufnr then
                 api.nvim_win_set_buf(target_win, bufnr)
             end
         else
-            -- Create a temporary preview buffer
-            local buf = api.nvim_create_buf(false, true)
-            vim.bo[buf].bufhidden = "wipe"
-            vim.bo[buf].buftype = "nofile"
-            vim.bo[buf].swapfile = false
-
-            local existing = vim.fn.bufnr(filename)
-            if existing == -1 then
-                pcall(api.nvim_buf_set_name, buf, filename)
-            else
-                pcall(api.nvim_buf_set_name, buf, filename .. " (Preview)")
+            if not preview_buf or not api.nvim_buf_is_valid(preview_buf) then
+                preview_buf = api.nvim_create_buf(false, true)
+                vim.bo[preview_buf].bufhidden = "hide"
+                vim.bo[preview_buf].buftype = "nofile"
+                vim.bo[preview_buf].swapfile = false
             end
+
+            local buf = preview_buf
+
+            local display_name = filename .. " (Preview)"
+            pcall(api.nvim_buf_set_name, buf, display_name)
 
             if util.is_binary(filename) then
                 api.nvim_buf_set_lines(buf, 0, -1, false, { "[Binary File - Preview Disabled]" })
