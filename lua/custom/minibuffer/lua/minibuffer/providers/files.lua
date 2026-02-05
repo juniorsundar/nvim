@@ -1,12 +1,17 @@
+---@class FilesProvider
 local M = {}
+
 local minibuffer = require "minibuffer"
 local util = require "minibuffer.util"
 
+---@type vim.SystemObj|nil Current fd job handle
 local current_fd_job = nil
 
+---Open file picker using fd command
+---Files are loaded asynchronously
 function M.files()
     if current_fd_job then
-        current_fd_job:kill()
+        current_fd_job:kill(15)
         current_fd_job = nil
     end
 
@@ -31,7 +36,7 @@ function M.files()
         end,
         on_close = function()
             if current_fd_job then
-                current_fd_job:kill()
+                current_fd_job:kill(15)
                 current_fd_job = nil
             end
         end,
@@ -58,9 +63,14 @@ function M.files()
     end)
 end
 
+---@type vim.SystemObj|nil Current grep job handle
 local current_job = nil
+
+---@type uv.uv_timer_t|nil Grep debounce timer
 local grep_timer = nil
 
+---Open live grep picker using rg command
+---Results update as you type
 function M.live_grep()
     minibuffer.pick({}, util.jump_to_location, {
         prompt = "Grep > ",
@@ -76,6 +86,9 @@ function M.live_grep()
     })
 end
 
+---Run asynchronous grep with debouncing
+---@param query string Search query
+---@param update_ui_callback fun(matches: table) Callback to update UI with results
 function M.run_async_grep(query, update_ui_callback)
     if grep_timer then
         grep_timer:stop()
@@ -84,7 +97,7 @@ function M.run_async_grep(query, update_ui_callback)
     end
 
     if current_job then
-        current_job:kill()
+        current_job:kill(15)
         current_job = nil
     end
 

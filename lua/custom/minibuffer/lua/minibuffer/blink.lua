@@ -1,13 +1,20 @@
+---@class BlinkModule
 local M = {}
 
 local VERSION = "v1.8.0"
 local BASE_URL = "https://github.com/Saghen/blink.cmp/releases/download"
 
+---@type boolean Whether the module has been loaded
 local has_loaded = false
+
+---@type table|nil The loaded Rust module
 local rust_module = nil
+
+---@type boolean Whether a download is in progress
 local is_downloading = false
 
----@return string
+---Get the library extension for the current OS
+---@return string extension ".so", ".dylib", or ".dll"
 local function get_lib_extension()
     if jit.os:lower() == "mac" or jit.os:lower() == "osx" then
         return ".dylib"
@@ -19,7 +26,7 @@ local function get_lib_extension()
 end
 
 ---Determine the system triple (e.g., x86_64-unknown-linux-gnu)
----@return string|nil
+---@return string|nil triple System triple or nil if unsupported
 local function get_system_triple()
     local os = jit.os:lower()
     local arch = jit.arch:lower()
@@ -48,6 +55,7 @@ local function get_system_triple()
 end
 
 ---Get the local path for the library
+---@return string path Path to the library file
 local function get_lib_path()
     local info = debug.getinfo(1, "S")
     local script_path = info.source:sub(2)
@@ -56,7 +64,7 @@ local function get_lib_path()
 end
 
 ---Download the binary if missing
----@return boolean started_download
+---@return boolean started_download Whether download was started
 local function ensure_binary()
     if has_loaded or is_downloading then
         return false
@@ -108,7 +116,7 @@ local function ensure_binary()
 end
 
 ---Load the Rust module
----@return table|nil
+---@return table|nil module The loaded module or nil
 local function load_module()
     local has_blink, blink = pcall(require, "blink.cmp.fuzzy.rust")
     if has_blink then
@@ -140,13 +148,14 @@ local function load_module()
 end
 
 ---Check if blink is available
+---@return boolean available Whether blink fuzzy matcher is available
 function M.is_available()
     return load_module() ~= nil
 end
 
 ---Register items with the fuzzy matcher
 ---@param id string Context ID (e.g. "minibuffer")
----@param items table List of items
+---@param items table List of items with label and sortText fields
 function M.set_provider_items(id, items)
     local mod = load_module()
     if not mod then
@@ -157,9 +166,10 @@ function M.set_provider_items(id, items)
 end
 
 ---Perform fuzzy search
----@param query string
+---@param query string Search query
 ---@param id string Context ID
----@return table|nil matches, table|nil indices
+---@return table|nil matches List of matched items
+---@return table|nil indices List of matched indices
 function M.fuzzy(query, id)
     local mod = load_module()
     if not mod then

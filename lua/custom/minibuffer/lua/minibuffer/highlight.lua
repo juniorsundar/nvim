@@ -1,11 +1,24 @@
+---@class HighlightModule
 local M = {}
 
+---@type table<string, string|nil> Cache of language names by filetype
 local lang_cache = {}
 
+---Safely set an extmark with error handling
+---@param buf number Buffer handle
+---@param ns number Namespace ID
+---@param line number Line number (0-indexed)
+---@param col number Column number (0-indexed)
+---@param opts table Extmark options
+---@return boolean success Whether extmark was set
+---@return number|nil extmark_id The extmark ID or error message
 local function safe_extmark(buf, ns, line, col, opts)
     return pcall(vim.api.nvim_buf_set_extmark, buf, ns, line, col, opts)
 end
 
+---Get treesitter language for a filename
+---@param filename string File path
+---@return string|nil lang Language name or nil
 local function get_lang(filename)
     local ft = vim.filetype.match { filename = filename }
     if not ft then
@@ -34,6 +47,12 @@ local function get_lang(filename)
     return lang
 end
 
+---Highlight a single entry line
+---@param buf number Buffer handle
+---@param ns number Namespace ID
+---@param line_idx number Line index (0-indexed)
+---@param line string Line content
+---@param highlight_code boolean Whether to highlight code content
 function M.highlight_entry(buf, ns, line_idx, line, highlight_code)
     local bufnr = line:match "^(%d+): "
     if bufnr then
@@ -92,6 +111,13 @@ function M.highlight_entry(buf, ns, line_idx, line, highlight_code)
     end
 end
 
+---Highlight code content with treesitter
+---@param buf number Buffer handle
+---@param ns number Namespace ID
+---@param row number Row index (0-indexed)
+---@param start_col number Starting column
+---@param content string Code content to highlight
+---@param filename string Filename for language detection
 function M.highlight_code(buf, ns, row, start_col, content, filename)
     local lang = get_lang(filename)
     if not lang then
