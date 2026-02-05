@@ -33,6 +33,11 @@ local function close_existing()
 end
 
 local M = {}
+local default_opts = {}
+
+function M.setup(opts)
+    default_opts = opts or {}
+end
 
 local function complete_line(input, selection)
     if vim.startswith(selection, input) then
@@ -50,7 +55,7 @@ function M.pick(items_or_provider, on_select, opts)
 
     close_existing()
 
-    opts = opts or {}
+    opts = vim.tbl_deep_extend("force", default_opts, opts or {})
     on_select = on_select or opts.on_select
 
     local available_sorters = opts.available_sorters or { "blink", "native", "lua", "mini" }
@@ -277,6 +282,62 @@ function M.pick(items_or_provider, on_select, opts)
         end
     end
 
+    function actions.send_to_qf()
+        local items = {}
+        local what = { title = opts.prompt or "Minibuffer Selection" }
+
+        -- Collect items (marked or current selection)
+        local candidates = {}
+        local has_marked = false
+        for item, is_marked in pairs(marked) do
+            if is_marked then
+                has_marked = true
+                table.insert(candidates, item)
+            end
+        end
+
+        if not has_marked then
+            local selection = current_matches[selected_index]
+            if selection then
+                table.insert(candidates, selection)
+            end
+        end
+
+        if #candidates == 0 then
+            return
+        end
+
+        ui:close()
+        if active_ui == ui then
+            active_ui = nil
+        end
+
+        -- Parse items using the current parser if available
+        for _, candidate in ipairs(candidates) do
+            local item_data = { text = candidate }
+            if parser then
+                local parsed = parser(candidate)
+                if parsed then
+                    if parsed.filename then
+                        item_data.filename = parsed.filename
+                    end
+                    if parsed.lnum then
+                        item_data.lnum = parsed.lnum
+                    end
+                    if parsed.col then
+                        item_data.col = parsed.col
+                    end
+                    -- text might be overridden by parser, or just use candidate
+                end
+            end
+            table.insert(items, item_data)
+        end
+
+        what.items = items
+        vim.fn.setqflist({}, " ", what)
+        vim.cmd "copen"
+    end
+
     function actions.close()
         if api.nvim_win_is_valid(original_win) and api.nvim_buf_is_valid(original_buf) then
             api.nvim_win_set_buf(original_win, original_buf)
@@ -317,6 +378,7 @@ function M.pick(items_or_provider, on_select, opts)
         ["<Esc>"] = "close",
         ["<C-c>"] = "close",
         ["<C-g>"] = "send_to_grep",
+        ["<C-q>"] = "send_to_qf",
         ["<C-s>"] = "cycle_sorter",
     }
 
