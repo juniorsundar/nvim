@@ -28,6 +28,7 @@ function M.files()
 end
 
 local current_job = nil
+local grep_timer = nil
 
 function M.live_grep()
     minibuffer.pick({}, util.jump_to_location, {
@@ -45,41 +46,56 @@ function M.live_grep()
 end
 
 function M.run_async_grep(query, update_ui_callback)
+    if grep_timer then
+        grep_timer:stop()
+        grep_timer:close()
+        grep_timer = nil
+    end
+
     if current_job then
         current_job:kill()
         current_job = nil
     end
 
-    update_ui_callback {}
-
     if not query or #query < 2 then
+        update_ui_callback {}
         return
     end
 
-    local cmd = { "rg", "--vimgrep", "--smart-case", "--", query }
+    grep_timer = vim.uv.new_timer()
+    grep_timer:start(
+        100,
+        0,
+        vim.schedule_wrap(function()
+            grep_timer:close()
+            grep_timer = nil
 
-    local output_lines = {}
-    local this_job
+            local cmd = { "rg", "--vimgrep", "--smart-case", "--", query }
 
-    this_job = vim.system(cmd, {
-        text = true,
-        stdout = function(_, data)
-            if data then
-                local lines = vim.split(data, "\n", { trimempty = true })
-                for _, line in ipairs(lines) do
-                    table.insert(output_lines, line)
-                end
+            local output_lines = {}
+            local this_job
 
-                vim.schedule(function()
-                    if current_job ~= this_job then
-                        return
+            this_job = vim.system(cmd, {
+                text = true,
+                stdout = function(_, data)
+                    if data then
+                        local lines = vim.split(data, "\n", { trimempty = true })
+                        for _, line in ipairs(lines) do
+                            table.insert(output_lines, line)
+                        end
+
+                        vim.schedule(function()
+                            if current_job ~= this_job then
+                                return
+                            end
+                            update_ui_callback(output_lines)
+                        end)
                     end
-                    update_ui_callback(output_lines)
-                end)
-            end
-        end,
-    })
-    current_job = this_job
+                end,
+            })
+            current_job = this_job
+        end)
+    )
 end
 
 return M

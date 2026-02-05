@@ -1,5 +1,24 @@
 local M = {}
 
+function M.is_binary(path)
+    local f = io.open(path, "rb")
+    if not f then
+        return false
+    end
+    local chunk = f:read(1024)
+    f:close()
+    return chunk and chunk:find "\0"
+end
+
+function M.complete_line(input, selection)
+    if vim.startswith(selection, input) then
+        return selection
+    end
+
+    local prefix = input:match("^(.*[%s%.%/:\\])" or "") or ""
+    return prefix .. selection
+end
+
 local schemas = {
     buffer = {
         pattern = "^(%d+):%s+(.-):(%d+):(%d+)",
