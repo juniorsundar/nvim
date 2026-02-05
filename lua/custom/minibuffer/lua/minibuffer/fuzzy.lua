@@ -69,6 +69,15 @@ M.sorters = {
         return matches
     end,
 
+    mini = function(items, query)
+        local has_mini, mini = pcall(require, "mini.fuzzy")
+        if not has_mini then
+            return items
+        end
+        local matches = mini.filtersort(query, items)
+        return matches
+    end,
+
     native = function(items, query)
         if vim.fn.exists "*matchfuzzy" == 1 then
             return vim.fn.matchfuzzy(items, query)

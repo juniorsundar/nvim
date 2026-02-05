@@ -53,7 +53,7 @@ function M.pick(items_or_provider, on_select, opts)
     opts = opts or {}
     on_select = on_select or opts.on_select
 
-    local available_sorters = opts.available_sorters or { "blink", "native", "lua" }
+    local available_sorters = opts.available_sorters or { "blink", "native", "lua", "mini" }
     local sorter_idx = 1
     local prompt_text = opts.prompt or "> "
     local custom_sorter = opts.sorter
