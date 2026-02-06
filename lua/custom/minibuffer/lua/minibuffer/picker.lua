@@ -164,6 +164,8 @@ function Picker:close()
         self.opts.on_close()
     end
 
+    preview.cleanup()
+
     self.ui:close()
     if active_picker == self then
         active_picker = nil

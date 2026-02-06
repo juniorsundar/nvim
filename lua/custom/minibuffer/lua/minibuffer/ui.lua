@@ -78,6 +78,10 @@ function UI:_configure_window(win_id)
     vim.wo[win_id].foldcolumn = "0"
     vim.wo[win_id].spell = false
     vim.wo[win_id].list = false
+    vim.wo[win_id].winhighlight =
+        "Normal:Normal,FloatBorder:Normal,WinSeparator:Normal,StatusLine:Normal,StatusLineNC:Normal"
+    vim.wo[win_id].fillchars = "eob: ,horiz: ,horizup: ,horizdown: ,vert: ,vertleft: ,vertright: ,verthoriz: "
+    vim.wo[win_id].statusline = " "
 end
 
 ---Update the virtual text prompt
