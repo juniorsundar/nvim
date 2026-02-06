@@ -164,6 +164,10 @@ function Picker:close()
         self.opts.on_close()
     end
 
+    if api.nvim_win_is_valid(self.original_win) and api.nvim_buf_is_valid(self.original_buf) then
+        api.nvim_win_set_buf(self.original_win, self.original_buf)
+    end
+
     preview.cleanup()
 
     self.ui:close()
