@@ -116,6 +116,7 @@ require("mini.deps").setup { path = { package = path_package } }
 vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/minibuffer")
 vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/cling.nvim")
 vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/buffers.nvim")
+vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/micro.nvim")
 
 vim.keymap.set("n", "<leader>P", "", { desc = "MiniDeps", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>Pu", function()
