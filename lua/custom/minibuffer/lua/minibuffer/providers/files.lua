@@ -3,6 +3,7 @@ local M = {}
 
 local minibuffer = require "minibuffer"
 local util = require "minibuffer.util"
+local fuzzy = require "minibuffer.fuzzy"
 
 ---@type vim.SystemObj|nil Current fd job handle
 local current_fd_job = nil
@@ -116,7 +117,7 @@ function M.run_async_files(query, update_ui_callback)
                 table.insert(cmd, dir)
             end
             table.insert(cmd, "--")
-            table.insert(cmd, query)
+            table.insert(cmd, query:sub(1, 2))
 
             local output_lines = {}
             local this_job
@@ -134,7 +135,8 @@ function M.run_async_files(query, update_ui_callback)
                             if current_fd_job ~= this_job then
                                 return
                             end
-                            update_ui_callback(output_lines)
+                            local matches = fuzzy.filter(output_lines, query, { sorter = "lua" })
+                            update_ui_callback(matches)
                         end)
                     end
                 end,

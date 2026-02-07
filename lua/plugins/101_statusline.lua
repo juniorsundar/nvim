@@ -25,7 +25,7 @@ StatusLine.config = {
         },
     },
     colors = (function()
-        local p = require("theme.colors").dark
+        local p = require("doom-one.colors").get_palette(vim.opt.background:get())
         return {
             bg = p.bg_alt,
             fg = p.fg,
