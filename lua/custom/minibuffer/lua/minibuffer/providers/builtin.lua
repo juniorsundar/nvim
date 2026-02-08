@@ -7,14 +7,83 @@ local util = require "minibuffer.util"
 ---Open command picker (like M-x in Emacs)
 ---Shows all available vim commands with completion
 function M.commands()
+    local history_state = {
+        index = 0,
+        prefix = nil,
+        last_tick = nil,
+        matches = nil,
+    }
+
+    local function cycle_history(builtin, direction)
+        local input_buf = builtin.picker.input_buf
+        local current_tick = vim.api.nvim_buf_get_changedtick(input_buf)
+
+        if history_state.last_tick and current_tick ~= history_state.last_tick then
+            history_state.index = 0
+            history_state.prefix = nil
+            history_state.matches = nil
+        end
+
+        if not history_state.matches then
+            local input = vim.api.nvim_get_current_line()
+            history_state.prefix = input
+            history_state.matches = {}
+            local seen = {}
+            local count = vim.fn.histnr "cmd"
+            for i = count, 1, -1 do
+                local entry = vim.fn.histget("cmd", i)
+                if entry and entry ~= "" and not seen[entry] then
+                    if not history_state.prefix or vim.startswith(entry, history_state.prefix) then
+                        table.insert(history_state.matches, entry)
+                        seen[entry] = true
+                    end
+                end
+            end
+        end
+
+        local new_index = history_state.index + direction
+        if new_index < 0 then
+            new_index = 0
+        elseif new_index > #history_state.matches then
+            new_index = #history_state.matches
+        end
+
+        if new_index == history_state.index then
+            return
+        end
+
+        local text_to_show
+        if new_index == 0 then
+            text_to_show = history_state.prefix
+        else
+            text_to_show = history_state.matches[new_index]
+        end
+
+        history_state.index = new_index
+        builtin.picker.ui:update_input { text_to_show }
+
+        history_state.last_tick = vim.api.nvim_buf_get_changedtick(input_buf)
+    end
+
     minibuffer.pick(function(input)
         if input == "" then
             return vim.fn.getcompletion("", "command")
         end
         return vim.fn.getcompletion(input, "cmdline")
     end, function(input_text)
+        vim.fn.histadd("cmd", input_text)
         vim.cmd(input_text)
-    end, { prompt = "M-x > " })
+    end, {
+        prompt = "M-x > ",
+        keymaps = {
+            ["<C-p>"] = function(_, builtin)
+                cycle_history(builtin, 1)
+            end,
+            ["<C-n>"] = function(_, builtin)
+                cycle_history(builtin, -1)
+            end,
+        },
+    })
 end
 
 ---Open buffer picker
