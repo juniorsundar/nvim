@@ -1,9 +1,9 @@
 local api = vim.api
-local highlight = require "minibuffer.highlight"
+local highlight = require "refer.highlight"
 
 local M = {}
 
----@class MinibufferUI
+---@class ReferUI
 ---@field base_prompt string The prompt text to display
 ---@field opts table Options table
 ---@field ns_id number Namespace ID for extmarks
@@ -18,14 +18,14 @@ UI.__index = UI
 ---Create a new UI instance
 ---@param prompt_text string The prompt text
 ---@param opts table|nil Options table
----@return MinibufferUI ui New UI instance
+---@return ReferUI ui New UI instance
 function M.new(prompt_text, opts)
-    ---@type MinibufferUI
+    ---@type ReferUI
     local self = setmetatable({}, UI)
     self.base_prompt = prompt_text
     self.opts = opts or {}
-    self.ns_id = api.nvim_create_namespace "minibuffer"
-    self.prompt_ns = api.nvim_create_namespace "minibuffer_prompt"
+    self.ns_id = api.nvim_create_namespace "refer"
+    self.prompt_ns = api.nvim_create_namespace "refer_prompt"
     return self
 end
 
@@ -46,8 +46,8 @@ function UI:create_windows()
     self.input_buf = api.nvim_create_buf(false, true)
     self.results_buf = api.nvim_create_buf(false, true)
 
-    vim.bo[self.input_buf].filetype = "minibuffer_input"
-    vim.bo[self.results_buf].filetype = "minibuffer_results"
+    vim.bo[self.input_buf].filetype = "refer_input"
+    vim.bo[self.results_buf].filetype = "refer_results"
 
     vim.cmd("botright " .. self:get_height(0) .. "split")
     self.results_win = api.nvim_get_current_win()

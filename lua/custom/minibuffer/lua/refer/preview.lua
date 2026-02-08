@@ -1,5 +1,5 @@
 local api = vim.api
-local util = require "minibuffer.util"
+local util = require "refer.util"
 
 ---@class PreviewModule
 local M = {}

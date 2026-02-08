@@ -77,14 +77,14 @@ local function ensure_binary()
 
     local triple = get_system_triple()
     if not triple then
-        vim.notify("Minibuffer: System not supported for pre-built blink-fuzzy binaries.", vim.log.levels.ERROR)
+        vim.notify("Refer: System not supported for pre-built blink-fuzzy binaries.", vim.log.levels.ERROR)
         return false
     end
 
     local url = string.format("%s/%s/%s%s", BASE_URL, VERSION, triple, get_lib_extension())
     is_downloading = true
 
-    vim.notify("Minibuffer: Downloading fuzzy matcher library...", vim.log.levels.INFO)
+    vim.notify("Refer: Downloading fuzzy matcher library...", vim.log.levels.INFO)
 
     vim.system({
         "curl",
@@ -100,12 +100,12 @@ local function ensure_binary()
         is_downloading = false
         if out.code == 0 then
             vim.schedule(function()
-                vim.notify("Minibuffer: Fuzzy matcher downloaded successfully.", vim.log.levels.INFO)
+                vim.notify("Refer: Fuzzy matcher downloaded successfully.", vim.log.levels.INFO)
             end)
         else
             vim.schedule(function()
                 vim.notify(
-                    "Minibuffer: Failed to download fuzzy matcher: " .. (out.stderr or "unknown error"),
+                    "Refer: Failed to download fuzzy matcher: " .. (out.stderr or "unknown error"),
                     vim.log.levels.ERROR
                 )
             end)
@@ -136,7 +136,7 @@ local function load_module()
     local open_func, err = package.loadlib(lib_path, "luaopen_blink_cmp_fuzzy")
     if not open_func then
         if not is_downloading then
-            vim.notify("Minibuffer: Failed to load fuzzy lib: " .. (err or "unknown"), vim.log.levels.ERROR)
+            vim.notify("Refer: Failed to load fuzzy lib: " .. (err or "unknown"), vim.log.levels.ERROR)
             is_downloading = true
         end
         return nil
@@ -154,7 +154,7 @@ function M.is_available()
 end
 
 ---Register items with the fuzzy matcher
----@param id string Context ID (e.g. "minibuffer")
+---@param id string Context ID (e.g. "refer")
 ---@param items table List of items with label and sortText fields
 function M.set_provider_items(id, items)
     local mod = load_module()

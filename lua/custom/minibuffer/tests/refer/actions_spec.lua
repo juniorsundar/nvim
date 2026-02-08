@@ -1,12 +1,12 @@
-local minibuffer = require "minibuffer"
-local Picker = require "minibuffer.picker"
+local refer = require "refer"
+local Picker = require "refer.picker"
 local stub = require "luassert.stub"
 
-describe("minibuffer.actions", function()
+describe("refer.actions", function()
     local picker
 
     before_each(function()
-        picker = minibuffer.pick({}, function() end)
+        picker = refer.pick({}, function() end)
     end)
 
     after_each(function()
@@ -50,7 +50,7 @@ describe("minibuffer.actions", function()
             local call = vim.fn.setqflist.calls[1]
             local what = call.refs[3]
 
-            assert.are.same("Minibuffer Selection", what.title)
+            assert.are.same("Refer Selection", what.title)
             assert.are.same(2, #what.items)
         end)
 

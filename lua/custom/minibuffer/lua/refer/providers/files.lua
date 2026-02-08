@@ -1,9 +1,9 @@
 ---@class FilesProvider
 local M = {}
 
-local minibuffer = require "minibuffer"
-local util = require "minibuffer.util"
-local fuzzy = require "minibuffer.fuzzy"
+local refer = require "refer"
+local util = require "refer.util"
+local fuzzy = require "refer.fuzzy"
 
 ---@type vim.SystemObj|nil Current fd job handle
 local current_fd_job = nil
@@ -25,7 +25,7 @@ function M.files()
         fd_timer = nil
     end
 
-    local picker = minibuffer.pick({}, nil, {
+    local picker = refer.pick({}, nil, {
         prompt = "Files > ",
         keymaps = {
             ["<Tab>"] = "toggle_mark",
@@ -65,7 +65,7 @@ local grep_timer = nil
 ---Open live grep picker using rg command
 ---Results update as you type
 function M.live_grep()
-    return minibuffer.pick({}, util.jump_to_location, {
+    return refer.pick({}, util.jump_to_location, {
         prompt = "Grep > ",
         parser = util.parsers.grep,
 
