@@ -5,7 +5,6 @@ describe("minibuffer.pick", function()
 
     local function set_input(p, text)
         vim.api.nvim_buf_set_lines(p.input_buf, 0, -1, false, { text })
-        -- Trigger refresh manually because TextChangedI won't fire via API
         p:refresh()
     end
 
@@ -30,14 +29,12 @@ describe("minibuffer.pick", function()
 
         assert.are.same(#items, #picker.current_matches)
 
-        -- Filter for "app"
         set_input(picker, "app")
-        vim.wait(50) -- Wait for debounce
+        vim.wait(50)
 
         assert.are.same(1, #picker.current_matches)
         assert.are.same("apple", picker.current_matches[1])
 
-        -- Select it
         picker.actions.select_entry()
 
         assert.are.same("apple", selected_item)
@@ -61,7 +58,6 @@ describe("minibuffer.pick", function()
         -- Default query ""
         assert.are.same(2, #picker.current_matches)
 
-        -- Filter "foo"
         set_input(picker, "foo")
         vim.wait(50)
 
@@ -98,10 +94,6 @@ describe("minibuffer.pick", function()
         picker = minibuffer.pick(items, function() end, { prompt = prompt })
         vim.wait(50)
 
-        -- Check if UI prompt is set (implementation detail of UI)
-        -- Assuming we can inspect the buffer content or window config?
-        -- UI creates a prompt buffer or uses virtual text/prefix.
-        -- Let's check `picker.ui.base_prompt` if accessible.
         assert.are.same(prompt, picker.ui.base_prompt)
     end)
 
@@ -135,6 +127,6 @@ describe("minibuffer.pick", function()
 
         picker:close()
         assert.is_true(closed)
-        picker = nil -- prevent double close in after_each
+        picker = nil
     end)
 end)

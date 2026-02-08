@@ -3,7 +3,6 @@ local blink = require "minibuffer.blink"
 local stub = require "luassert.stub"
 
 describe("minibuffer.fuzzy", function()
-    -- Stub blink availability to avoid download attempts
     stub(blink, "is_available", false)
 
     describe("lua sorter", function()
@@ -18,8 +17,7 @@ describe("minibuffer.fuzzy", function()
         it("matches partial strings", function()
             local items = { "apple", "apricot", "banana" }
             local res = sort(items, "ap")
-            -- Should match both, potentially sorting apple first if it's a prefix match?
-            -- The scorer gives bonuses for start of string.
+
             assert.are.same("apple", res[1])
             assert.are.same("apricot", res[2])
             assert.are.same(2, #res)
@@ -28,7 +26,7 @@ describe("minibuffer.fuzzy", function()
         it("handles fuzzy matches", function()
             local items = { "foobar", "fbr", "baz" }
             local res = sort(items, "fbr")
-            assert.are.same({ "fbr", "foobar" }, res) -- fbr is exact match so higher score
+            assert.are.same({ "fbr", "foobar" }, res)
         end)
 
         it("returns empty list for no matches", function()
@@ -48,7 +46,6 @@ describe("minibuffer.fuzzy", function()
             local res = sort(items, "hello world")
             assert.are.same({ "hello world" }, res)
 
-            -- Order of tokens shouldn't matter for matching, but might for scoring
             local res2 = sort(items, "world hello")
             assert.are.same({ "hello world" }, res2)
         end)
@@ -56,9 +53,6 @@ describe("minibuffer.fuzzy", function()
 
     describe("filter", function()
         it("uses lua sorter fallback when blink is missing", function()
-            -- Blink is not available in test env, so it should default to lua sorter
-            -- We verify this by checking if it returns matches using lua sorter logic
-
             local items = { "one", "two" }
             local res = fuzzy.filter(items, "one", { use_blink = true })
 

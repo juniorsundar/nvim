@@ -1,10 +1,8 @@
 local plenary_dir = os.getenv "PLENARY_DIR" or "/tmp/plenary.nvim"
--- Check for a specific file to ensure it's actually populated
 local is_installed = vim.fn.isdirectory(plenary_dir .. "/lua/plenary") == 1
 
 if not is_installed then
     print("Cloning plenary.nvim to " .. plenary_dir)
-    -- Cleanup just in case
     if vim.fn.isdirectory(plenary_dir) == 1 then
         vim.fn.delete(plenary_dir, "rf")
     end
