@@ -492,15 +492,14 @@ function Picker:setup_keymaps()
         elseif type(handler) == "function" then
             map(key, function()
                 local selection = self.current_matches[self.selected_index]
-                if selection then
-                    ---@type BuiltinContext
-                    local builtin = {
-                        actions = self.actions,
-                        parameters = parameters,
-                        marked = self.marked,
-                    }
-                    handler(selection, builtin)
-                end
+                ---@type BuiltinContext
+                local builtin = {
+                    picker = self,
+                    actions = self.actions,
+                    parameters = parameters,
+                    marked = self.marked,
+                }
+                handler(selection, builtin)
             end)
         end
     end
