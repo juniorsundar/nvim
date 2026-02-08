@@ -1,8 +1,8 @@
 ---@class LSPProvider
 local M = {}
 
-local minibuffer = require "minibuffer"
-local util = require "minibuffer.util"
+local refer = require "refer"
+local util = require "refer.util"
 
 ---Find references to symbol under cursor using LSP
 ---Shows filename, line, column, and content for each reference
@@ -43,7 +43,7 @@ function M.references()
             table.insert(items, entry)
         end
 
-        minibuffer.pick(items, util.jump_to_location, {
+        refer.pick(items, util.jump_to_location, {
             prompt = "LSP References > ",
             keymaps = {
                 ["<Tab>"] = "toggle_mark",
@@ -100,7 +100,7 @@ function M.definitions()
             end
         end
 
-        minibuffer.pick(items, util.jump_to_location, {
+        refer.pick(items, util.jump_to_location, {
             prompt = "LSP Definitions > ",
             keymaps = {
                 ["<Tab>"] = "toggle_mark",

@@ -1,8 +1,8 @@
 ---@class BuiltinProvider
 local M = {}
 
-local minibuffer = require "minibuffer"
-local util = require "minibuffer.util"
+local refer = require "refer"
+local util = require "refer.util"
 
 ---Open command picker (like M-x in Emacs)
 ---Shows all available vim commands with completion
@@ -65,7 +65,7 @@ function M.commands()
         history_state.last_tick = vim.api.nvim_buf_get_changedtick(input_buf)
     end
 
-    return minibuffer.pick(function(input)
+    return refer.pick(function(input)
         if input == "" then
             return vim.fn.getcompletion("", "command")
         end
@@ -111,7 +111,7 @@ function M.buffers()
         end
     end
 
-    return minibuffer.pick(items, util.jump_to_location, {
+    return refer.pick(items, util.jump_to_location, {
         prompt = "Buffers > ",
         keymaps = {
             ["<Tab>"] = "toggle_mark",
@@ -158,7 +158,7 @@ function M.old_files()
         end
     end
 
-    return minibuffer.pick(results, nil, {
+    return refer.pick(results, nil, {
         prompt = "Recent Files > ",
         keymaps = {
             ["<Tab>"] = "toggle_mark",

@@ -1,6 +1,6 @@
-local minibuffer = require "minibuffer"
+local refer = require "refer"
 
-describe("minibuffer.pick", function()
+describe("refer.pick", function()
     local picker
 
     local function set_input(p, text)
@@ -22,7 +22,7 @@ describe("minibuffer.pick", function()
             selected_item = item
         end
 
-        picker = minibuffer.pick(items, on_select)
+        picker = refer.pick(items, on_select)
 
         -- Initial state (debounce wait)
         vim.wait(50)
@@ -50,7 +50,7 @@ describe("minibuffer.pick", function()
         end
 
         local selected_item
-        picker = minibuffer.pick(provider, function(item)
+        picker = refer.pick(provider, function(item)
             selected_item = item
         end)
         vim.wait(50)
@@ -70,7 +70,7 @@ describe("minibuffer.pick", function()
 
     it("can cycle through items", function()
         local items = { "a", "b", "c" }
-        picker = minibuffer.pick(items, function() end)
+        picker = refer.pick(items, function() end)
         vim.wait(50)
 
         assert.are.same(1, picker.selected_index)
@@ -91,7 +91,7 @@ describe("minibuffer.pick", function()
     it("respects initial options", function()
         local items = { "one" }
         local prompt = "Test Prompt > "
-        picker = minibuffer.pick(items, function() end, { prompt = prompt })
+        picker = refer.pick(items, function() end, { prompt = prompt })
         vim.wait(50)
 
         assert.are.same(prompt, picker.ui.base_prompt)
@@ -108,7 +108,7 @@ describe("minibuffer.pick", function()
             captured_data = data
         end
 
-        picker = minibuffer.pick(items, on_select, { parser = parser })
+        picker = refer.pick(items, on_select, { parser = parser })
         vim.wait(50)
 
         picker.actions.select_entry()
@@ -118,7 +118,7 @@ describe("minibuffer.pick", function()
 
     it("calls on_close when closed", function()
         local closed = false
-        picker = minibuffer.pick({}, function() end, {
+        picker = refer.pick({}, function() end, {
             on_close = function()
                 closed = true
             end,

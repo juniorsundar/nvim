@@ -1,8 +1,8 @@
 local api = vim.api
-local util = require "minibuffer.util"
-local UI = require "minibuffer.ui"
-local fuzzy = require "minibuffer.fuzzy"
-local preview = require "minibuffer.preview"
+local util = require "refer.util"
+local UI = require "refer.ui"
+local fuzzy = require "refer.fuzzy"
+local preview = require "refer.preview"
 
 ---@class ActionTable
 ---@field refresh fun() Refresh the picker
@@ -22,7 +22,7 @@ local preview = require "minibuffer.preview"
 ---@field parameters table Original window/buffer/cursor info
 ---@field marked table<string, boolean> Marked items
 
----@class MinibufferOptions
+---@class ReferOptions
 ---@field prompt? string Prompt text (default: "> ")
 ---@field on_select? fun(selection: string, data: SelectionData|nil) Callback when item selected
 ---@field on_close? fun() Callback when picker closes
@@ -36,7 +36,7 @@ local preview = require "minibuffer.preview"
 
 ---@class Picker
 ---@field items_or_provider table|fun(query: string): table
----@field opts MinibufferOptions
+---@field opts ReferOptions
 ---@field on_select fun(selection: string, data: SelectionData|nil)|nil
 ---@field original_win number
 ---@field original_buf number
@@ -52,7 +52,7 @@ local preview = require "minibuffer.preview"
 ---@field is_previewing boolean
 ---@field debounce_timer uv.uv_timer_t|nil
 ---@field preview_timer uv.uv_timer_t|nil
----@field ui MinibufferUI
+---@field ui ReferUI
 ---@field input_buf number|nil
 ---@field actions ActionTable
 local Picker = {}
@@ -72,7 +72,7 @@ function Picker.close_existing()
         if api.nvim_win_is_valid(win) then
             local buf = api.nvim_win_get_buf(win)
             local ft = vim.bo[buf].filetype
-            if ft == "minibuffer_input" or ft == "minibuffer_results" then
+            if ft == "refer_input" or ft == "refer_results" then
                 api.nvim_win_close(win, true)
             end
         end
@@ -81,7 +81,7 @@ end
 
 ---Create a new Picker instance
 ---@param items_or_provider table|fun(query: string): table List of strings or provider function
----@param opts MinibufferOptions|nil Configuration options
+---@param opts ReferOptions|nil Configuration options
 ---@return Picker picker New picker instance
 function Picker.new(items_or_provider, opts)
     Picker.close_existing()
@@ -381,7 +381,7 @@ function Picker:setup_actions()
 
     self.actions.send_to_qf = function()
         local items = {}
-        local what = { title = self.opts.prompt or "Minibuffer Selection" }
+        local what = { title = self.opts.prompt or "Refer Selection" }
 
         local candidates = {}
         local has_marked = false
@@ -507,7 +507,7 @@ end
 
 ---Setup autocommands for the picker
 function Picker:setup_autocmds()
-    local group = api.nvim_create_augroup("MinibufferLive", { clear = true })
+    local group = api.nvim_create_augroup("ReferLive", { clear = true })
 
     api.nvim_create_autocmd("TextChangedI", {
         buffer = self.input_buf,

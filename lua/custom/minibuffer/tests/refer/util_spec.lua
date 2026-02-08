@@ -1,7 +1,7 @@
-local util = require "minibuffer.util"
+local util = require "refer.util"
 local stub = require "luassert.stub"
 
-describe("minibuffer.util", function()
+describe("refer.util", function()
     describe("parse_selection", function()
         it("parses buffer format", function()
             local input = "1: src/main.lua:10:5"

@@ -1,8 +1,8 @@
-local fuzzy = require "minibuffer.fuzzy"
-local blink = require "minibuffer.blink"
+local fuzzy = require "refer.fuzzy"
+local blink = require "refer.blink"
 local stub = require "luassert.stub"
 
-describe("minibuffer.fuzzy", function()
+describe("refer.fuzzy", function()
     stub(blink, "is_available", false)
 
     describe("lua sorter", function()

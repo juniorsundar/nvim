@@ -1,8 +1,8 @@
 local M = {}
 
-local blink = require "minibuffer.blink"
+local blink = require "refer.blink"
 
----@alias MinibufferSorterFn fun(items: table, query: string): table
+---@alias ReferSorterFn fun(items: table, query: string): table
 
 -- Pure Lua fuzzy scorer (fallback)
 ---@param str string String to score
@@ -58,16 +58,16 @@ local function simple_fuzzy_score(str, pattern)
     return total_score
 end
 
----@type table<string, MinibufferSorterFn> Available sorter functions
+---@type table<string, ReferSorterFn> Available sorter functions
 M.sorters = {
     ---Blink fuzzy sorter using Rust engine
-    ---@type MinibufferSorterFn
+    ---@type ReferSorterFn
     ---@return table|nil matched_indices
     blink = function(items, query)
         if not blink.is_available() then
             return nil
         end
-        local _, matched_indices = blink.fuzzy(query, "minibuffer")
+        local _, matched_indices = blink.fuzzy(query, "refer")
         if not matched_indices then
             return {}
         end
@@ -79,7 +79,7 @@ M.sorters = {
     end,
 
     ---Mini.fuzzy sorter
-    ---@type MinibufferSorterFn
+    ---@type ReferSorterFn
     ---@return table|nil matched_indices
     mini = function(items, query)
         local has_mini, mini = pcall(require, "mini.fuzzy")
@@ -91,7 +91,7 @@ M.sorters = {
     end,
 
     ---Native vim matchfuzzy sorter
-    ---@type MinibufferSorterFn
+    ---@type ReferSorterFn
     ---@return table|nil matched_indices
     native = function(items, query)
         if vim.fn.exists "*matchfuzzy" == 1 then
@@ -101,7 +101,7 @@ M.sorters = {
     end,
 
     ---Pure Lua fuzzy sorter
-    ---@type MinibufferSorterFn
+    ---@type ReferSorterFn
     ---@return table|nil matched_indices
     lua = function(items, query)
         local tokens = {}
@@ -156,7 +156,7 @@ function M.register_items(items)
     for _, item in ipairs(items) do
         table.insert(blink_items, { label = item, sortText = item })
     end
-    blink.set_provider_items("minibuffer", blink_items)
+    blink.set_provider_items("refer", blink_items)
     return true
 end
 

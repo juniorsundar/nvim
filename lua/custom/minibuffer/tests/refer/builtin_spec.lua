@@ -1,4 +1,4 @@
-local builtin = require "minibuffer.providers.builtin"
+local builtin = require "refer.providers.builtin"
 
 describe("builtin.commands history cycling", function()
     local picker

@@ -1,7 +1,7 @@
-local M = require "minibuffer"
-local builtin = require "minibuffer.providers.builtin"
-local lsp = require "minibuffer.providers.lsp"
-local files = require "minibuffer.providers.files"
+local M = require "refer"
+local builtin = require "refer.providers.builtin"
+local lsp = require "refer.providers.lsp"
+local files = require "refer.providers.files"
 
 vim.keymap.set("n", "<leader>:", builtin.commands, { desc = "Command Palette" })
 vim.keymap.set("n", "<leader>Fr", builtin.old_files, { desc = "Recent File" })
