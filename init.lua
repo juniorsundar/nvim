@@ -113,7 +113,7 @@ end
 require("mini.deps").setup { path = { package = path_package } }
 
 -- Custom local plugins
-vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/minibuffer")
+vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/refer.nvim")
 vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/cling.nvim")
 vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/buffers.nvim")
 vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/micro.nvim")
