@@ -59,9 +59,6 @@ describe("minibuffer.util", function()
             assert.are.same("path/to/file", util.complete_line("path/to/fi", "file"))
         end)
 
-        -- This behavior depends on the implementation of complete_line logic:
-        -- "prefix = input:match("^(.*[%s%.%/:\\\\])" or "") or """
-        -- It preserves the prefix up to the last separator.
         it("handles spaces as separators", function()
             assert.are.same("command argument", util.complete_line("command arg", "argument"))
         end)
@@ -71,7 +68,6 @@ describe("minibuffer.util", function()
         local original_cwd
         before_each(function()
             original_cwd = vim.fn.getcwd()
-            -- Mock getcwd to a known path
             stub(vim.fn, "getcwd", "/home/user/project")
         end)
 

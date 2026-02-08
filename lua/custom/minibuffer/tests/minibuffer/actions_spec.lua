@@ -6,8 +6,6 @@ describe("minibuffer.actions", function()
     local picker
 
     before_each(function()
-        -- Create a dummy picker.
-        -- We pass empty list, as we will inject state manually.
         picker = minibuffer.pick({}, function() end)
     end)
 
@@ -26,7 +24,6 @@ describe("minibuffer.actions", function()
         assert.is_true(picker.marked["item1"])
         assert.are.same(2, picker.selected_index)
 
-        -- Toggle off
         picker.selected_index = 1
         picker.actions.toggle_mark()
         assert.is_false(picker.marked["item1"])
@@ -47,12 +44,9 @@ describe("minibuffer.actions", function()
             picker.marked = { ["file1:1:1"] = true, ["file2:2:2"] = true }
             picker.current_matches = { "file1:1:1", "file2:2:2", "file3:3:3" }
 
-            -- We need a parser for them to be useful in QF, but even without, they go as text
             picker.actions.send_to_qf()
 
             assert.stub(vim.fn.setqflist).was_called()
-            -- Check the arguments passed to setqflist.
-            -- The second arg is ' ', third is { title = ..., items = ... }
             local call = vim.fn.setqflist.calls[1]
             local what = call.refs[3]
 
@@ -81,7 +75,6 @@ describe("minibuffer.actions", function()
                 selected = sel
             end
 
-            -- Mock input line
             vim.api.nvim_buf_set_lines(picker.input_buf, 0, -1, false, { "custom input" })
 
             picker.actions.select_input()
