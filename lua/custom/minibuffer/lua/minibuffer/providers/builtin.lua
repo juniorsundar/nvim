@@ -65,7 +65,7 @@ function M.commands()
         history_state.last_tick = vim.api.nvim_buf_get_changedtick(input_buf)
     end
 
-    minibuffer.pick(function(input)
+    return minibuffer.pick(function(input)
         if input == "" then
             return vim.fn.getcompletion("", "command")
         end
@@ -111,7 +111,7 @@ function M.buffers()
         end
     end
 
-    minibuffer.pick(items, util.jump_to_location, {
+    return minibuffer.pick(items, util.jump_to_location, {
         prompt = "Buffers > ",
         keymaps = {
             ["<Tab>"] = "toggle_mark",
@@ -158,7 +158,7 @@ function M.old_files()
         end
     end
 
-    minibuffer.pick(results, nil, {
+    return minibuffer.pick(results, nil, {
         prompt = "Recent Files > ",
         keymaps = {
             ["<Tab>"] = "toggle_mark",
