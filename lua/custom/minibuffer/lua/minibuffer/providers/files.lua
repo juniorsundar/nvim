@@ -53,6 +53,7 @@ function M.files()
     })
 
     picker:set_items {}
+    return picker
 end
 
 ---@type vim.SystemObj|nil Current grep job handle
@@ -64,7 +65,7 @@ local grep_timer = nil
 ---Open live grep picker using rg command
 ---Results update as you type
 function M.live_grep()
-    minibuffer.pick({}, util.jump_to_location, {
+    return minibuffer.pick({}, util.jump_to_location, {
         prompt = "Grep > ",
         parser = util.parsers.grep,
 
