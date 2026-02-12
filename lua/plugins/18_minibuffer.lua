@@ -3,6 +3,8 @@ local builtin = require "refer.providers.builtin"
 local lsp = require "refer.providers.lsp"
 local files = require "refer.providers.files"
 
+refer.setup_ui_select()
+
 vim.keymap.set("n", "<leader>:", builtin.commands, { desc = "Command Palette" })
 vim.keymap.set("n", "<leader>Fr", builtin.old_files, { desc = "Recent File" })
 vim.keymap.set("n", "<leader>Lr", lsp.references, { desc = "LSP References" })
