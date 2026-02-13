@@ -78,14 +78,14 @@ end, { desc = "Document Diagnostics", noremap = false, silent = true })
 --     Snacks.picker.lsp_definitions()
 --     -- lsp_function "definition"
 -- end, { desc = "Definition", noremap = false, silent = true })
-vim.keymap.set("n", "<leader>Lc", function()
-    Snacks.picker.lsp_declarations()
-    -- lsp_function "declaration"
-end, { desc = "Declaration", noremap = false, silent = true })
-vim.keymap.set("n", "<leader>Li", function()
-    Snacks.picker.lsp_implementations()
-    -- lsp_function "implementation"
-end, { desc = "Implementation", noremap = false, silent = true })
+-- vim.keymap.set("n", "<leader>Lc", function()
+--     Snacks.picker.lsp_declarations()
+--     -- lsp_function "declaration"
+-- end, { desc = "Declaration", noremap = false, silent = true })
+-- vim.keymap.set("n", "<leader>Li", function()
+--     Snacks.picker.lsp_implementations()
+--     -- lsp_function "implementation"
+-- end, { desc = "Implementation", noremap = false, silent = true })
 
 -- vim.keymap.set("n", "<leader>Lr", function()
 --     Snacks.picker.lsp_references()
