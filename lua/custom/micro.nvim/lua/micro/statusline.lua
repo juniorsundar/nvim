@@ -269,7 +269,7 @@ function StatusLine.render_window(parent_win, buf_id)
     local height = vim.api.nvim_win_get_height(parent_win)
     local is_active = vim.api.nvim_get_current_win() == parent_win
 
-    local row = is_active and height or (height - 1)
+    local row = height - 1
 
     local content, highlights = StatusLine.generate_content(parent_win, buf_id, width)
 
