@@ -74,6 +74,8 @@ function StatusLine.setup_highlights()
     vim.api.nvim_set_hl(0, "StatusLineDiagError", { fg = StatusLine.config.colors.red, bg = "None" })
     vim.api.nvim_set_hl(0, "StatusLineDiagWarn", { fg = StatusLine.config.colors.yellow, bg = "None" })
     vim.api.nvim_set_hl(0, "StatusLineDiagInfo", { fg = StatusLine.config.colors.cyan, bg = "None" })
+
+    vim.api.nvim_set_hl(0, "StatusLineLspProgress", { fg = StatusLine.config.colors.green, bg = "None" })
 end
 
 function StatusLine.is_ignored(buf_id)
@@ -167,6 +169,30 @@ function StatusLine.get_diagnostics(buf_id)
     return parts
 end
 
+local client_progress = {}
+
+function StatusLine.get_lsp_status(buf_id)
+    local clients = vim.lsp.get_clients { bufnr = buf_id }
+    local parts = {}
+    for _, client in ipairs(clients) do
+        local p = client_progress[client.id]
+        local text = client.name
+        if p then
+            if p.title then
+                text = text .. ": " .. p.title
+            end
+            if p.message then
+                text = text .. " " .. p.message
+            end
+            if p.percentage then
+                text = text .. " " .. p.percentage .. "%%"
+            end
+        end
+        table.insert(parts, { text = " " .. text .. " ", group = "StatusLineLspProgress" })
+    end
+    return parts
+end
+
 function StatusLine.get_file_info(buf_id)
     local full_path = vim.api.nvim_buf_get_name(buf_id)
     local filename = vim.fn.fnamemodify(full_path, ":.")
@@ -210,6 +236,11 @@ function StatusLine.generate_content(win_id, buf_id, width)
     end
 
     -- B. Build Right Side
+    local lsp_status = StatusLine.get_lsp_status(buf_id)
+    for _, s in ipairs(lsp_status) do
+        table.insert(right_components, s)
+    end
+
     local diags = StatusLine.get_diagnostics(buf_id)
     for _, d in ipairs(diags) do
         table.insert(right_components, d)
@@ -374,5 +405,35 @@ vim.api.nvim_create_autocmd(
 )
 
 vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, { group = grp, callback = StatusLine.autoscroll })
+
+vim.api.nvim_create_autocmd("LspProgress", {
+    group = grp,
+    callback = function(ev)
+        local client_id = ev.data.client_id
+        local value = ev.data.params.value
+        if not client_progress[client_id] then
+            client_progress[client_id] = {}
+        end
+        local p = client_progress[client_id]
+        if value.kind == "begin" then
+            p.title = value.title
+            p.message = value.message
+            p.percentage = value.percentage
+        elseif value.kind == "report" then
+            if value.title then
+                p.title = value.title
+            end
+            if value.message then
+                p.message = value.message
+            end
+            if value.percentage then
+                p.percentage = value.percentage
+            end
+        elseif value.kind == "end" then
+            client_progress[client_id] = nil
+        end
+        StatusLine.update()
+    end,
+})
 
 return StatusLine
