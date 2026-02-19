@@ -7,7 +7,8 @@ vim.lsp.autohover = {
         border = "rounded",
         relative = "editor",
         offset_x = vim.o.columns,
-        ratio = 0.3,
+        ratio = 0.1,
+        max_height = nil,
     },
 }
 vim.o.updatetime = vim.lsp.autohover.delay
@@ -49,7 +50,6 @@ local function eldoc()
 
         ---@type string[]
         local lines = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
-        table.insert(lines, 1, "")
 
         if vim.tbl_isempty(lines) then
             return
@@ -57,17 +57,25 @@ local function eldoc()
 
         if vim.lsp.autohover.layout == "eldoc" then
             -- table.remove(lines, 1)
-            if eldoc_win_id ~= nil or eldoc_buf_id ~= nil then
+            if eldoc_win_id and vim.api.nvim_win_is_valid(eldoc_win_id) then
                 return
             end
+            close_eldoc_window()
+
             eldoc_buf_id = vim.api.nvim_create_buf(false, true)
             vim.b[eldoc_buf_id].statusline_ignore = true
 
             vim.api.nvim_buf_set_lines(eldoc_buf_id, 0, 0, false, lines)
+
+            local max_height = math.floor(vim.o.lines * vim.lsp.autohover.opts.ratio)
+            if vim.lsp.autohover.opts.max_height then
+                max_height = math.min(max_height, vim.lsp.autohover.opts.max_height)
+            end
+
             eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
                 split = "below",
                 win = -1,
-                height = math.min(math.floor(vim.o.lines * vim.lsp.autohover.opts.ratio), #lines),
+                height = math.min(max_height, #lines),
                 style = "minimal",
             })
             vim.api.nvim_buf_set_name(eldoc_buf_id, "[LSP Eldoc]")
@@ -76,6 +84,7 @@ local function eldoc()
             vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = eldoc_buf_id })
             vim.api.nvim_set_option_value("modifiable", false, { buf = eldoc_buf_id })
             vim.api.nvim_set_option_value("swapfile", false, { buf = eldoc_buf_id })
+            vim.api.nvim_set_option_value("conceallevel", 2, { win = eldoc_win_id })
             vim.api.nvim_win_set_var(eldoc_win_id, "statusline_ignore", true)
             vim.keymap.set("n", "q", close_eldoc_window, {
                 buffer = eldoc_buf_id,
@@ -148,17 +157,12 @@ vim.keymap.set(
     toggle_auto_hover,
     { desc = "Toggle LSP auto hover", noremap = false, silent = true }
 )
--- vim.keymap.set(
---     "n",
---     "<leader>Lk",
---     function()
---         if eldoc_buf_id ~= nil and eldoc_win_id ~= nil then
---             vim.api.nvim_set_current_win(eldoc_win_id)
---         else
---             show_documentation()
---         end
---     end,
---     { desc = "Hover", noremap = false, silent = true }
--- )
+vim.keymap.set("n", "<leader>Tk", function()
+    if eldoc_win_id and vim.api.nvim_win_is_valid(eldoc_win_id) then
+        vim.api.nvim_set_current_win(eldoc_win_id)
+    else
+        eldoc()
+    end
+end, { desc = "Hover", noremap = false, silent = true })
 
 vim.lsp.buf.eldoc = eldoc

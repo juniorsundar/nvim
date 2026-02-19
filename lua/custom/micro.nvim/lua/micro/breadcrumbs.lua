@@ -81,9 +81,8 @@ local function find_symbol_path(symbol_list, line, char, path)
         if range_contains_pos(symbol.range, line, char) then
             -- Found the symbol, add it to the path
             ---@type string
-            local icon = kind_icons[symbol.kind] or "" -- Default icon
+            local icon = kind_icons[symbol.kind] or ""
             table.insert(path, icon .. " " .. symbol.name)
-            -- Recurse into its children to find the most specific symbol
             find_symbol_path(symbol.children, line, char, path)
             return true
         end
@@ -106,9 +105,9 @@ local function lsp_callback(err, symbols, ctx, config)
     ---@type number
     local winnr = vim.api.nvim_get_current_win()
     ---@type number[]
-    local pos = vim.api.nvim_win_get_cursor(0) -- {line, col}
+    local pos = vim.api.nvim_win_get_cursor(0)
     ---@type number
-    local cursor_line = pos[1] - 1 -- LSP is 0-indexed
+    local cursor_line = pos[1] - 1
     ---@type number
     local cursor_char = pos[2]
 
@@ -168,18 +167,15 @@ local function lsp_callback(err, symbols, ctx, config)
             end
             table.insert(breadcrumbs, "%#" .. icon_hl .. "#" .. (icon or file_icon) .. "%#Normal#" .. " " .. component)
         else
-            -- Path component is a folder
             table.insert(breadcrumbs, folder_icon .. " " .. component)
         end
     end
 
-    -- Find and append the symbol path
     find_symbol_path(symbols, cursor_line, cursor_char, breadcrumbs)
 
     ---@type string
     local breadcrumb_string = table.concat(breadcrumbs, " > ")
 
-    -- Set the winbar
     if breadcrumb_string ~= "" then
         vim.api.nvim_set_option_value("winbar", breadcrumb_string, { win = winnr })
     else
@@ -199,12 +195,11 @@ local function breadcrumbs_set()
     local bufnr = vim.api.nvim_get_current_buf()
     ---@type number
     ---@diagnostic disable-next-line: unused-local
-    local winnr = vim.api.nvim_get_current_buf() -- Note: This is buffer handle, not window. Not used.
+    local winnr = vim.api.nvim_get_current_buf()
 
     ---@type vim.lsp.Client[]
     local clients = vim.lsp.get_clients { bufnr = bufnr }
 
-    -- Exit if no clients or client doesn't support documentSymbol
     if #clients == 0 then
         return
     elseif not clients[1].supports_method "textDocument/documentSymbol" then
@@ -232,27 +227,44 @@ local function breadcrumbs_set()
         return
     end
 
-    -- Make the async LSP request
     local result, _ = pcall(vim.lsp.buf_request, bufnr, "textDocument/documentSymbol", params, lsp_callback)
 
     if not result then
-        -- Request failed to send
         return
     end
+end
+
+local timer = nil
+local function debounced_breadcrumbs_set()
+    if timer then
+        timer:stop()
+        timer:close()
+    end
+
+    timer = vim.uv.new_timer()
+    if timer == nil then
+        return
+    end
+
+    timer:start(
+        200,
+        0,
+        vim.schedule_wrap(function()
+            breadcrumbs_set()
+        end)
+    )
 end
 
 -- Create a dedicated augroup
 ---@type number
 local breadcrumbs_augroup = vim.api.nvim_create_augroup("Breadcrumbs", { clear = true })
 
--- Update breadcrumbs when the cursor moves
 vim.api.nvim_create_autocmd({ "CursorHold" }, {
     group = breadcrumbs_augroup,
-    callback = breadcrumbs_set,
+    callback = debounced_breadcrumbs_set,
     desc = "Set breadcrumbs.",
 })
 
--- Clear breadcrumbs when leaving the window
 vim.api.nvim_create_autocmd({ "WinLeave" }, {
     group = breadcrumbs_augroup,
     callback = function()
@@ -273,6 +285,7 @@ local function toggle_breadcrumbs()
     vim.lsp.breadcrumbs.enabled = not vim.lsp.breadcrumbs.enabled
     if vim.lsp.breadcrumbs.enabled then
         vim.notify("Breadcrumbs enabled", vim.log.levels.INFO, { title = "LSP" })
+        debounced_breadcrumbs_set()
     else
         vim.notify("Breadcrumbs disabled", vim.log.levels.INFO, { title = "LSP" })
         vim.o.winbar = ""
