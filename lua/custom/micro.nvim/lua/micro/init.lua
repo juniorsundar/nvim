@@ -7,6 +7,7 @@ function M.setup()
     require "micro.breadcrumbs"
     require "micro.folds"
     require "micro.hover"
+    require "micro.signature"
 end
 
 return M
