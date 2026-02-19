@@ -90,7 +90,6 @@ vim.keymap.set("n", "<C-Down>", "gj", opts)
 -- Visual mode --
 vim.keymap.set("v", "<", "<gv", opts)
 vim.keymap.set("v", ">", ">gv", opts)
-
 -- Terminal mode --
 vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 
