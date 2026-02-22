@@ -2,6 +2,26 @@ vim.opt.statusline = " "
 vim.opt.scrolloff = 1
 local ns_id = vim.api.nvim_create_namespace "StatusLineNS"
 
+local function get_hl_fg(groups)
+    for _, group in ipairs(groups) do
+        local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = group, link = false })
+        if ok and hl and type(hl.fg) == "number" then
+            return string.format("#%06x", hl.fg)
+        end
+    end
+    return "NONE"
+end
+
+local function get_hl_bg(groups)
+    for _, group in ipairs(groups) do
+        local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = group, link = false })
+        if ok and hl and type(hl.bg) == "number" then
+            return string.format("#%06x", hl.bg)
+        end
+    end
+    return "NONE"
+end
+
 local StatusLine = {}
 
 StatusLine.config = {
@@ -24,27 +44,12 @@ StatusLine.config = {
             ["qf"] = true,
         },
     },
-    colors = (function()
-        local p = require("doom-one.colors").get_palette(vim.opt.background:get())
-        return {
-            bg = p.bg_alt,
-            fg = p.fg,
-            yellow = p.yellow,
-            cyan = p.cyan,
-            darkblue = p.dark_blue,
-            green = p.green,
-            orange = p.orange,
-            violet = p.violet,
-            magenta = p.magenta,
-            blue = p.blue,
-            red = p.red,
-        }
-    end)(),
+    colors = {},
     diff = {
-        symbols = { added = " ", modified = "󰝤 ", removed = " " },
+        symbols = { added = " ", modified = "󰝤 ", removed = " " },
     },
     lsp_errors = {
-        symbols = { info = " ", warn = " ", error = " " },
+        symbols = { info = " ", warn = " ", error = " " },
     },
     border_style = { " ", "─", "", "", "", "", "", "" },
 }
@@ -53,7 +58,24 @@ StatusLine.state = {
     wins = {},
 }
 
+function StatusLine.refresh_colors()
+    local c = StatusLine.config.colors
+    c.fg = get_hl_fg { "Normal" }
+    c.bg = get_hl_bg { "StatusLine", "Normal" }
+    c.red = get_hl_fg { "DiagnosticError", "Error", "DiffDelete" }
+    c.orange = get_hl_fg { "Constant", "WarningMsg", "Number" }
+    c.yellow = get_hl_fg { "DiagnosticWarn", "WarningMsg" }
+    c.green = get_hl_fg { "DiagnosticOk", "DiffAdd", "String" }
+    c.cyan = get_hl_fg { "DiagnosticHint", "Special", "Identifier" }
+    c.blue = get_hl_fg { "Function", "Type", "Identifier" }
+    c.violet = get_hl_fg { "Statement", "Keyword" }
+    c.magenta = get_hl_fg { "Special", "Identifier", "PreProc" }
+    c.darkblue = c.blue
+end
+
 function StatusLine.setup_highlights()
+    StatusLine.refresh_colors()
+
     vim.api.nvim_set_hl(0, "StatusLine", { bg = "None", fg = "None" })
     vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "None", fg = "None" })
 
@@ -125,7 +147,7 @@ end
 
 function StatusLine.get_git_branch(buf_id)
     local signs = vim.b[buf_id].gitsigns_status_dict
-    local text = signs and ("  " .. (signs.head or "") .. " ") or ""
+    local text = signs and ("  " .. (signs.head or "") .. " ") or ""
     return { { text = text, group = "StatusLineGitBranch" } }
 end
 
@@ -408,6 +430,14 @@ function StatusLine.setup(opts)
     )
 
     vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, { group = grp, callback = StatusLine.autoscroll })
+
+    vim.api.nvim_create_autocmd("ColorScheme", {
+        group = grp,
+        callback = function()
+            StatusLine.setup_highlights()
+            StatusLine.update()
+        end,
+    })
 
     vim.api.nvim_create_autocmd("LspProgress", {
         group = grp,
