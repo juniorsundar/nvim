@@ -395,45 +395,49 @@ function StatusLine.autoscroll()
     end
 end
 
-StatusLine.setup_highlights()
+function StatusLine.setup(opts)
+    StatusLine.config = vim.tbl_deep_extend("force", StatusLine.config, opts or {})
 
-local grp = vim.api.nvim_create_augroup("CustomStatusLine", { clear = true })
+    StatusLine.setup_highlights()
 
-vim.api.nvim_create_autocmd(
-    { "WinEnter", "WinClosed", "VimResized", "WinScrolled", "BufEnter", "CursorHold", "ModeChanged" },
-    { group = grp, callback = StatusLine.update }
-)
+    local grp = vim.api.nvim_create_augroup("CustomStatusLine", { clear = true })
 
-vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, { group = grp, callback = StatusLine.autoscroll })
+    vim.api.nvim_create_autocmd(
+        { "WinEnter", "WinClosed", "VimResized", "WinScrolled", "BufEnter", "CursorHold", "ModeChanged" },
+        { group = grp, callback = StatusLine.update }
+    )
 
-vim.api.nvim_create_autocmd("LspProgress", {
-    group = grp,
-    callback = function(ev)
-        local client_id = ev.data.client_id
-        local value = ev.data.params.value
-        if not client_progress[client_id] then
-            client_progress[client_id] = {}
-        end
-        local p = client_progress[client_id]
-        if value.kind == "begin" then
-            p.title = value.title
-            p.message = value.message
-            p.percentage = value.percentage
-        elseif value.kind == "report" then
-            if value.title then
+    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, { group = grp, callback = StatusLine.autoscroll })
+
+    vim.api.nvim_create_autocmd("LspProgress", {
+        group = grp,
+        callback = function(ev)
+            local client_id = ev.data.client_id
+            local value = ev.data.params.value
+            if not client_progress[client_id] then
+                client_progress[client_id] = {}
+            end
+            local p = client_progress[client_id]
+            if value.kind == "begin" then
                 p.title = value.title
-            end
-            if value.message then
                 p.message = value.message
-            end
-            if value.percentage then
                 p.percentage = value.percentage
+            elseif value.kind == "report" then
+                if value.title then
+                    p.title = value.title
+                end
+                if value.message then
+                    p.message = value.message
+                end
+                if value.percentage then
+                    p.percentage = value.percentage
+                end
+            elseif value.kind == "end" then
+                client_progress[client_id] = nil
             end
-        elseif value.kind == "end" then
-            client_progress[client_id] = nil
-        end
-        StatusLine.update()
-    end,
-})
+            StatusLine.update()
+        end,
+    })
+end
 
 return StatusLine
