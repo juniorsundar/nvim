@@ -491,4 +491,4 @@ M.setup = function(opts)
     end
 end
 
-return M.setup() or M
+return M

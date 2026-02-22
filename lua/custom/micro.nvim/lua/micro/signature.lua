@@ -1,3 +1,5 @@
+local M = {}
+
 local function smart_conceal(text, params, active_idx, max_width)
     if not params or #params == 0 or #text <= max_width then
         return text
@@ -181,13 +183,17 @@ local function debounced_signature()
     )
 end
 
-local augroup = vim.api.nvim_create_augroup("AutoSignatureHelp", { clear = true })
+function M.setup(opts)
+    local augroup = vim.api.nvim_create_augroup("AutoSignatureHelp", { clear = true })
 
-vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-    group = augroup,
-    callback = debounced_signature,
-    desc = "Print signature help automatically with debounce",
-})
+    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+        group = augroup,
+        callback = debounced_signature,
+        desc = "Print signature help automatically with debounce",
+    })
 
-vim.api.nvim_create_user_command("PrintSignatureHelp", print_signature_help, {})
-vim.keymap.set("n", "<leader>Ls", print_signature_help, { desc = "Signature" })
+    vim.api.nvim_create_user_command("PrintSignatureHelp", print_signature_help, {})
+    vim.keymap.set("n", "<leader>Ls", print_signature_help, { desc = "Signature" })
+end
+
+return M
