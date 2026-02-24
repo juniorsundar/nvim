@@ -80,6 +80,11 @@ compile.setup {
             completion_cmd = "docker completion bash",
         },
         {
+            binary = "just",
+            command = "Just",
+            completion_cmd = "just --completions bash",
+        },
+        {
             binary = "nh",
             command = "NH",
             completion_cmd = "nh completions bash",
