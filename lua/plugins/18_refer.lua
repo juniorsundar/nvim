@@ -14,8 +14,10 @@ vim.keymap.set("n", "<leader>Ld", lsp.definitions, { desc = "LSP Definitions" })
 vim.keymap.set("n", "<leader>Li", lsp.implementations, { desc = "LSP Implementations" })
 vim.keymap.set("n", "<leader>Lc", lsp.declarations, { desc = "LSP Declarations" })
 vim.keymap.set("n", "<leader>FL", lsp.lsp_servers, { desc = "LSP Clients" })
+vim.keymap.set("n", "<leader>Fm", builtin.macros, { desc = "Macro Registers" })
 vim.keymap.set("n", "<leader>b", builtin.buffers, { desc = "Buffers" })
 vim.keymap.set("n", "<leader>Ff", files.files, { desc = "Files" })
 vim.keymap.set("n", "<leader>Ft", files.live_grep, { desc = "Text" })
+vim.keymap.set({ "n", "v" }, "<leader>Fw", files.grep_word, { desc = "Word" })
 
 return refer
