@@ -75,6 +75,11 @@ end
 compile.setup {
     wrappers = {
         {
+            binary = "lazygit",
+            command = "Lazygit",
+            help_cmd = "--help",
+        },
+        {
             binary = "docker",
             command = "Docker",
             completion_cmd = "docker completion bash",
@@ -108,3 +113,8 @@ compile.setup {
 }
 
 vim.keymap.set("n", "<leader>c", "<cmd>Cling<cr>", { desc = "Cling" })
+vim.keymap.set("n", "<leader>GL", function()
+    vim.cmd "Lazygit"
+    vim.cmd "wincmd T"
+    vim.cmd "startinsert"
+end, { desc = "lazygit" })
