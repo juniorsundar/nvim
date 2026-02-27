@@ -111,24 +111,28 @@ if not vim.loop.fs_stat(mini_path) then
 end
 require("mini.deps").setup { path = { package = path_package } }
 
--- Custom local plugins
-vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/refer.nvim")
-vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/cling.nvim")
-vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/buffers.nvim")
-vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/micro.nvim")
+if vim.g.vscode then
+    require "plugins"
+else
+    -- Custom local plugins
+    vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/refer.nvim")
+    vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/cling.nvim")
+    vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/buffers.nvim")
+    vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/micro.nvim")
 
-vim.keymap.set("n", "<leader>P", "", { desc = "MiniDeps", noremap = false, silent = true })
-vim.keymap.set("n", "<leader>Pu", function()
-    MiniDeps.update()
-end, { desc = "Update", noremap = false, silent = true })
-vim.keymap.set("n", "<leader>Pc", function()
-    MiniDeps.clean()
-end, { desc = "Clean", noremap = false, silent = true })
+    vim.keymap.set("n", "<leader>P", "", { desc = "MiniDeps", noremap = false, silent = true })
+    vim.keymap.set("n", "<leader>Pu", function()
+        MiniDeps.update()
+    end, { desc = "Update", noremap = false, silent = true })
+    vim.keymap.set("n", "<leader>Pc", function()
+        MiniDeps.clean()
+    end, { desc = "Clean", noremap = false, silent = true })
 
-require "plugins"
+    require "plugins"
 
--- LSP ======================================================
-require "config.lsp"
+    -- LSP ======================================================
+    require "config.lsp"
 
--- MISC UTILS ===============================================
-require "config.utils"
+    -- MISC UTILS ===============================================
+    require "config.utils"
+end
