@@ -11,7 +11,7 @@ if vim.g.vscode then
 else
     for file_name, file_type in vim.fs.dir(plugins_dir) do
         if file_type == "file" then
-            local module_name = string.match(file_name, "^(.-)%.lua%")
+            local module_name = string.match(file_name, "^(.-)%.lua")
             if module_name and module_name ~= "init" then
                 table.insert(files, module_name)
             end
