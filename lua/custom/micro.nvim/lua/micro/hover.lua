@@ -49,7 +49,9 @@ local function eldoc()
             eldoc_buf_id = vim.api.nvim_create_buf(false, true)
             vim.b[eldoc_buf_id].statusline_ignore = true
 
-            vim.api.nvim_buf_set_lines(eldoc_buf_id, 0, 0, false, lines)
+            local padded_lines = vim.list_extend({ "" }, lines)
+            table.insert(padded_lines, "")
+            vim.api.nvim_buf_set_lines(eldoc_buf_id, 0, 0, false, padded_lines)
 
             local max_height = math.floor(vim.o.lines * vim.Micro.hover.opts.ratio)
             if vim.Micro.hover.opts.max_height then
@@ -59,7 +61,7 @@ local function eldoc()
             eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
                 split = "below",
                 win = -1,
-                height = math.min(max_height, #lines),
+                height = math.min(max_height, #padded_lines),
                 style = "minimal",
             })
             vim.api.nvim_buf_set_name(eldoc_buf_id, "[LSP Eldoc]")
@@ -68,7 +70,14 @@ local function eldoc()
             vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = eldoc_buf_id })
             vim.api.nvim_set_option_value("modifiable", false, { buf = eldoc_buf_id })
             vim.api.nvim_set_option_value("swapfile", false, { buf = eldoc_buf_id })
+            pcall(vim.treesitter.start, eldoc_buf_id, "markdown")
             vim.api.nvim_set_option_value("conceallevel", 2, { win = eldoc_win_id })
+            vim.api.nvim_set_option_value("concealcursor", "nc", { win = eldoc_win_id })
+            vim.api.nvim_set_option_value("wrap", true, { win = eldoc_win_id })
+            vim.api.nvim_set_option_value("linebreak", true, { win = eldoc_win_id })
+            vim.api.nvim_set_option_value("breakindent", true, { win = eldoc_win_id })
+            vim.api.nvim_set_option_value("signcolumn", "yes:2", { win = eldoc_win_id })
+            vim.api.nvim_set_option_value("winhl", "SignColumn:Normal", { win = eldoc_win_id })
             vim.api.nvim_win_set_var(eldoc_win_id, "statusline_ignore", true)
             vim.keymap.set("n", "q", close_eldoc_window, {
                 buffer = eldoc_buf_id,
