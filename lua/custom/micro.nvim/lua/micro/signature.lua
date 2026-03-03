@@ -97,10 +97,6 @@ local function print_signature_help()
         local ft = vim.bo[bufnr].filetype
         local lang = vim.treesitter.language.get_lang(ft) or ft
 
-        if lang == "lua" then
-            lang = "luau"
-        end
-
         local ok, parser = pcall(vim.treesitter.get_string_parser, text, lang)
         if not ok then
             print(text)
@@ -182,6 +178,8 @@ local function debounced_signature()
             local clients = vim.lsp.get_clients { bufnr = 0 }
             if #clients > 0 then
                 print_signature_help()
+            else
+                vim.api.nvim_echo({}, false, {})
             end
         end)
     )
