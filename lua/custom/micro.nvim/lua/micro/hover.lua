@@ -127,8 +127,8 @@ function M.setup(opts)
             border = "rounded",
             relative = "editor",
             offset_x = vim.o.columns,
-            ratio = 0.1,
-            max_height = nil,
+            ratio = 0.4,
+            max_height = 15,
         },
     }
 
@@ -170,6 +170,24 @@ function M.setup(opts)
     })
 
     vim.Micro.eldoc = eldoc
+end
+
+--- Scroll the eldoc window from your current buffer without switching focus.
+--- direction: 1 to scroll down, -1 to scroll up.
+--- step: number of lines to scroll per call (default 4).
+--- Example keymap usage:
+---   vim.keymap.set("n", "<M-j>", function() require("micro.hover").scroll(1) end)
+---   vim.keymap.set("n", "<M-k>", function() require("micro.hover").scroll(-1) end)
+function M.scroll(direction, step)
+    if not eldoc_win_id or not vim.api.nvim_win_is_valid(eldoc_win_id) then
+        return
+    end
+    local lines = step or 4
+    -- <C-e> scrolls the viewport down (content moves up), <C-y> scrolls the viewport up (content moves down)
+    local scroll_key = direction > 0 and "\5" or "\25"
+    vim.api.nvim_win_call(eldoc_win_id, function()
+        vim.cmd(string.format("normal! %d%s", lines, scroll_key))
+    end)
 end
 
 return M
