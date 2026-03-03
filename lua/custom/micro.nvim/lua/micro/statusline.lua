@@ -215,27 +215,54 @@ function StatusLine.get_lsp_status(buf_id)
     return parts
 end
 
-function StatusLine.get_file_info(buf_id)
+function StatusLine.get_file_info(buf_id, max_width)
     local full_path = vim.api.nvim_buf_get_name(buf_id)
-    local filename = vim.fn.fnamemodify(full_path, ":.")
     local extension = vim.fn.fnamemodify(full_path, ":e")
     local tail = vim.fn.fnamemodify(full_path, ":t")
 
-    if filename == "" then
-        filename = "[No Name]"
-    end
     local icon_symbol, icon_hl_group = require("nvim-web-devicons").get_icon(tail, extension, { default = true })
-
     local icon = { text = " " .. icon_symbol .. " ", group = icon_hl_group }
-    local name = { text = " " .. filename .. " ", group = "StatusLineFilename" }
 
+    local state_suffix = ""
+    local name_group = "StatusLineFilename"
     if vim.bo[buf_id].modified then
-        name.text = name.text .. "󰏫 "
-        name.group = "StatusLineFilenameEdited"
+        state_suffix = "󰏫 "
+        name_group = "StatusLineFilenameEdited"
     elseif vim.bo[buf_id].readonly then
-        name.text = name.text .. "󰏮 "
-        name.group = "StatusLineFilenameRO"
+        state_suffix = "󰏮 "
+        name_group = "StatusLineFilenameRO"
     end
+
+    local padding_width = 2 + vim.fn.strdisplaywidth(state_suffix)
+    local path_budget = (max_width or 999) - padding_width
+
+    local filename
+    if full_path == "" then
+        filename = "[No Name]"
+    else
+        -- Level 0: full relative path
+        local rel = vim.fn.fnamemodify(full_path, ":.")
+        if vim.fn.strdisplaywidth(rel) <= path_budget then
+            filename = rel
+        else
+            -- Level 1: pathshorten (e.g. lua/m/s/file.lua)
+            local shortened = vim.fn.pathshorten(rel)
+            if vim.fn.strdisplaywidth(shortened) <= path_budget then
+                filename = shortened
+            else
+                -- Level 2: tail only (e.g. file.lua)
+                if vim.fn.strdisplaywidth(tail) <= path_budget then
+                    filename = tail
+                else
+                    -- Level 3: truncate tail with ellipsis
+                    local truncated = vim.fn.strcharpart(tail, 0, math.max(path_budget - 1, 1)) .. "…"
+                    filename = truncated
+                end
+            end
+        end
+    end
+
+    local name = { text = " " .. filename .. " " .. state_suffix, group = name_group }
 
     return {
         icon = icon,
@@ -244,50 +271,75 @@ function StatusLine.get_file_info(buf_id)
 end
 
 function StatusLine.generate_content(win_id, buf_id, width)
+    local function get_components_width(list)
+        local w = 0
+        for _, c in ipairs(list) do
+            w = w + vim.fn.strdisplaywidth(c.text)
+        end
+        return w
+    end
+
+    -- A. Fetch all auxiliary components early
+    local diffs = StatusLine.get_git_diff(buf_id)
+    local lsp_status = StatusLine.get_lsp_status(buf_id)
+    local diags = StatusLine.get_diagnostics(buf_id)
+    local branch = StatusLine.get_git_branch(buf_id)
+
+    -- B. Adaptive component hiding
+    local icon_width = 3
+    local min_path_width = 20
+
+    local function available_for_path()
+        return width
+            - icon_width
+            - get_components_width(diffs)
+            - get_components_width(lsp_status)
+            - get_components_width(diags)
+            - get_components_width(branch)
+    end
+
+    if available_for_path() < min_path_width then
+        lsp_status = {}
+    end
+    if available_for_path() < min_path_width then
+        branch = {}
+    end
+    if available_for_path() < min_path_width then
+        diffs = {}
+    end
+
+    local path_budget = available_for_path()
+
+    -- C. Build components with adaptive file info
     local left_components = {}
     local right_components = {}
 
-    -- A. Build Left Side
-    local file = StatusLine.get_file_info(buf_id)
+    local file = StatusLine.get_file_info(buf_id, path_budget)
     table.insert(left_components, file.icon)
     table.insert(left_components, file.name)
 
-    local diffs = StatusLine.get_git_diff(buf_id)
     for _, d in ipairs(diffs) do
         table.insert(left_components, d)
     end
 
-    -- B. Build Right Side
-    local lsp_status = StatusLine.get_lsp_status(buf_id)
     for _, s in ipairs(lsp_status) do
         table.insert(right_components, s)
     end
-
-    local diags = StatusLine.get_diagnostics(buf_id)
     for _, d in ipairs(diags) do
         table.insert(right_components, d)
     end
-
-    local branch = StatusLine.get_git_branch(buf_id)
     for _, b in ipairs(branch) do
         table.insert(right_components, b)
     end
 
-    -- C. Calculate Spacer
-    local left_len = 0
-    for _, c in ipairs(left_components) do
-        left_len = left_len + vim.fn.strdisplaywidth(c.text)
-    end
-
-    local right_len = 0
-    for _, c in ipairs(right_components) do
-        right_len = right_len + vim.fn.strdisplaywidth(c.text)
-    end
+    -- D. Calculate Spacer
+    local left_len = get_components_width(left_components)
+    local right_len = get_components_width(right_components)
 
     local space_len = width - left_len - right_len
-    local spacer_text = string.rep(" ", math.max(space_len, 1))
+    local spacer_text = string.rep(" ", math.max(space_len, 0))
 
-    -- D. Assemble and Track Highlights
+    -- E. Assemble and Track Highlights
     local full_text = ""
     local highlights = {}
 
@@ -303,7 +355,7 @@ function StatusLine.generate_content(win_id, buf_id, width)
     end
 
     add_components(left_components)
-    full_text = full_text .. spacer_text -- Add spacer (no highlight)
+    full_text = full_text .. spacer_text
     add_components(right_components)
 
     return full_text, highlights
