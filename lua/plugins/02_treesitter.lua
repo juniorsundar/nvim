@@ -1,7 +1,6 @@
 MiniDeps.now(function()
     MiniDeps.add {
         source = "nvim-treesitter/nvim-treesitter",
-        checkout = "main",
         hooks = {
             post_checkout = function()
                 vim.cmd "TSUpdate"
@@ -45,10 +44,7 @@ MiniDeps.now(function()
         end,
     })
 
-    MiniDeps.add {
-        source = "nvim-treesitter/nvim-treesitter-textobjects",
-        checkout = "main",
-    }
+    MiniDeps.add { source = "nvim-treesitter/nvim-treesitter-textobjects" }
     require("nvim-treesitter-textobjects").setup {
         select = {
             lookahead = true,
