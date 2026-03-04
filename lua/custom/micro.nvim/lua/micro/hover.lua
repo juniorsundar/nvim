@@ -3,9 +3,29 @@ local M = {}
 local eldoc_win_id = nil
 local eldoc_buf_id = nil
 
+local function with_splitkeep_screen(fn)
+    if not vim.Micro.hover.reduce_split_jank then
+        fn()
+        return
+    end
+    local prev = vim.o.splitkeep
+    pcall(function()
+        vim.o.splitkeep = "screen"
+    end)
+    local ok, err = pcall(fn)
+    pcall(function()
+        vim.o.splitkeep = prev
+    end)
+    if not ok then
+        error(err)
+    end
+end
+
 local function close_eldoc_window()
-    pcall(vim.api.nvim_win_close, eldoc_win_id, true)
-    pcall(vim.api.nvim_buf_delete, eldoc_buf_id, { force = true }, true)
+    with_splitkeep_screen(function()
+        pcall(vim.api.nvim_win_close, eldoc_win_id, true)
+        pcall(vim.api.nvim_buf_delete, eldoc_buf_id, { force = true }, true)
+    end)
     eldoc_buf_id = nil
     eldoc_win_id = nil
 end
@@ -58,12 +78,14 @@ local function eldoc()
                 max_height = math.min(max_height, vim.Micro.hover.opts.max_height)
             end
 
-            eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
-                split = "below",
-                win = -1,
-                height = math.min(max_height, #padded_lines),
-                style = "minimal",
-            })
+            with_splitkeep_screen(function()
+                eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
+                    split = "below",
+                    win = -1,
+                    height = math.min(max_height, #padded_lines),
+                    style = "minimal",
+                })
+            end)
             vim.api.nvim_buf_set_name(eldoc_buf_id, "[LSP Eldoc]")
             vim.api.nvim_set_option_value("filetype", "markdown", { buf = eldoc_buf_id })
             vim.api.nvim_set_option_value("buftype", "nofile", { buf = eldoc_buf_id })
@@ -123,6 +145,7 @@ function M.setup(opts)
             delay = 500,
         },
         layout = "eldoc",
+        reduce_split_jank = true,
         opts = {
             border = "rounded",
             relative = "editor",
@@ -183,7 +206,6 @@ function M.scroll(direction, step)
         return
     end
     local lines = step or 4
-    -- <C-e> scrolls the viewport down (content moves up), <C-y> scrolls the viewport up (content moves down)
     local scroll_key = direction > 0 and "\5" or "\25"
     vim.api.nvim_win_call(eldoc_win_id, function()
         vim.cmd(string.format("normal! %d%s", lines, scroll_key))
