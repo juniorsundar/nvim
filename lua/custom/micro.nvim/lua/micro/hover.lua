@@ -30,6 +30,40 @@ local function close_eldoc_window()
     eldoc_win_id = nil
 end
 
+local function extract_links_to_footnotes(lines)
+    local processed_lines = {}
+    local footnotes = {}
+    local link_count = 0
+    local in_code_block = false
+
+    for _, line in ipairs(lines) do
+        if line:match "^%s*```" then
+            in_code_block = not in_code_block
+        end
+
+        local processed_line = line
+
+        if not in_code_block then
+            processed_line = line:gsub("%[([^%]]+)%]%(([^%)]+)%)", function(text, url)
+                link_count = link_count + 1
+                table.insert(footnotes, string.format("[^%d]: %s", link_count, url))
+                return string.format("%s[^%d]", text, link_count)
+            end)
+        end
+
+        table.insert(processed_lines, processed_line)
+    end
+
+    if #footnotes > 0 then
+        table.insert(processed_lines, "")
+        for _, footnote in ipairs(footnotes) do
+            table.insert(processed_lines, footnote)
+        end
+    end
+
+    return processed_lines
+end
+
 local function eldoc()
     local bufnr = vim.api.nvim_get_current_buf()
     local clients = vim.lsp.get_clients { bufnr = bufnr }
@@ -66,6 +100,8 @@ local function eldoc()
 
             close_eldoc_window()
 
+            lines = extract_links_to_footnotes(lines)
+
             eldoc_buf_id = vim.api.nvim_create_buf(false, true)
             vim.b[eldoc_buf_id].statusline_ignore = true
 
@@ -101,6 +137,58 @@ local function eldoc()
             vim.api.nvim_set_option_value("signcolumn", "yes:2", { win = eldoc_win_id })
             vim.api.nvim_set_option_value("winhl", "SignColumn:Normal", { win = eldoc_win_id })
             vim.api.nvim_win_set_var(eldoc_win_id, "statusline_ignore", true)
+
+            local function open_link()
+                local line = vim.api.nvim_get_current_line()
+                local cWORD = vim.fn.expand "<cWORD>"
+                local ref = cWORD:match "%[%^(%d+)%]"
+                local target
+
+                if line:match "^%[%^%d+%]:" then
+                    target = line:match "%[%^%d+%]:%s*(.+)"
+                elseif ref then
+                    local buf_lines = vim.api.nvim_buf_get_lines(eldoc_buf_id, 0, -1, false)
+                    for _, l in ipairs(buf_lines) do
+                        local match = l:match("%[%^" .. ref .. "%]:%s*(.+)")
+                        if match then
+                            target = match
+                            break
+                        end
+                    end
+                else
+                    target = cWORD:match "(https?://[%w-_%.%?%.:/%%+=&]+)" or vim.fn.expand "<cfile>"
+                end
+
+                if not target or target == "" then
+                    vim.notify("No valid link or file found under cursor", vim.log.levels.WARN)
+                    return
+                end
+
+                if target:match "^https?://" then
+                    if vim.ui and vim.ui.open then
+                        vim.ui.open(target)
+                    else
+                        local sys = vim.loop.os_uname().sysname
+                        local cmd = sys == "Darwin" and "open" or sys == "Windows_NT" and "explorer" or "xdg-open"
+                        vim.fn.jobstart({ cmd, target }, { detach = true })
+                    end
+                else
+                    local expanded_path = vim.fn.expand(target)
+                    if vim.fn.filereadable(expanded_path) == 1 then
+                        vim.cmd "wincmd p"
+                        vim.cmd("edit " .. vim.fn.fnameescape(expanded_path))
+                    else
+                        vim.notify("File not found: " .. target, vim.log.levels.WARN)
+                    end
+                end
+            end
+
+            vim.keymap.set("n", "gx", open_link, {
+                buffer = eldoc_buf_id,
+                silent = true,
+                noremap = true,
+                desc = "Open markdown link or footnote",
+            })
             vim.keymap.set("n", "q", close_eldoc_window, {
                 buffer = eldoc_buf_id,
                 silent = true,
@@ -118,23 +206,6 @@ local function eldoc()
 
     local params = vim.lsp.util.make_position_params(0, "utf-32")
     vim.lsp.buf_request(bufnr, "textDocument/hover", params, handler)
-end
-
-local function toggle_auto_hover()
-    if vim.Micro.hover == nil then
-        vim.notify("`vim.Micro.hover` doesn't exists!", vim.log.levels.WARN, { title = "LSP" })
-        return
-    end
-    if vim.Micro.hover.enabled == nil then
-        vim.notify("`vim.Micro.hover.enabled` doesn't exists!", vim.log.levels.WARN, { title = "LSP" })
-        return
-    end
-    vim.Micro.hover.enabled = not vim.Micro.hover.enabled
-    if vim.Micro.hover.enabled then
-        vim.notify("Auto Hover enabled", vim.log.levels.INFO, { title = "LSP" })
-    else
-        vim.notify("Auto Hover disabled", vim.log.levels.INFO, { title = "LSP" })
-    end
 end
 
 function M.setup(opts)
