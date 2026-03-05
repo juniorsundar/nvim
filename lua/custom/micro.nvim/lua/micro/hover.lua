@@ -173,10 +173,28 @@ local function eldoc()
                         vim.fn.jobstart({ cmd, target }, { detach = true })
                     end
                 else
-                    local expanded_path = vim.fn.expand(target)
+                    local path = target
+                    local l_num, c_num
+                    if path:match "^file://" then
+                        path = path:sub(8)
+                        local file_path
+                        file_path, l_num, c_num = path:match "^([^#]+)#(%d+)#(%d+)$"
+                        if not file_path then
+                            file_path, l_num = path:match "^([^#]+)#(%d+)$"
+                        end
+                        path = file_path or path
+                    end
+                    local expanded_path = vim.fn.expand(path)
                     if vim.fn.filereadable(expanded_path) == 1 then
                         vim.cmd "wincmd p"
                         vim.cmd("edit " .. vim.fn.fnameescape(expanded_path))
+                        if l_num then
+                            local l = tonumber(l_num)
+                            local c = c_num and math.max(0, tonumber(c_num) - 1) or 0
+                            local max_l = vim.api.nvim_buf_line_count(0)
+                            l = math.min(l, max_l)
+                            pcall(vim.api.nvim_win_set_cursor, 0, { l, c })
+                        end
                     else
                         vim.notify("File not found: " .. target, vim.log.levels.WARN)
                     end
