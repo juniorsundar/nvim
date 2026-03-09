@@ -175,13 +175,13 @@ M.context_actions = {
         {
             desc = "Go to next diagnostic",
             fn = function()
-                vim.diagnostic.goto_next()
+                vim.diagnostic.jump { count = 1 }
             end,
         },
         {
             desc = "Go to prev diagnostic",
             fn = function()
-                vim.diagnostic.goto_prev()
+                vim.diagnostic.jump { count = -1 }
             end,
         },
         {
@@ -438,7 +438,7 @@ function M.create_buffer(opts)
         end
 
         for idx, km in ipairs(picker_keymaps) do
-            local row = pk_line_start + idx - 1 -- 0-indexed
+            local row = pk_line_start + idx - 1
             local eid = api.nvim_buf_set_extmark(buf, ns_id, row, 0, {})
             M.buffer_data[buf][eid] = {
                 is_context_action = false,
@@ -561,10 +561,8 @@ function M.execute_keymap()
         return
     end
 
-    -- Close the keymap buffer first
     api.nvim_buf_delete(bufnr, { force = true })
 
-    -- Return focus to the source window
     if M.source_winid and api.nvim_win_is_valid(M.source_winid) then
         api.nvim_set_current_win(M.source_winid)
     end
