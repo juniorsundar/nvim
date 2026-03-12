@@ -90,6 +90,11 @@ compile.setup {
             completion_cmd = "just --completions bash",
         },
         {
+            binary = "cargo",
+            command = "Cargo",
+            completion_cmd = "rustup completions bash",
+        },
+        {
             binary = "nh",
             command = "NH",
             completion_cmd = "nh completions bash",
