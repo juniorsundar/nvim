@@ -15,7 +15,7 @@ MiniDeps.now(function()
         },
     }
 
-    vim.keymap.set("n", "<leader>o", function()
-        vim.cmd "Oil"
-    end, { desc = "Oil", noremap = false, silent = true })
+    -- vim.keymap.set("n", "<leader>o", function()
+    --     vim.cmd "Oil"
+    -- end, { desc = "Oil", noremap = false, silent = true })
 end)

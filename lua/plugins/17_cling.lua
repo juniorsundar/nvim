@@ -78,6 +78,7 @@ compile.setup {
             binary = "lazygit",
             command = "Lazygit",
             help_cmd = "--help",
+            close_on_exit = true,
         },
         {
             binary = "docker",
@@ -114,6 +115,14 @@ compile.setup {
                 end, { buffer = buf, silent = true, desc = "JJ: Populate Quickfix" })
             end,
         },
+        {
+            binary = [[sh -c 'f=$(mktemp); yazi --chooser-file="$f"; sel=$(cat "$f"); rm -f "$f"; [ -n "$sel" ] && nvim --server "$NVIM" --remote "$sel"']],
+            command = "Yazi",
+            close_on_exit = true,
+            cwd = function()
+                return vim.fn.expand "%:p:h"
+            end,
+        },
     },
 }
 
@@ -123,3 +132,8 @@ vim.keymap.set("n", "<leader>GL", function()
     vim.cmd "wincmd T"
     vim.cmd "startinsert"
 end, { desc = "lazygit" })
+vim.keymap.set("n", "<leader>o", function()
+    vim.cmd "Yazi"
+    vim.cmd "wincmd T"
+    vim.cmd "startinsert"
+end, { desc = "Yazi" })
