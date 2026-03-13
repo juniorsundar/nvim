@@ -78,6 +78,9 @@ compile.setup {
             binary = "lazygit",
             command = "Lazygit",
             help_cmd = "--help",
+            keymaps = function(buf)
+                vim.cmd "startinsert"
+            end,
             close_on_exit = true,
         },
         {
@@ -116,11 +119,59 @@ compile.setup {
             end,
         },
         {
-            binary = [[sh -c 'f=$(mktemp); yazi --chooser-file="$f"; sel=$(cat "$f"); rm -f "$f"; [ -n "$sel" ] && nvim --server "$NVIM" --remote "$sel"']],
+            binary = function()
+                _G._yazi_chooser_file = vim.fn.tempname()
+                local start_dir = _G._yazi_start_dir or ""
+                _G._yazi_start_dir = nil
+                return string.format(
+                    [[sh -c 'yazi %s --chooser-file="%s"']],
+                    start_dir ~= "" and vim.fn.shellescape(start_dir) or "",
+                    _G._yazi_chooser_file
+                )
+            end,
             command = "Yazi",
             close_on_exit = true,
             cwd = function()
                 return vim.fn.expand "%:p:h"
+            end,
+            keymaps = function(_buf)
+                vim.cmd "startinsert"
+            end,
+            on_close = function(_buf)
+                local chooser = _G._yazi_chooser_file
+                if not chooser then
+                    return
+                end
+                local f = io.open(chooser, "r")
+                if not f then
+                    return
+                end
+                local sel = vim.trim(f:read "*l" or "")
+                f:close()
+                os.remove(chooser)
+                _G._yazi_chooser_file = nil
+                if sel == "" then
+                    return
+                end
+                local stat = vim.uv.fs_stat(sel)
+                if not stat then
+                    return
+                end
+                if stat.type == "directory" then
+                    _G._yazi_start_dir = sel
+                    _G._yazi_origin_win = _G._yazi_origin_win or vim.api.nvim_get_current_win()
+                    vim.cmd "Yazi"
+                elseif stat.type == "file" then
+                    local origin_win = _G._yazi_origin_win
+                    _G._yazi_origin_win = nil
+                    local edit_cmd = "edit " .. vim.fn.fnameescape(sel)
+                    if origin_win and vim.api.nvim_win_is_valid(origin_win) then
+                        vim.fn.win_execute(origin_win, edit_cmd)
+                        vim.api.nvim_set_current_win(origin_win)
+                    else
+                        vim.cmd(edit_cmd)
+                    end
+                end
             end,
         },
     },
@@ -130,10 +181,8 @@ vim.keymap.set("n", "<leader>c", "<cmd>Cling<cr>", { desc = "Cling" })
 vim.keymap.set("n", "<leader>GL", function()
     vim.cmd "Lazygit"
     vim.cmd "wincmd T"
-    vim.cmd "startinsert"
 end, { desc = "lazygit" })
 vim.keymap.set("n", "<leader>o", function()
+    _G._yazi_origin_win = vim.api.nvim_get_current_win()
     vim.cmd "Yazi"
-    vim.cmd "wincmd T"
-    vim.cmd "startinsert"
 end, { desc = "Yazi" })
