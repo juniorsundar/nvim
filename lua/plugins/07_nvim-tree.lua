@@ -14,4 +14,5 @@ MiniDeps.now(function()
         },
     }
     vim.api.nvim_set_hl(0, "NvimTreeCursorLine", { link = "Visual" })
+    vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<cr>", { desc = "Explorer" })
 end)
