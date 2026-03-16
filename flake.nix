@@ -35,6 +35,7 @@
               pkgs.python3
               pkgs.lua-language-server
               pkgs.stylua
+              pkgs.luajitPackages.luacheck
             ];
 
             shellHook = ''
