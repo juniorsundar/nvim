@@ -457,6 +457,11 @@ function StatusLine.autoscroll()
         return
     end
 
+    local mode = vim.fn.mode()
+    if mode == "i" or mode == "ic" or mode == "ix" then
+        return
+    end
+
     local current_line = vim.fn.line "."
     local last_line = vim.fn.line "$"
 
