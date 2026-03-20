@@ -3,6 +3,10 @@ local builtin = require "refer.providers.builtin"
 local lsp = require "refer.providers.lsp"
 local files = require "refer.providers.files"
 
+refer.setup {
+    extras = { find_file = true },
+}
+
 refer.setup_ui_select()
 
 vim.keymap.set({ "n", "v" }, ":", function()
