@@ -23,6 +23,7 @@ vim.keymap.set("n", "<leader>Fm", builtin.macros, { desc = "Macro Registers" })
 vim.keymap.set("n", "<leader>Ff", files.files, { desc = "Files" })
 vim.keymap.set("n", "<leader>Ft", files.live_grep, { desc = "Text" })
 vim.keymap.set("n", "<leader>Fl", files.lines, { desc = "Lines" })
+vim.keymap.set("n", "<C-x><C-f>", "<cmd>Refer Extras FindFile<cr>", { desc = "Find File" })
 vim.keymap.set({ "n", "v" }, "<leader>Fw", files.grep_word, { desc = "Word" })
 
 return refer
