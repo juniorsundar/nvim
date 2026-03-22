@@ -67,12 +67,6 @@ local opts = {
     silent = true, -- do not show message
 }
 
--- Normal mode --
--- Better window navigation
-vim.keymap.set("n", "<A-h>", "<C-w>h", opts)
-vim.keymap.set("n", "<A-j>", "<C-w>j", opts)
-vim.keymap.set("n", "<A-k>", "<C-w>k", opts)
-vim.keymap.set("n", "<A-l>", "<C-w>l", opts)
 -- Resize with arrows
 -- delta: 2 lines
 vim.keymap.set("n", "<C-A-Up>", ":resize -2<CR>", opts)
