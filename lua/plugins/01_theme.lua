@@ -3,6 +3,12 @@ MiniDeps.now(function()
 
     require("onedark").setup {
         style = "dark",
+        highlights = {
+            ["DiagnosticHint"] = { fg = "$green" },
+            ["DiagnosticUnderlineHint"] = { sp = "$green" },
+            ["CursorLine"] = { bg = "$bg0" },
+            ["Folded"] = { bg = "$bg0" },
+        },
     }
     require("onedark").load()
 end)
