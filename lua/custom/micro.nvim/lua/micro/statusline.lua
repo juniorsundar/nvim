@@ -31,7 +31,7 @@ StatusLine.config = {
             ["NvimTree_1"] = true,
         },
         buftypes = {
-            ["terminal"] = true,
+            -- ["terminal"] = true,
             ["prompt"] = true,
             -- ["nofile"] = true,
         },
