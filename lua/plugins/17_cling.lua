@@ -84,6 +84,11 @@ compile.setup {
             close_on_exit = true,
         },
         {
+            binary = "rg --vimgrep",
+            command = "Rg",
+            completion_cmd = "rg --generate complete-bash",
+        },
+        {
             binary = "docker",
             command = "Docker",
             completion_cmd = "docker completion bash",
