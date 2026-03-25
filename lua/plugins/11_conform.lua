@@ -9,6 +9,7 @@ MiniDeps.later(function()
             rust = { "rustfmt" },
             nix = { "nixfmt" },
             lua = { "stylua" },
+            gleam = { "gleam" },
         },
     }
 

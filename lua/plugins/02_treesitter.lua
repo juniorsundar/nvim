@@ -33,6 +33,7 @@ MiniDeps.now(function()
         "latex",
         "regex",
         "v",
+        "gleam",
     }
 
     require("nvim-treesitter").install(languages)
