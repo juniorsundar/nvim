@@ -1,4 +1,13 @@
-require("micro").setup()
+require("micro").setup {
+    statusline = {
+        enabled = true,
+        ignored = {
+            names = {
+                ["[Lazygit]"] = true,
+            },
+        },
+    },
+}
 
 vim.keymap.set("n", "<leader>Lk", function()
     vim.Micro.eldoc()
