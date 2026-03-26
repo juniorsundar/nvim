@@ -1,6 +1,13 @@
 local M = {}
 local ns_id = vim.api.nvim_create_namespace "split_suffix_beacon"
 
+local default = {
+    modifiers = {
+        ["vsplit"] = "<C-v>",
+        ["split"] = "<C-h>",
+    },
+}
+
 local function split_suffix(command)
     local buf_dest = vim.api.nvim_get_current_buf()
     local line_dest = vim.api.nvim_win_get_cursor(0)[1] - 1
@@ -30,10 +37,12 @@ local function split_suffix(command)
 end
 
 function M.setup(opts)
-    vim.keymap.set("n", opts.modifiers.vsplit, function()
+    default = vim.tbl_deep_extend("force", default, opts or {})
+
+    vim.keymap.set("n", default.modifiers.vsplit, function()
         split_suffix "vsplit"
     end)
-    vim.keymap.set("n", opts.modifiers.split, function()
+    vim.keymap.set("n", default.modifiers.split, function()
         split_suffix "split"
     end)
 end

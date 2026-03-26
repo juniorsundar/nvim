@@ -8,7 +8,7 @@ local defaults = {
     folds = { enabled = true },
     hover = { enabled = true },
     signature = { enabled = true },
-    ["split-suffix"] = { enabled = true, modifiers = { ["vsplit"] = "<C-v>", ["split"] = "<C-h>" } },
+    ["split-suffix"] = { enabled = true },
 }
 
 function M.setup(opts)
