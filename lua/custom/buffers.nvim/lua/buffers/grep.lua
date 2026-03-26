@@ -110,6 +110,7 @@ function M.highlight_buffer(bufnr)
             "# <C-c><C-c>  -> Apply edits (Direct)",
             "# <C-c><C-s>  -> Apply edits (Conflict Markers)",
             "# <C-c><C-r>  -> Refresh content from disk",
+            "# q           -> Kill buffer",
             "",
         }
 
@@ -422,6 +423,12 @@ function M.refresh_content()
     else
         vim.notify("No changes found on disk", vim.log.levels.INFO)
     end
+end
+
+---Kills buffer
+function M.kill_buffer()
+    local current_buf = api.nvim_get_current_buf()
+    api.nvim_buf_delete(current_buf, { force = true })
 end
 
 return M
