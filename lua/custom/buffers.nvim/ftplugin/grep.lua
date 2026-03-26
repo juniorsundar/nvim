@@ -28,6 +28,10 @@ vim.keymap.set("n", "<C-c><C-r>", function()
     require("buffers.grep").refresh_content()
 end, { buffer = bufnr, silent = true, desc = "Refresh content from disk" })
 
+vim.keymap.set("n", "q", function()
+    require("buffers.grep").kill_buffer()
+end, { buffer = bufnr, silent = true, desc = "Kill buffer" })
+
 require("buffers.grep").highlight_buffer(bufnr)
 
 vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
