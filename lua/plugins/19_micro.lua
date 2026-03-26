@@ -7,6 +7,14 @@ require("micro").setup {
             },
         },
     },
+    dynamic_lnum = { enabled = true },
+    treesit_navigator = { enabled = true },
+    breadcrumbs = { enabled = false },
+    toggle = { enabled = true },
+    folds = { enabled = true },
+    hover = { enabled = true },
+    signature = { enabled = true },
+    split_suffix = { enabled = true },
 }
 
 vim.keymap.set("n", "<leader>Lk", function()

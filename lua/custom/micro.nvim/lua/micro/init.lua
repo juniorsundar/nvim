@@ -1,14 +1,15 @@
 local M = {}
 
 local defaults = {
-    statusline = { enabled = true },
-    ["toggle-lnum"] = { enabled = true },
-    ["treesit-navigator"] = { enabled = true },
+    statusline = { enabled = false },
+    dynamic_lnum = { enabled = false },
+    treesit_navigator = { enabled = false },
     breadcrumbs = { enabled = false },
-    folds = { enabled = true },
-    hover = { enabled = true },
-    signature = { enabled = true },
-    ["split-suffix"] = { enabled = true },
+    toggle = { enabled = false },
+    folds = { enabled = false },
+    hover = { enabled = false },
+    signature = { enabled = false },
+    split_suffix = { enabled = false },
 }
 
 function M.setup(opts)
