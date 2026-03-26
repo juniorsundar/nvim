@@ -1,6 +1,9 @@
 -- OPTIONS ==========================================================
 vim.g.mapleader = " "
 vim.g.maplocalleader = "  "
+vim.keymap.set({ "n", "v" }, "<leader>", "", { desc = "Leader", noremap = false, silent = true })
+vim.keymap.set({ "n", "v" }, "<leader><leader>", "", { desc = "LocalLeader", noremap = false, silent = true })
+
 vim.opt.clipboard = "unnamedplus"
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
 vim.opt.mouse = "a"

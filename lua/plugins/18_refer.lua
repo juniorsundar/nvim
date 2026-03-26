@@ -9,6 +9,7 @@ refer.setup {
 
 refer.setup_ui_select()
 
+vim.keymap.set({ "n", "v" }, "<leader>F", "", { desc = "Find", noremap = false, silent = true })
 vim.keymap.set({ "n", "v" }, ":", function()
     builtin.commands { max_height_percent = 0.1 }
 end, { desc = "Command Palette" })
