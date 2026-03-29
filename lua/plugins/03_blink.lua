@@ -71,11 +71,11 @@ MiniDeps.now(function()
                     --     markdown = { "obsidian", "obsidian_new", "obsidian_tags" },
                     -- },
                     providers = {
-                        lazydev = {
-                            name = "LazyDev",
-                            module = "lazydev.integrations.blink",
-                            score_offset = 100,
-                        },
+                        -- lazydev = {
+                        --     name = "LazyDev",
+                        --     module = "lazydev.integrations.blink",
+                        --     score_offset = 100,
+                        -- },
                     },
                 },
                 completion = {
@@ -83,7 +83,13 @@ MiniDeps.now(function()
                         -- winhighlight = "Normal:BlinkCmpPmenu,Normal:BlinkCmpCursorLine,Search:None,FloatBorder:FloatBorder",
                         border = "none",
                         draw = {
-                            treesitter = { "lsp", "path", "snippets", "buffer", "lazydev" },
+                            treesitter = {
+                                "lsp",
+                                "path",
+                                "snippets",
+                                "buffer",
+                                -- "lazydev",
+                            },
                             columns = { { "kind_icon", "label", "label_description", gap = 1 }, { "source_name" } },
                             components = {
                                 source_name = {
