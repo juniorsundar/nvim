@@ -22,9 +22,9 @@ local function get_hl_bg(groups)
     return "NONE"
 end
 
-local StatusLine = {}
+local M = {}
 
-StatusLine.config = {
+M.config = {
     ignored = {
         names = {
             ["[LSP Eldoc]"] = true,
@@ -54,12 +54,12 @@ StatusLine.config = {
     border_style = { " ", "─", "", "", "", "", "", "" },
 }
 
-StatusLine.state = {
+M.state = {
     wins = {},
 }
 
-function StatusLine.refresh_colors()
-    local c = StatusLine.config.colors
+function M.refresh_colors()
+    local c = M.config.colors
     c.fg = get_hl_fg { "Normal" }
     c.bg = get_hl_bg { "StatusLine", "Normal" }
     c.red = get_hl_fg { "GitSignsDelete", "DiagnosticError", "Error", "DiffDelete" }
@@ -73,53 +73,49 @@ function StatusLine.refresh_colors()
     c.darkblue = c.blue
 end
 
-function StatusLine.setup_highlights()
-    StatusLine.refresh_colors()
+function M.setup_highlights()
+    M.refresh_colors()
 
     vim.api.nvim_set_hl(0, "StatusLine", { bg = "None", fg = "None" })
     vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "None", fg = "None" })
 
-    vim.api.nvim_set_hl(0, "StatusLineFilename", { fg = StatusLine.config.colors.fg, bg = "None", bold = true })
-    vim.api.nvim_set_hl(
-        0,
-        "StatusLineFilenameEdited",
-        { fg = StatusLine.config.colors.yellow, bg = "None", bold = true }
-    )
-    vim.api.nvim_set_hl(0, "StatusLineFilenameRO", { fg = StatusLine.config.colors.red, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineFilename", { fg = M.config.colors.fg, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineFilenameEdited", { fg = M.config.colors.yellow, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineFilenameRO", { fg = M.config.colors.red, bg = "None", bold = true })
 
-    vim.api.nvim_set_hl(0, "StatusLineGitBranch", { fg = StatusLine.config.colors.violet, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineGitBranch", { fg = M.config.colors.violet, bg = "None", bold = true })
 
-    vim.api.nvim_set_hl(0, "StatusLineDiffAdd", { fg = StatusLine.config.colors.green, bg = "None" })
-    vim.api.nvim_set_hl(0, "StatusLineDiffChange", { fg = StatusLine.config.colors.orange, bg = "None" })
-    vim.api.nvim_set_hl(0, "StatusLineDiffDelete", { fg = StatusLine.config.colors.red, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiffAdd", { fg = M.config.colors.green, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiffChange", { fg = M.config.colors.orange, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiffDelete", { fg = M.config.colors.red, bg = "None" })
 
-    vim.api.nvim_set_hl(0, "StatusLineDiagError", { fg = StatusLine.config.colors.red, bg = "None" })
-    vim.api.nvim_set_hl(0, "StatusLineDiagWarn", { fg = StatusLine.config.colors.yellow, bg = "None" })
-    vim.api.nvim_set_hl(0, "StatusLineDiagInfo", { fg = StatusLine.config.colors.cyan, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiagError", { fg = M.config.colors.red, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiagWarn", { fg = M.config.colors.yellow, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiagInfo", { fg = M.config.colors.cyan, bg = "None" })
 
-    vim.api.nvim_set_hl(0, "StatusLineLspProgress", { fg = StatusLine.config.colors.green, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineLspProgress", { fg = M.config.colors.green, bg = "None" })
 end
 
-function StatusLine.is_ignored(buf_id)
+function M.is_ignored(buf_id)
     local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf_id), ":t")
     local buftype = vim.bo[buf_id].buftype
     local filetype = vim.bo[buf_id].filetype
 
-    if StatusLine.config.ignored.names[name] then
+    if M.config.ignored.names[name] then
         return true
     end
-    if StatusLine.config.ignored.buftypes[buftype] then
+    if M.config.ignored.buftypes[buftype] then
         return true
     end
-    if StatusLine.config.ignored.filetypes[filetype] then
+    if M.config.ignored.filetypes[filetype] then
         return true
     end
     return false
 end
 
-function StatusLine.get_mode_color()
+function M.get_mode_color()
     local m = vim.fn.mode()
-    local c = StatusLine.config.colors
+    local c = M.config.colors
     local map = {
         n = c.blue,
         i = c.green,
@@ -145,19 +141,19 @@ function StatusLine.get_mode_color()
     return map[m] or c.blue
 end
 
-function StatusLine.get_git_branch(buf_id)
+function M.get_git_branch(buf_id)
     local signs = vim.b[buf_id].gitsigns_status_dict
     local text = signs and ("  " .. (signs.head or "") .. " ") or ""
     return { { text = text, group = "StatusLineGitBranch" } }
 end
 
-function StatusLine.get_git_diff(buf_id)
+function M.get_git_diff(buf_id)
     local signs = vim.b[buf_id].gitsigns_status_dict
     if not signs then
         return {}
     end
 
-    local config = StatusLine.config.diff
+    local config = M.config.diff
     local parts = { { text = " ", group = "None" } }
 
     if (signs.added or 0) > 0 then
@@ -173,10 +169,10 @@ function StatusLine.get_git_diff(buf_id)
     return parts
 end
 
-function StatusLine.get_diagnostics(buf_id)
+function M.get_diagnostics(buf_id)
     local count = vim.diagnostic.count(buf_id)
     local parts = { { text = " ", group = "None" } }
-    local sym = StatusLine.config.lsp_errors.symbols
+    local sym = M.config.lsp_errors.symbols
 
     if (count[vim.diagnostic.severity.HINT] or 0) > 0 then
         table.insert(parts, { text = sym.info .. count[4] .. " ", group = "StatusLineDiagInfo" })
@@ -193,7 +189,7 @@ end
 
 local client_progress = {}
 
-function StatusLine.get_lsp_status(buf_id)
+function M.get_lsp_status(buf_id)
     local clients = vim.lsp.get_clients { bufnr = buf_id }
     local parts = {}
     for _, client in ipairs(clients) do
@@ -215,7 +211,7 @@ function StatusLine.get_lsp_status(buf_id)
     return parts
 end
 
-function StatusLine.get_file_info(buf_id, max_width)
+function M.get_file_info(buf_id, max_width)
     local full_path = vim.api.nvim_buf_get_name(buf_id)
     local extension = vim.fn.fnamemodify(full_path, ":e")
     local tail = vim.fn.fnamemodify(full_path, ":t")
@@ -270,7 +266,7 @@ function StatusLine.get_file_info(buf_id, max_width)
     }
 end
 
-function StatusLine.generate_content(win_id, buf_id, width)
+function M.generate_content(win_id, buf_id, width)
     local function get_components_width(list)
         local w = 0
         for _, c in ipairs(list) do
@@ -280,10 +276,10 @@ function StatusLine.generate_content(win_id, buf_id, width)
     end
 
     -- A. Fetch all auxiliary components early
-    local diffs = StatusLine.get_git_diff(buf_id)
-    local lsp_status = StatusLine.get_lsp_status(buf_id)
-    local diags = StatusLine.get_diagnostics(buf_id)
-    local branch = StatusLine.get_git_branch(buf_id)
+    local diffs = M.get_git_diff(buf_id)
+    local lsp_status = M.get_lsp_status(buf_id)
+    local diags = M.get_diagnostics(buf_id)
+    local branch = M.get_git_branch(buf_id)
 
     -- B. Adaptive component hiding
     local icon_width = 3
@@ -314,7 +310,7 @@ function StatusLine.generate_content(win_id, buf_id, width)
     local left_components = {}
     local right_components = {}
 
-    local file = StatusLine.get_file_info(buf_id, path_budget)
+    local file = M.get_file_info(buf_id, path_budget)
     table.insert(left_components, file.icon)
     table.insert(left_components, file.name)
 
@@ -361,11 +357,11 @@ function StatusLine.generate_content(win_id, buf_id, width)
     return full_text, highlights
 end
 
-function StatusLine.render_window(parent_win, buf_id)
-    if StatusLine.is_ignored(buf_id) or vim.api.nvim_win_get_config(parent_win).relative ~= "" then
-        if StatusLine.state.wins[parent_win] then
-            pcall(vim.api.nvim_win_close, StatusLine.state.wins[parent_win], true)
-            StatusLine.state.wins[parent_win] = nil
+function M.render_window(parent_win, buf_id)
+    if M.is_ignored(buf_id) or vim.api.nvim_win_get_config(parent_win).relative ~= "" then
+        if M.state.wins[parent_win] then
+            pcall(vim.api.nvim_win_close, M.state.wins[parent_win], true)
+            M.state.wins[parent_win] = nil
         end
         return
     end
@@ -376,9 +372,9 @@ function StatusLine.render_window(parent_win, buf_id)
 
     local row = height - 1
 
-    local content, highlights = StatusLine.generate_content(parent_win, buf_id, width)
+    local content, highlights = M.generate_content(parent_win, buf_id, width)
 
-    local status_win = StatusLine.state.wins[parent_win]
+    local status_win = M.state.wins[parent_win]
     local status_buf
 
     local opts = {
@@ -388,7 +384,7 @@ function StatusLine.render_window(parent_win, buf_id)
         height = 1,
         row = row,
         col = 0,
-        border = StatusLine.config.border_style,
+        border = M.config.border_style,
         style = "minimal",
         focusable = false,
         zindex = 10,
@@ -400,7 +396,7 @@ function StatusLine.render_window(parent_win, buf_id)
     else
         status_buf = vim.api.nvim_create_buf(false, true)
         status_win = vim.api.nvim_open_win(status_buf, false, opts)
-        StatusLine.state.wins[parent_win] = status_win
+        M.state.wins[parent_win] = status_win
     end
 
     vim.api.nvim_buf_set_lines(status_buf, 0, -1, false, { content })
@@ -421,39 +417,39 @@ function StatusLine.render_window(parent_win, buf_id)
         end
 
         local hl_name = "StatusBorderActive" .. mode
-        vim.api.nvim_set_hl(0, hl_name, { fg = StatusLine.get_mode_color() })
+        vim.api.nvim_set_hl(0, hl_name, { fg = M.get_mode_color() })
         border_group = hl_name
     end
 
     vim.api.nvim_set_option_value("winhighlight", "Normal:Normal,FloatBorder:" .. border_group, { win = status_win })
 end
 
-function StatusLine.update()
+function M.update()
     vim.schedule(function()
-        for parent, status in pairs(StatusLine.state.wins) do
+        for parent, status in pairs(M.state.wins) do
             if not vim.api.nvim_win_is_valid(parent) then
                 if vim.api.nvim_win_is_valid(status) then
                     vim.api.nvim_win_close(status, true)
                 end
-                StatusLine.state.wins[parent] = nil
+                M.state.wins[parent] = nil
             end
         end
         for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
             if vim.api.nvim_win_is_valid(win) then
-                StatusLine.render_window(win, vim.api.nvim_win_get_buf(win))
+                M.render_window(win, vim.api.nvim_win_get_buf(win))
             end
         end
     end)
 end
 
-function StatusLine.autoscroll()
+function M.autoscroll()
     local win = vim.api.nvim_get_current_win()
     if vim.api.nvim_win_get_config(win).relative ~= "" then
         return
     end
 
     local buf = vim.api.nvim_get_current_buf()
-    if StatusLine.is_ignored(buf) then
+    if M.is_ignored(buf) then
         return
     end
 
@@ -474,25 +470,25 @@ function StatusLine.autoscroll()
     end
 end
 
-function StatusLine.setup(opts)
-    StatusLine.config = vim.tbl_deep_extend("force", StatusLine.config, opts or {})
+function M.setup(opts)
+    M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 
-    StatusLine.setup_highlights()
+    M.setup_highlights()
 
     local grp = vim.api.nvim_create_augroup("CustomStatusLine", { clear = true })
 
     vim.api.nvim_create_autocmd(
         { "WinEnter", "WinClosed", "VimResized", "WinScrolled", "BufEnter", "CursorHold", "ModeChanged" },
-        { group = grp, callback = StatusLine.update }
+        { group = grp, callback = M.update }
     )
 
-    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, { group = grp, callback = StatusLine.autoscroll })
+    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, { group = grp, callback = M.autoscroll })
 
     vim.api.nvim_create_autocmd("ColorScheme", {
         group = grp,
         callback = function()
-            StatusLine.setup_highlights()
-            StatusLine.update()
+            M.setup_highlights()
+            M.update()
         end,
     })
 
@@ -522,9 +518,9 @@ function StatusLine.setup(opts)
             elseif value.kind == "end" then
                 client_progress[client_id] = nil
             end
-            StatusLine.update()
+            M.update()
         end,
     })
 end
 
-return StatusLine
+return M
