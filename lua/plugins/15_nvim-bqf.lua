@@ -1,5 +1,5 @@
 ---@diagnostic disable: missing-fields, duplicate-set-field
-MiniDeps.add { source = "kevinhwang91/nvim-bqf" }
+vim.pack.add { gh "kevinhwang91/nvim-bqf" }
 local fn = vim.fn
 
 function _G.qftf(info)

@@ -1,4 +1,4 @@
-MiniDeps.add { source = "lewis6991/gitsigns.nvim" }
+vim.pack.add { gh "lewis6991/gitsigns.nvim" }
 
 vim.api.nvim_create_autocmd("BufEnter", {
     pattern = "*",

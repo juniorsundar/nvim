@@ -63,6 +63,8 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 
 vim.loader.enable()
 
+require("vim._core.ui2").enable()
+
 -- KEYMAPS ==========================================================
 -- define common options
 local opts = {
@@ -89,23 +91,9 @@ vim.keymap.set("v", ">", ">gv", opts)
 vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 
 -- PLUGINS ==========================================================
-local path_package = vim.fn.stdpath "data" .. "/site/"
-local mini_path = path_package .. "pack/deps/start/mini.deps"
-if not vim.loop.fs_stat(mini_path) then
-    vim.cmd 'echo "Installing `mini.deps`" | redraw'
-    local clone_cmd = {
-        "git",
-        "clone",
-        "--filter=blob:none",
-        "https://github.com/nvim-mini/mini.deps",
-        mini_path,
-    }
-    vim.fn.system(clone_cmd)
-    vim.cmd "packadd mini.deps | helptags ALL"
-    vim.cmd 'echo "Installed `mini.deps`" | redraw'
+function _G.gh(link)
+    return "https://github.com/" .. link
 end
-require("mini.deps").setup { path = { package = path_package } }
-
 if vim.g.vscode then
     require "plugins"
 else
@@ -115,13 +103,10 @@ else
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/buffers.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/micro.nvim")
 
-    vim.keymap.set("n", "<leader>P", "", { desc = "MiniDeps", noremap = false, silent = true })
+    vim.keymap.set("n", "<leader>P", "", { desc = "Package", noremap = false, silent = true })
     vim.keymap.set("n", "<leader>Pu", function()
-        MiniDeps.update()
+        vim.pack.update()
     end, { desc = "Update", noremap = false, silent = true })
-    vim.keymap.set("n", "<leader>Pc", function()
-        MiniDeps.clean()
-    end, { desc = "Clean", noremap = false, silent = true })
 
     require "plugins"
 

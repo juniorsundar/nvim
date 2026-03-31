@@ -62,7 +62,7 @@ local function print_signature_help()
     local params = vim.lsp.util.make_position_params(0, "utf-8")
     local bufnr = vim.api.nvim_get_current_buf()
     local clients = vim.lsp.get_clients { bufnr = bufnr }
-    if not clients[1].supports_method "textDocument/signatureHelp" then
+    if not clients[1]:supports_method "textDocument/signatureHelp" then
         return
     end
 

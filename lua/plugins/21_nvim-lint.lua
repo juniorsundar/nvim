@@ -1,13 +1,11 @@
-MiniDeps.later(function()
-    MiniDeps.add { source = "mfussenegger/nvim-lint" }
+vim.pack.add { gh "mfussenegger/nvim-lint" }
 
-    require("lint").linters_by_ft = {
-        rust = { "clippy" },
-        python = { "ruff" },
-        lua = { "luacheck" },
-    }
+require("lint").linters_by_ft = {
+    rust = { "clippy" },
+    python = { "ruff" },
+    lua = { "luacheck" },
+}
 
-    vim.keymap.set({ "n" }, "<leader>LL", function()
-        require("lint").try_lint()
-    end, { desc = "Lint" })
-end)
+vim.keymap.set({ "n" }, "<leader>LL", function()
+    require("lint").try_lint()
+end, { desc = "Lint" })

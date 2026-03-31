@@ -1,4 +1,4 @@
-MiniDeps.add { source = "folke/flash.nvim" }
+vim.pack.add { gh "folke/flash.nvim" }
 
 require("flash").setup()
 local is_vscode = vim.g.vscode
