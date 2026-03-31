@@ -68,7 +68,7 @@ local function print_signature_help()
 
     vim.lsp.buf_request(bufnr, "textDocument/signatureHelp", params, function(err, result, ctx, config)
         if err or not result or not result.signatures or #result.signatures == 0 then
-            vim.api.nvim_echo({}, false, {})
+            vim.api.nvim_echo({ { "" } }, false, {})
             return
         end
 
@@ -156,6 +156,7 @@ local function print_signature_help()
             table.insert(chunks, { current_text, current_hl })
         end
 
+        vim.api.nvim_echo({ { "" } }, false, {})
         vim.api.nvim_echo(chunks, false, {})
     end)
 end
@@ -175,10 +176,11 @@ local function debounced_signature()
         300,
         0,
         vim.schedule_wrap(function()
-            local clients = vim.lsp.get_clients { bufnr = 0 }
+            local clients = vim.lsp.get_clients { bufnr = vim.api.nvim_get_current_buf() }
             if #clients > 0 then
                 print_signature_help()
             else
+                vim.api.nvim_echo({ { "" } }, false, {})
                 vim.api.nvim_echo({}, false, {})
             end
         end)
