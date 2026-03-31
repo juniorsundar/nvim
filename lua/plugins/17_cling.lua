@@ -126,7 +126,7 @@ compile.setup {
         {
             binary = function()
                 _G._yazi_chooser_file = vim.fn.tempname()
-                local start_dir = _G._yazi_start_dir or ""
+                local start_dir = _G._yazi_start_dir or vim.fn.expand "%:p"
                 _G._yazi_start_dir = nil
                 return string.format(
                     [[sh -c 'yazi %s --chooser-file="%s"']],
