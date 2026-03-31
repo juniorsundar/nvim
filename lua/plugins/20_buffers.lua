@@ -14,7 +14,7 @@ local function open_keymap_buf()
     }
 end
 
-vim.keymap.set({ "n", "v", "x", "s", "o", "i", "t" }, "<C-x><C-h>", open_keymap_buf, {
+vim.keymap.set({ "n", "v", "x", "s", "o", "i", "t" }, "<C-h><C-h>", open_keymap_buf, {
     desc = "Keymap Buffer",
     silent = true,
 })
