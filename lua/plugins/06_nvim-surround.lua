@@ -1,1 +1,1 @@
-MiniDeps.add { source = "kylechui/nvim-surround" }
+vim.pack.add { gh "kylechui/nvim-surround" }

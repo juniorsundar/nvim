@@ -201,7 +201,7 @@ local function breadcrumbs_set()
 
     if #clients == 0 then
         return
-    elseif not clients[1].supports_method "textDocument/documentSymbol" then
+    elseif not clients[1]:supports_method "textDocument/documentSymbol" then
         return
     end
 

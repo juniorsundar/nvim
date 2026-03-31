@@ -1,3 +1,1 @@
-MiniDeps.now(function()
-    MiniDeps.add { source = "nvim-tree/nvim-web-devicons" }
-end)
+vim.pack.add { gh "nvim-tree/nvim-web-devicons" }

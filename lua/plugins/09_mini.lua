@@ -1,4 +1,4 @@
-MiniDeps.add { source = "nvim-mini/mini.move" }
+vim.pack.add { gh "nvim-mini/mini.move" }
 vim.api.nvim_create_autocmd("BufEnter", {
     pattern = "*",
     once = true,
