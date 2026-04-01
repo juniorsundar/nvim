@@ -25,6 +25,9 @@ vim.api.nvim_create_autocmd("BufEnter", {
         vim.keymap.set("n", "<space>Gp", function()
             gs.preview_hunk()
         end, { desc = "Preview Hunk", noremap = false, silent = true })
+        vim.keymap.set("n", "<space>GP", function()
+            gs.preview_hunk_inline()
+        end, { desc = "Preview Hunk Inline", noremap = false, silent = true })
         vim.keymap.set("n", "<space>Gs", function()
             gs.stage_hunk()
         end, { desc = "Stage Hunk", noremap = false, silent = true })
@@ -85,3 +88,49 @@ vim.api.nvim_create_autocmd("BufEnter", {
         }
     end,
 })
+
+function _G.MyStatusColumn()
+    local winid = vim.g.statusline_winid
+    if not winid or not vim.api.nvim_win_is_valid(winid) then
+        return ""
+    end
+
+    local bufnr = vim.api.nvim_win_get_buf(winid)
+    local lnum = vim.v.lnum - 1
+
+    local line_count = vim.api.nvim_buf_line_count(bufnr)
+    if lnum >= line_count or lnum < 0 then
+        return ""
+    end
+
+    if vim.v.virtnum ~= 0 then
+        return ""
+    end
+
+    local extmarks = vim.api.nvim_buf_get_extmarks(
+        bufnr,
+        -1,
+        { lnum, 0 },
+        { lnum, -1 },
+        { details = true, type = "sign" }
+    )
+
+    local git_lane = "  "
+    local diag_lane = "  "
+
+    for _, mark in ipairs(extmarks) do
+        local details = mark[4]
+        local hl = details.sign_hl_group or ""
+        local text = details.sign_text or ""
+
+        if hl:find "GitSigns" then
+            git_lane = "%#" .. hl .. "#" .. text .. "%*"
+        elseif hl:find "Diagnostic" then
+            diag_lane = "%#" .. hl .. "#" .. text .. "%*"
+        end
+    end
+
+    return "%l " .. git_lane .. diag_lane
+end
+
+vim.opt.statuscolumn = "%!v:lua.MyStatusColumn()"
