@@ -20,6 +20,9 @@ return {
             hint = {
                 enable = true,
             },
+            codeLens = {
+                enable = true,
+            },
         },
     },
 }
