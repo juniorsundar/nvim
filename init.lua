@@ -63,7 +63,9 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 
 vim.loader.enable()
 
-require("vim._core.ui2").enable()
+require("vim._core.ui2").enable {}
+vim.g.difftool = true
+vim.g.undotree = true
 
 -- KEYMAPS ==========================================================
 -- define common options
@@ -94,6 +96,7 @@ vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode"
 function _G.gh(link)
     return "https://github.com/" .. link
 end
+
 if vim.g.vscode then
     require "plugins"
 else
