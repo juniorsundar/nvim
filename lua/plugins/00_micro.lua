@@ -37,6 +37,12 @@ end, { desc = "Update all plugins" })
 vim.keymap.set("n", "<leader>Pc", function()
     pack.clean()
 end, { desc = "Clean orphaned plugins" })
+vim.keymap.set("n", "<leader>Pr", function()
+    pack.rollback()
+end, { desc = "Rollback plugins to lockfile" })
+vim.keymap.set("n", "<leader>Ph", function()
+    pack.health()
+end, { desc = "Check plugin health" })
 
 vim.api.nvim_create_autocmd("BufEnter", {
     pattern = "screen.txt",

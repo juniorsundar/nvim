@@ -2,6 +2,7 @@ local M = {}
 
 M.config = {}
 M._specs = {}
+M._build_queue = {}
 
 --- Expand URI shorthand prefixes into full HTTPS URLs.
 --- Local filesystem paths (starting with /, ~/, ./) are passed through as-is.
@@ -61,6 +62,58 @@ local function normalise_spec(item)
     return spec
 end
 
+--- Execute a build command for a plugin.
+---@param name string Plugin name
+---@param build string|function Build command or function
+---@param path string Plugin path on disk
+local function run_build(name, build, path)
+    if type(build) == "function" then
+        vim.notify("micro.pack: running build function for " .. name, vim.log.levels.INFO)
+        local ok, err = pcall(build, path)
+        if not ok then
+            vim.notify("micro.pack: build failed for " .. name .. ": " .. tostring(err), vim.log.levels.ERROR)
+        end
+    elseif type(build) == "string" then
+        vim.notify("micro.pack: running build for " .. name .. ": " .. build, vim.log.levels.INFO)
+        vim.system({ "sh", "-c", build }, { cwd = path }, function(res)
+            if res.code ~= 0 then
+                vim.schedule(function()
+                    vim.notify(
+                        "micro.pack: build failed for " .. name .. " (exit " .. res.code .. ")\n" .. (res.stderr or ""),
+                        vim.log.levels.ERROR
+                    )
+                end)
+            else
+                vim.schedule(function()
+                    vim.notify("micro.pack: build completed for " .. name, vim.log.levels.INFO)
+                end)
+            end
+        end)
+    end
+end
+
+--- Process queued builds after PackChanged event.
+--- Only runs builds for install/update kinds — not delete.
+---@param kind string The PackChanged event kind: "install", "update", or "delete"
+---@param name string The plugin name from the event
+local function process_build_queue(kind, name)
+    if kind == "delete" then
+        -- Never run builds for deleted plugins
+        M._build_queue[name] = nil
+        return
+    end
+    if M._build_queue[name] then
+        local spec = M._specs[name]
+        if spec and spec.build then
+            local plug_info = vim.pack.get({ name }, { info = false })[1]
+            if plug_info then
+                run_build(name, spec.build, plug_info.path)
+            end
+        end
+        M._build_queue[name] = nil
+    end
+end
+
 --- Add plugin(s) — installs immediately if missing, loads into session.
 --- Accepts a single spec (string or table) OR a list of specs.
 --- Returns M for chaining.
@@ -85,6 +138,9 @@ function M.add(specs, opts)
         local name = M._resolve_name(spec)
         M._specs[name] = spec
         table.insert(expanded, spec)
+        if spec.build then
+            M._build_queue[name] = true
+        end
     end
 
     vim.pack.add(expanded, opts)
@@ -160,6 +216,77 @@ function M.get(names, opts)
     return vim.pack.get(names, opts)
 end
 
+--- Rollback plugin(s) to the revision recorded in the lockfile.
+--- This is useful when an update breaks something and you want to revert.
+---@param names string[]? List of plugin names to rollback. Default: all declared plugins.
+function M.rollback(names)
+    local target = names
+    if not target then
+        target = vim.tbl_keys(M._specs)
+        if #target == 0 then
+            vim.notify("micro.pack: no plugins declared", vim.log.levels.WARN)
+            return
+        end
+    end
+
+    vim.notify("micro.pack: rolling back " .. #target .. " plugin(s) to lockfile revisions...", vim.log.levels.INFO)
+    vim.pack.update(target, { target = "lockfile", force = false })
+end
+
+--- Check health of managed plugins.
+--- Validates that all declared plugins exist on disk and reports any issues.
+---@return table results A table with { healthy: string[], missing: string[], errors: string[] }
+function M.health()
+    local results = {
+        healthy = {},
+        missing = {},
+        errors = {},
+    }
+
+    local all_on_disk = {}
+    for _, plug in ipairs(vim.pack.get()) do
+        local pname = plug.spec and plug.spec.name
+        if pname then
+            all_on_disk[pname] = plug
+        end
+    end
+
+    for name, spec in pairs(M._specs) do
+        local plug = all_on_disk[name]
+        if not plug then
+            table.insert(results.missing, name)
+        else
+            if plug.spec.src ~= spec.src then
+                table.insert(
+                    results.errors,
+                    string.format("%s: src mismatch (disk=%s, spec=%s)", name, plug.spec.src, spec.src)
+                )
+            else
+                table.insert(results.healthy, name)
+            end
+        end
+    end
+
+    local lines = { "micro.pack health check:" }
+    table.insert(lines, string.format("  ✓ %d plugins healthy", #results.healthy))
+    if #results.missing > 0 then
+        table.insert(
+            lines,
+            string.format("  ✗ %d plugins missing: %s", #results.missing, table.concat(results.missing, ", "))
+        )
+    end
+    if #results.errors > 0 then
+        table.insert(lines, string.format("  ! %d plugins with errors:", #results.errors))
+        for _, err in ipairs(results.errors) do
+            table.insert(lines, "    " .. err)
+        end
+    end
+    local has_issues = #results.missing > 0 or #results.errors > 0
+    vim.notify(table.concat(lines, "\n"), has_issues and vim.log.levels.WARN or vim.log.levels.INFO)
+
+    return results
+end
+
 --- High-level setup hook. Does NOT defer/batch installs — M.add() is
 --- always immediate. Use this for future config like on_change hooks.
 ---@param opts table?
@@ -167,16 +294,20 @@ function M.setup(opts)
     opts = opts or {}
     M.config = vim.tbl_deep_extend("force", M.config, opts)
 
-    if type(opts.on_change) == "function" then
-        local augroup = vim.api.nvim_create_augroup("MicroPack", { clear = true })
-        vim.api.nvim_create_autocmd("User", {
-            pattern = "PackChanged",
-            group = augroup,
-            callback = function(args)
-                opts.on_change(args.data)
-            end,
-        })
-    end
+    local augroup = vim.api.nvim_create_augroup("MicroPack", { clear = true })
+    vim.api.nvim_create_autocmd("User", {
+        pattern = "PackChanged",
+        group = augroup,
+        callback = function(args)
+            local data = args.data or {}
+            if data.spec and data.spec.name then
+                process_build_queue(data.kind or "", data.spec.name)
+            end
+            if type(M.config.on_change) == "function" then
+                M.config.on_change(data)
+            end
+        end,
+    })
 
     if opts.specs and type(opts.specs) == "table" then
         M.add(opts.specs)
