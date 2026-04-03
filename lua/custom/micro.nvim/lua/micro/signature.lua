@@ -192,7 +192,12 @@ function M.setup(opts)
 
     vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
         group = augroup,
-        callback = debounced_signature,
+        callback = function()
+            if vim.bo.buftype == "prompt" or vim.bo.buftype == "nofile" then
+                return
+            end
+            debounced_signature()
+        end,
         desc = "Print signature help automatically with debounce",
     })
 
