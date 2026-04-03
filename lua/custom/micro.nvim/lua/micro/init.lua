@@ -10,6 +10,7 @@ local defaults = {
     hover = { enabled = false },
     signature = { enabled = false },
     split_suffix = { enabled = false },
+    pack = { enabled = false },
 }
 
 function M.setup(opts)

@@ -1,5 +1,5 @@
 ---@diagnostic disable: missing-fields, duplicate-set-field
-vim.pack.add { gh "kevinhwang91/nvim-bqf" }
+require("micro.pack").add "gh:kevinhwang91/nvim-bqf"
 local fn = vim.fn
 
 function _G.qftf(info)

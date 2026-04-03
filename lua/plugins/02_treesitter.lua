@@ -1,4 +1,4 @@
-vim.pack.add { gh "nvim-treesitter/nvim-treesitter" }
+require("micro.pack").add "gh:nvim-treesitter/nvim-treesitter"
 require("nvim-treesitter").setup {
     install_dir = vim.fn.stdpath "data" .. "/site",
 }
@@ -38,7 +38,7 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
-vim.pack.add { gh "nvim-treesitter/nvim-treesitter-textobjects" }
+require("micro.pack").add "gh:nvim-treesitter/nvim-treesitter-textobjects"
 require("nvim-treesitter-textobjects").setup {
     select = {
         lookahead = true,

@@ -1,4 +1,4 @@
-vim.pack.add { gh "folke/persistence.nvim" }
+require("micro.pack").add "gh:folke/persistence.nvim"
 
 require("persistence").setup()
 vim.keymap.set("n", "<leader>q", "", { desc = "Persistence" })

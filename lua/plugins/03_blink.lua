@@ -1,4 +1,4 @@
-vim.pack.add { { src = gh "saghen/blink.cmp", version = "v1.10.1" } }
+require("micro.pack").add { src = "gh:saghen/blink.cmp", version = "v1.10.1" }
 
 vim.api.nvim_create_autocmd({ "CmdlineEnter", "LspAttach" }, {
     pattern = "*",

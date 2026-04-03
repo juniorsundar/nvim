@@ -1,4 +1,4 @@
-vim.pack.add { gh "folke/sidekick.nvim" }
+require("micro.pack").add "gh:folke/sidekick.nvim"
 
 require("sidekick").setup {
     jump = {
