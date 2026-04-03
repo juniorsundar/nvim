@@ -1,1 +1,1 @@
-vim.pack.add { gh "kylechui/nvim-surround" }
+require("micro.pack").add "gh:kylechui/nvim-surround"

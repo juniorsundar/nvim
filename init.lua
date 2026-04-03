@@ -93,10 +93,6 @@ vim.keymap.set("v", ">", ">gv", opts)
 vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 
 -- PLUGINS ==========================================================
-function _G.gh(link)
-    return "https://github.com/" .. link
-end
-
 if vim.g.vscode then
     require "plugins"
 else
@@ -105,11 +101,6 @@ else
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/cling.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/buffers.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/micro.nvim")
-
-    vim.keymap.set("n", "<leader>P", "", { desc = "Package", noremap = false, silent = true })
-    vim.keymap.set("n", "<leader>Pu", function()
-        vim.pack.update()
-    end, { desc = "Update", noremap = false, silent = true })
 
     require "plugins"
 

@@ -1,4 +1,4 @@
-vim.pack.add { gh "juniorsundar/doom-one.nvim" }
+require("micro.pack").add "gh:juniorsundar/doom-one.nvim"
 -- Add color to cursor
 vim.g.doom_one_cursor_coloring = false
 -- Set :terminal colors

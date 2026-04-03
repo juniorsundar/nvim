@@ -1,4 +1,4 @@
-vim.pack.add { gh "folke/flash.nvim" }
+require("micro.pack").add "gh:folke/flash.nvim"
 
 require("flash").setup()
 local is_vscode = vim.g.vscode

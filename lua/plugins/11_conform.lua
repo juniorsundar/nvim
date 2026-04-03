@@ -1,4 +1,4 @@
-vim.pack.add { gh "stevearc/conform.nvim" }
+require("micro.pack").add "gh:stevearc/conform.nvim"
 require("conform").setup {
     format_on_save = nil,
     formatters_by_ft = {
