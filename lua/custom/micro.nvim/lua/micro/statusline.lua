@@ -62,10 +62,10 @@ function M.refresh_colors()
     local c = M.config.colors
     c.fg = get_hl_fg { "Normal" }
     c.bg = get_hl_bg { "StatusLine", "Normal" }
-    c.red = get_hl_fg { "GitSignsDelete", "DiagnosticError", "Error", "DiffDelete" }
-    c.orange = get_hl_fg { "GitSignsChange", "Constant", "WarningMsg", "Number" }
+    c.red = get_hl_fg { "DiffDelete", "DiagnosticError", "GitSignsDelete", "Error" }
+    c.orange = get_hl_fg { "DiffChange", "GitSignsChange", "Constant", "WarningMsg", "Number" }
     c.yellow = get_hl_fg { "DiagnosticWarn", "WarningMsg" }
-    c.green = get_hl_fg { "GitSignsAdd", "DiagnosticOk", "DiffAdd", "String" }
+    c.green = get_hl_fg { "DiffAdd", "DiagnosticOk", "GitSignsAdd", "String" }
     c.cyan = get_hl_fg { "DiagnosticHint", "Special", "Identifier" }
     c.blue = get_hl_fg { "Function", "Type", "Identifier" }
     c.violet = get_hl_fg { "Statement", "Keyword" }
