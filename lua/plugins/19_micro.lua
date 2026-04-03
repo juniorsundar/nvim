@@ -26,3 +26,12 @@ end, { desc = "Scroll eldoc down" })
 vim.keymap.set("n", "<M-k>", function()
     require("micro.hover").scroll(-1)
 end, { desc = "Scroll eldoc up" })
+
+vim.api.nvim_create_autocmd("BufEnter", {
+    pattern = "screen.txt",
+    callback = function(context)
+        vim.api.nvim_open_term(context.buf, {})
+        vim.keymap.set("n", "q", "<cmd>qa!<cr>", { silent = true, buffer = context.buf })
+        vim.cmd "normal! G$"
+    end,
+})
