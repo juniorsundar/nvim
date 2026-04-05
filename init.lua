@@ -63,7 +63,7 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 
 vim.loader.enable()
 
-require("vim._core.ui2").enable {}
+-- require("vim._core.ui2").enable {}
 vim.g.difftool = true
 vim.cmd.packadd "nvim.difftool"
 
