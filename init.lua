@@ -65,7 +65,10 @@ vim.loader.enable()
 
 require("vim._core.ui2").enable {}
 vim.g.difftool = true
+vim.cmd.packadd "nvim.difftool"
+
 vim.g.undotree = true
+vim.cmd.packadd "nvim.undotree"
 
 -- KEYMAPS ==========================================================
 -- define common options
