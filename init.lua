@@ -95,6 +95,8 @@ vim.keymap.set("v", ">", ">gv", opts)
 -- Terminal mode --
 vim.keymap.set("t", "<C-\\><C-\\>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 
+vim.keymap.set("n", "<leader>e", "<cmd>Explore<cr>", opts)
+
 -- PLUGINS ==========================================================
 if vim.g.vscode then
     require "plugins"
