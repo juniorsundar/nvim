@@ -140,6 +140,7 @@ compile.setup {
                 return vim.fn.expand "%:p:h"
             end,
             keymaps = function(_buf)
+                vim.cmd "horizontal resize"
                 vim.cmd "startinsert"
             end,
             on_close = function(_buf)
