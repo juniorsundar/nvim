@@ -43,12 +43,3 @@ end, { desc = "Rollback plugins to lockfile" })
 vim.keymap.set("n", "<leader>Ph", function()
     pack.health()
 end, { desc = "Check plugin health" })
-
-vim.api.nvim_create_autocmd("BufEnter", {
-    pattern = "screen.txt",
-    callback = function(context)
-        vim.api.nvim_open_term(context.buf, {})
-        vim.keymap.set("n", "q", "<cmd>qa!<cr>", { silent = true, buffer = context.buf })
-        vim.cmd "normal! G$"
-    end,
-})
