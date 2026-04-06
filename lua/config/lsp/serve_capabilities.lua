@@ -2,13 +2,16 @@ M = {
     capabilities = vim.lsp.protocol.make_client_capabilities(),
 }
 
+M.capabilities.textDocument.codeLens = {
+    dynamicRegistration = true,
+    refreshSupport = true,
+}
+
 M.capabilities.workspace = {
     didChangeWatchedFiles = {
         dynamicRegistration = true,
     },
-    refresh = {
-        enabled = true,
-    },
+    inlayHint = { refreshSupport = true },
 }
 
 M.capabilities.textDocument.foldingRange = {
@@ -21,7 +24,6 @@ local blink_loaded, blink = pcall(require, "blink.cmp")
 if blink_loaded then
     -- if cmp_loaded then
     M.capabilities = vim.tbl_deep_extend("force", M.capabilities, blink.get_lsp_capabilities(M.capabilities))
-    M.capabilities.textDocument.codeLens = { dynamicRegistration = true }
     -- M.capabilities = vim.tbl_deep_extend("force", M.capabilities, cmp.default_capabilities())
 end
 
@@ -30,26 +32,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     callback = function(event)
         local bufnr = event.buf
         local client = vim.lsp.get_client_by_id(event.data.client_id)
-
-        if client and client:supports_method "textDocument/codeLens" then
-            vim.lsp.codelens.enable()
-        end
-
-        vim.keymap.set("n", "<leader>LCl", function()
-            vim.lsp.codelens.run()
-        end, { buffer = bufnr, desc = "Run CodeLens action" })
-
-        vim.keymap.set("n", "<leader>LCr", function()
-            vim.lsp.codelens.enable(true)
-        end, { buffer = bufnr, desc = "Force refresh CodeLens" })
-
-        vim.keymap.set("n", "<leader>LCt", function()
-            if vim.lsp.codelens.is_enabled() then
-                vim.lsp.codelens.enable(false)
-            else
-                vim.lsp.codelens.enable()
-            end
-        end, { buffer = bufnr, desc = "Toggle CodeLens" })
 
         vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
         if client and client.server_capabilities.documentHighlightProvider then
