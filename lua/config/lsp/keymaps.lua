@@ -67,19 +67,6 @@ end, { desc = "Workspace Diagnostics", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>LDd", function()
     vim.diagnostic.setloclist()
 end, { desc = "Document Diagnostics", noremap = false, silent = true })
-
-vim.keymap.set("n", "<leader>LCl", function()
+vim.keymap.set("n", "<leader>LC", function()
     vim.lsp.codelens.run()
 end, { desc = "Run CodeLens action" })
-
-vim.keymap.set("n", "<leader>LCr", function()
-    vim.lsp.codelens.enable(true)
-end, { desc = "Force refresh CodeLens" })
-
-vim.keymap.set("n", "<leader>LCt", function()
-    if vim.lsp.codelens.is_enabled() then
-        vim.lsp.codelens.enable(false)
-    else
-        vim.lsp.codelens.enable()
-    end
-end, { desc = "Toggle CodeLens" })
