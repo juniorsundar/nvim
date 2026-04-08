@@ -2,6 +2,14 @@ M = {
     capabilities = vim.lsp.protocol.make_client_capabilities(),
 }
 
+local blink_loaded, blink = pcall(require, "blink.cmp")
+-- local cmp_loaded, cmp = pcall(require, "cmp_nvim_lsp")
+if blink_loaded then
+    -- if cmp_loaded then
+    M.capabilities = vim.tbl_deep_extend("force", M.capabilities, blink.get_lsp_capabilities(M.capabilities))
+    -- M.capabilities = vim.tbl_deep_extend("force", M.capabilities, cmp.default_capabilities())
+end
+
 M.capabilities.textDocument.codeLens = {
     dynamicRegistration = true,
     refreshSupport = true,
@@ -18,14 +26,6 @@ M.capabilities.textDocument.foldingRange = {
     dynamicRegistration = false,
     lineFoldingOnly = true,
 }
-
-local blink_loaded, blink = pcall(require, "blink.cmp")
--- local cmp_loaded, cmp = pcall(require, "cmp_nvim_lsp")
-if blink_loaded then
-    -- if cmp_loaded then
-    M.capabilities = vim.tbl_deep_extend("force", M.capabilities, blink.get_lsp_capabilities(M.capabilities))
-    -- M.capabilities = vim.tbl_deep_extend("force", M.capabilities, cmp.default_capabilities())
-end
 
 vim.api.nvim_create_autocmd("LspAttach", {
     group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true }),
