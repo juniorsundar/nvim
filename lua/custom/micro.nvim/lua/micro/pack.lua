@@ -182,30 +182,47 @@ function M.clean(opts)
         return
     end
 
-    local orphan_names = vim.tbl_map(function(p)
-        return p.spec.name
-    end, orphans)
+    local function format_entry(p)
+        local status = p.active and " [active]" or ""
+        return string.format("%s%s", p.spec.name, status)
+    end
 
     if opts.force then
+        local orphan_names = vim.tbl_map(function(p)
+            return p.spec.name
+        end, orphans)
         vim.pack.del(orphan_names, { force = false })
         vim.notify("micro.pack: cleaned " .. #orphan_names .. " plugin(s)", vim.log.levels.INFO)
         return
     end
 
-    local msg = "micro.pack: " .. #orphans .. " orphaned plugin(s) found:\n\n"
-    for i, p in ipairs(orphans) do
-        local status = p.active and " [active]" or ""
-        msg = msg .. string.format("  %d. %s%s\n", i, p.spec.name, status)
-    end
-    msg = msg .. "\nDelete all orphaned plugins?"
+    local items = vim.tbl_map(format_entry, orphans)
+    table.insert(items, 1, "[All]")
 
-    local choice = vim.fn.confirm(msg, "&Yes\n&No", 2, "Question")
-    if choice == 1 then
-        vim.pack.del(orphan_names, { force = false })
-        vim.notify("micro.pack: cleaned " .. #orphan_names .. " plugin(s)", vim.log.levels.INFO)
-    else
-        vim.notify("micro.pack: clean cancelled", vim.log.levels.INFO)
-    end
+    vim.ui.select(items, {
+        prompt = "micro.pack: orphaned plugin(s) found — choose action:",
+        kind = "micro.pack.clean",
+    }, function(choice, idx)
+        if not choice or idx == #items then
+            vim.notify("micro.pack: clean cancelled", vim.log.levels.INFO)
+            return
+        end
+
+        if idx == 1 then
+            local orphan_names = vim.tbl_map(function(p)
+                return p.spec.name
+            end, orphans)
+            vim.pack.del(orphan_names, { force = false })
+            vim.notify("micro.pack: cleaned " .. #orphan_names .. " plugin(s)", vim.log.levels.INFO)
+            return
+        end
+
+        local selected_plugin = orphans[idx - 1]
+        if selected_plugin then
+            vim.pack.del({ selected_plugin.spec.name }, { force = false })
+            vim.notify(string.format("micro.pack: cleaned '%s'", selected_plugin.spec.name), vim.log.levels.INFO)
+        end
+    end)
 end
 
 --- Get info about managed plugins. Thin passthrough to vim.pack.get().
