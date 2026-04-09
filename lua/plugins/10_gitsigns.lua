@@ -5,6 +5,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
     once = true,
     callback = function()
         local gs = require "gitsigns"
+        vim.keymap.set("n", "<leader>G", "", { desc = "Git", noremap = false, silent = true })
         vim.keymap.set("n", "<leader>Gd", function()
             gs.diffthis()
         end, { desc = "Diff", noremap = false, silent = true })
