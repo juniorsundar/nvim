@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+
+if command -v gum >/dev/null 2>&1; then
+    _confirm() { gum confirm "$@"; }
+    _input() { gum input --placeholder "Enter session name"; }
+    _pick() { gum choose; }
+else
+    _confirm() {
+        read -p "$1 (y/N) " -n 1 -r REPLY
+        echo
+        [[ $REPLY =~ ^[Yy]$ ]]
+    }
+    _input() {
+        read -p "Enter new session name: " NAME
+        echo "$NAME"
+    }
+    _pick() {
+        if command -v fzf >/dev/null 2>&1; then
+            fzf --height 50% --reverse --exit-0 \
+                --preview 'bash -c '\''
+                  if [ "$1" = "[new]" ]; then
+                    echo "Create a new session"
+                  else
+                    LC_ALL=en_US.UTF-8 TMUX= tmux capture-pane -p -e -t "$1:0.0" 2>/dev/null || echo "Preview unavailable"
+                  fi
+                '\'' _ {}'
+        else
+            local items=()
+            while IFS= read -r line; do
+                items+=("$line")
+            done
+
+            for i in "${!items[@]}"; do
+                echo "$((i+1))) ${items[$i]}" >&2
+            done
+
+            local choice
+            read -p "Select an option (1-${#items[@]}): " choice < /dev/tty >&2
+
+            if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#items[@]}" ]; then
+                echo "${items[$((choice-1))]}"
+            fi
+        fi
+    }
+fi
+
+if ! tmux has-session 2>/dev/null; then
+    if _confirm "No tmux server running. Create a new session?"; then
+        SESSION_NAME=$(_input)
+
+        if [[ -n "$SESSION_NAME" ]]; then
+            tmux new-session -s "$SESSION_NAME"
+        fi
+    fi
+    exit 0
+fi
+
+SESSION=$((tmux list-sessions -F '#S'; echo "[new]") | _pick)
+
+if [[ -z "$SESSION" ]]; then
+    exit 0
+fi
+
+if [[ "$SESSION" == "[new]" ]]; then
+    NEW_NAME=$(_input)
+    if [[ -z "$NEW_NAME" ]]; then
+        exit 0
+    fi
+    tmux new-session -d -s "$NEW_NAME"
+    SESSION="$NEW_NAME"
+fi
+
+if [[ -n "$TMUX" ]]; then
+    tmux switch-client -t "$SESSION"
+else
+    tmux attach -t "$SESSION"
+fi

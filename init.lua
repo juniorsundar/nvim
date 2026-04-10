@@ -103,6 +103,7 @@ if vim.g.vscode then
 else
     -- Custom local plugins
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/refer.nvim")
+    vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/refer-projectile.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/cling.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/buffers.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/micro.nvim")
