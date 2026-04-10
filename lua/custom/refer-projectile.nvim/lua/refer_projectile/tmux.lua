@@ -1,5 +1,15 @@
 local M = {}
 
+--- Synchronously get the current tmux session name.
+--- @return string|nil session name, or nil if not in tmux / tmux not running.
+function M.get_current_session()
+    local result = vim.system({ "tmux", "display-message", "-p", "#{session_name}" }, { text = true }):wait()
+    if result.code ~= 0 or not result.stdout or result.stdout == "" then
+        return nil
+    end
+    return (result.stdout:gsub("\n$", ""))
+end
+
 --- Synchronously list all tmux sessions.
 --- @return string[] session names, or {} if tmux is not running.
 function M.list_sessions()
@@ -31,9 +41,14 @@ end
 
 --- Synchronously create a new detached tmux session.
 --- @param session_name string
+--- @param cmd string|nil Optional command to run immediately after session creation
 --- @return boolean success
-function M.create_session(session_name)
-    local result = vim.system({ "tmux", "new-session", "-d", "-s", session_name }, { text = true }):wait()
+function M.create_session(session_name, cmd)
+    local command = { "tmux", "new-session", "-d", "-s", session_name }
+    if cmd and cmd ~= "" then
+        table.insert(command, cmd)
+    end
+    local result = vim.system(command, { text = true }):wait()
     return result.code == 0
 end
 
