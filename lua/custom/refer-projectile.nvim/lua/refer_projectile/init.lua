@@ -43,7 +43,9 @@ function M.pick_project()
 
     require("refer").pick(sessions, function(selection)
         preview.close_tab()
-        tmux.switch_session(selection)
+        vim.schedule(function()
+            tmux.switch_session(selection)
+        end)
     end, {
         prompt = "Switch session: ",
         preview = { enabled = false },
@@ -53,6 +55,9 @@ function M.pick_project()
         keymaps = {
             ["<CR>"] = function(_, builtin)
                 builtin.actions.select_entry()
+            end,
+            ["<Esc>"] = function(_, builtin)
+                builtin.actions.close()
             end,
             ["<C-n>"] = function(_, builtin)
                 builtin.actions.next_item()

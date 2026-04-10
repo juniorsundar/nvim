@@ -3,6 +3,7 @@ local M = {}
 local _buf = nil
 local _win = nil
 local _tabpage = nil
+local _initial_buf = nil
 
 --- Open a new full-screen preview tab and return its tabpage and window handles.
 --- If a preview tab already exists and is valid, returns it without creating a new one.
@@ -23,6 +24,8 @@ function M.open_preview_tab()
     local tabpage = all_tabs[#all_tabs]
 
     local win = vim.api.nvim_tabpage_list_wins(tabpage)[1]
+
+    _initial_buf = vim.api.nvim_win_get_buf(win)
 
     vim.api.nvim_win_set_width(win, vim.o.columns)
     vim.api.nvim_win_set_height(win, vim.o.lines)
@@ -95,6 +98,11 @@ function M.cleanup()
     _buf = nil
     if buf ~= nil and vim.api.nvim_buf_is_valid(buf) then
         vim.api.nvim_buf_delete(buf, { force = true })
+    end
+    local initial = _initial_buf
+    _initial_buf = nil
+    if initial ~= nil and vim.api.nvim_buf_is_valid(initial) then
+        vim.api.nvim_buf_delete(initial, { force = true })
     end
 end
 
