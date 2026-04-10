@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+session_name=" $(pwd)"
+PARAMS="$@"
+
+FINAL_CMD="nvim $PARAMS"
+
+if command -v direnv &> /dev/null && [ -f ".envrc" ]; then
+
+    if direnv export bash >/dev/null 2>&1; then
+        FINAL_CMD="direnv exec . nvim $PARAMS"
+    fi
+fi
+
+if [ -n "$TMUX" ]; then
+    eval "$FINAL_CMD"
+else
+    tmux new-session -A -s "$session_name" "$FINAL_CMD"
+fi

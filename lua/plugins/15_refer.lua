@@ -26,5 +26,6 @@ vim.keymap.set("n", "<leader>Ft", files.live_grep, { desc = "Text" })
 vim.keymap.set("n", "<leader>Fl", files.lines, { desc = "Lines" })
 vim.keymap.set("n", "<leader>F<C-f>", "<cmd>Refer Extras FindFile<cr>", { desc = "Find File" })
 vim.keymap.set({ "n", "v" }, "<leader>Fw", files.grep_word, { desc = "Word" })
+vim.keymap.set({ "n" }, "<leader>FPs", "<cmd>Refer Projectile Switch<cr>", { desc = "Projectile: Switch session" })
 
 return refer
