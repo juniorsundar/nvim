@@ -2,6 +2,7 @@ local M = {}
 
 local tmux = require "refer_projectile.tmux"
 local preview = require "refer_projectile.preview"
+local recent = require "refer_projectile.recent"
 
 function M._scripts_dir()
     local plugin_root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":h:h:h")
@@ -231,34 +232,64 @@ local function filesystem_picker(on_confirm)
 end
 
 function M.open_project()
-    filesystem_picker(function(path)
-        if not path or path == "" then
-            return
-        end
+    local recent_projects = recent.load()
 
-        path = vim.fn.fnamemodify(vim.fn.expand(path), ":p"):gsub("/+$", "")
-        local session_name = " " .. path:gsub("%.", "_")
+    if #recent_projects > 0 then
+        local items = vim.list_extend({}, recent_projects)
+        table.insert(items, "...")
 
-        local sessions = tmux.list_sessions()
-        local exists = false
-        for _, s in ipairs(sessions) do
-            if s == session_name then
-                exists = true
-                break
-            end
-        end
-
-        if not exists then
-            local cmd = "cd " .. vim.fn.shellescape(path) .. " && nv ."
-            local ok = tmux.create_session(session_name, cmd)
-            if not ok then
-                vim.notify("refer-projectile: failed to create tmux session " .. session_name, vim.log.levels.ERROR)
+        vim.ui.select(items, {
+            prompt = "Recent projects: ",
+        }, function(selection)
+            if not selection then
                 return
             end
-        end
 
-        tmux.switch_session(session_name)
-    end)
+            if selection == "..." then
+                vim.defer_fn(function()
+                    filesystem_picker(function(path)
+                        M._open_or_create_session(path)
+                    end)
+                end, 0)
+            else
+                M._open_or_create_session(selection)
+            end
+        end)
+    else
+        filesystem_picker(function(path)
+            M._open_or_create_session(path)
+        end)
+    end
+end
+
+function M._open_or_create_session(path)
+    if not path or path == "" then
+        return
+    end
+
+    path = vim.fn.fnamemodify(vim.fn.expand(path), ":p"):gsub("/+$", "")
+    local session_name = " " .. path:gsub("%.", "_")
+
+    local sessions = tmux.list_sessions()
+    local exists = false
+    for _, s in ipairs(sessions) do
+        if s == session_name then
+            exists = true
+            break
+        end
+    end
+
+    if not exists then
+        local cmd = "cd " .. vim.fn.shellescape(path) .. " && nv"
+        local ok = tmux.create_session(session_name, cmd)
+        if not ok then
+            vim.notify("refer-projectile: failed to create tmux session " .. session_name, vim.log.levels.ERROR)
+            return
+        end
+        recent.add(path)
+    end
+
+    tmux.switch_session(session_name)
 end
 
 function M.export_scripts(dest_dir)
