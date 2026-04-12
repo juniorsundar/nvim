@@ -29,6 +29,7 @@ M.config = {
         names = {
             ["[LSP Eldoc]"] = true,
             ["NvimTree_1"] = true,
+            ["[Yazi]"] = true,
         },
         buftypes = {
             -- ["terminal"] = true,
