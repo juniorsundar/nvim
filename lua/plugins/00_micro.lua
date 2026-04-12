@@ -1,6 +1,14 @@
 local pack = require "micro.pack"
 
 require("micro").setup {
+    breadcrumbs = { enabled = false },
+    dynamic_lnum = { enabled = true },
+    folds = { enabled = true },
+    hover = { enabled = true },
+    pack = { enabled = true },
+    session = { enabled = true },
+    signature = { enabled = true },
+    split_suffix = { enabled = true },
     statusline = {
         enabled = true,
         ignored = {
@@ -9,15 +17,8 @@ require("micro").setup {
             },
         },
     },
-    dynamic_lnum = { enabled = true },
-    treesit_navigator = { enabled = true },
-    breadcrumbs = { enabled = false },
     toggle = { enabled = true },
-    folds = { enabled = true },
-    hover = { enabled = true },
-    signature = { enabled = true },
-    split_suffix = { enabled = true },
-    pack = { enabled = true },
+    treesit_navigator = { enabled = true },
 }
 
 vim.keymap.set("n", "<leader>Lk", function()
@@ -43,3 +44,11 @@ end, { desc = "Rollback plugins to lockfile" })
 vim.keymap.set("n", "<leader>Ph", function()
     pack.health()
 end, { desc = "Check plugin health" })
+
+vim.keymap.set("n", "<leader>S", "", { desc = "Session", noremap = false, silent = true })
+vim.keymap.set("n", "<leader>Ss", function()
+    require("micro.session").save_session()
+end, { desc = "Save session" })
+vim.keymap.set("n", "<leader>Sl", function()
+    require("micro.session").load_session()
+end, { desc = "Load session" })

@@ -6,7 +6,7 @@ M.queue = {}
 local default = {
     modifiers = {
         ["vsplit"] = "<C-w><C-v>",
-        ["split"] = "<C-w><C-h>",
+        ["split"] = "<C-w><C-s>",
         ["clear"] = "<C-w><C-x>",
     },
 }
