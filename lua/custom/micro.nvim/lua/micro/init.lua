@@ -11,6 +11,7 @@ local defaults = {
     signature = { enabled = false },
     split_suffix = { enabled = false },
     pack = { enabled = false },
+    session = { enabled = false },
 }
 
 function M.setup(opts)
