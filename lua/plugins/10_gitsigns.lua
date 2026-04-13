@@ -131,7 +131,26 @@ function _G.MyStatusColumn()
         end
     end
 
-    return "%l " .. git_lane .. diag_lane
+    local show_num = vim.wo[winid].number
+    local show_rel = vim.wo[winid].relativenumber
+    local num_width = vim.wo[winid].numberwidth
+
+    local num_str = ""
+    if show_num or show_rel then
+        local num
+        if show_rel then
+            num = (vim.v.relnum == 0 and show_num) and vim.v.lnum or vim.v.relnum
+        else
+            num = vim.v.lnum
+        end
+        num_str = string.format("%" .. num_width .. "d", num)
+    end
+
+    if num_str ~= "" then
+        return " " .. num_str .. " " .. git_lane .. diag_lane
+    end
+
+    return git_lane .. diag_lane
 end
 
 vim.opt.statuscolumn = "%!v:lua.MyStatusColumn()"
