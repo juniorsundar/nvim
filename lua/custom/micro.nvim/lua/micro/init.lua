@@ -1,17 +1,18 @@
 local M = {}
 
 local defaults = {
-    statusline = { enabled = false },
-    dynamic_lnum = { enabled = false },
-    treesit_navigator = { enabled = false },
     breadcrumbs = { enabled = false },
-    toggle = { enabled = false },
+    dynamic_lnum = { enabled = false },
     folds = { enabled = false },
     hover = { enabled = false },
+    pack = { enabled = false },
+    quickfix = { enabled = false },
+    session = { enabled = false },
     signature = { enabled = false },
     split_suffix = { enabled = false },
-    pack = { enabled = false },
-    session = { enabled = false },
+    statusline = { enabled = false },
+    toggle = { enabled = false },
+    treesit_navigator = { enabled = false },
 }
 
 function M.setup(opts)

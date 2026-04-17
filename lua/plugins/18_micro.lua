@@ -6,6 +6,7 @@ require("micro").setup {
     folds = { enabled = true },
     hover = { enabled = true },
     pack = { enabled = true },
+    quickfix = { enabled = true },
     session = { enabled = true },
     signature = { enabled = true },
     split_suffix = { enabled = true },

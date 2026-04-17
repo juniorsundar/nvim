@@ -42,7 +42,6 @@ M.config = {
             ["snacks_picker_input"] = true,
             ["refer_input"] = true,
             ["refer_results"] = true,
-            ["qf"] = true,
         },
     },
     colors = {},
