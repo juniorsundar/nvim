@@ -1,5 +1,5 @@
----@diagnostic disable: missing-fields, duplicate-set-field
-require("micro.pack").add "gh:kevinhwang91/nvim-bqf"
+local M = {}
+
 local fn = vim.fn
 
 function _G.qftf(info)
@@ -18,7 +18,7 @@ function _G.qftf(info)
     else
         items = fn.getloclist(info.winid, { id = info.id, items = 0 }).items
     end
-    local limit = 31
+    local limit = 50
     local fnameFmt1, fnameFmt2 = "%-" .. limit .. "s", "…%." .. (limit - 1) .. "s"
     local validFmt = "%s │%5d:%-3d│%s %s"
     for i = info.start_idx, info.end_idx do
@@ -53,47 +53,4 @@ end
 
 vim.o.qftf = "{info -> v:lua._G.qftf(info)}"
 
-require("bqf").setup {
-    auto_resize_height = true,
-    preview = {
-        border = "solid",
-        winblend = 0,
-    },
-    filter = {
-        fzf = {
-            extra_opts = { "--bind", "ctrl-o:toggle-all", "--delimiter", "│" },
-        },
-    },
-}
-
-vim.api.nvim_set_hl(0, "BqfPreviewFloat", { link = "NormalFloat" })
-
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = "qf",
-    callback = function()
-        local function fix_preview_hl()
-            local has_win, winid = pcall(function()
-                return require("bqf.preview.floatwin").winid
-            end)
-            if has_win and winid and vim.api.nvim_win_is_valid(winid) then
-                local winhl = vim.wo[winid].winhighlight
-                if not winhl:match "LineNr:" then
-                    vim.wo[winid].winhighlight = winhl .. ",LineNr:BqfPreviewFloat"
-                end
-            end
-        end
-
-        for _, delay in ipairs { 50, 100, 200, 300, 400 } do
-            vim.defer_fn(fix_preview_hl, delay)
-        end
-
-        vim.api.nvim_create_autocmd("CursorMoved", {
-            buffer = 0,
-            callback = function()
-                for _, delay in ipairs { 50, 100, 200 } do
-                    vim.defer_fn(fix_preview_hl, delay)
-                end
-            end,
-        })
-    end,
-})
+return M
