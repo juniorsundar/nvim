@@ -1,6 +1,8 @@
 local M = {}
-
 local fn = vim.fn
+
+-- Ensure syntax highlighting is enabled globally
+vim.cmd "syntax enable"
 
 function _G.qftf(info)
     local items
@@ -52,5 +54,43 @@ function _G.qftf(info)
 end
 
 vim.o.qftf = "{info -> v:lua._G.qftf(info)}"
+
+-- Custom quickfix syntax integration
+local qf_augroup = vim.api.nvim_create_augroup("CustomQfSyntax", { clear = true })
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "qf",
+    group = qf_augroup,
+    callback = function()
+        -- Use a custom guard to avoid conflicts with Neovim's default qf syntax
+        if vim.b.qf_custom_syntax_loaded then
+            return
+        end
+
+        -- Clear default quickfix syntax to prevent rule conflicts
+        vim.cmd "syntax clear"
+
+        vim.cmd [[
+            syntax match qfFileName /^[^│]*/ nextgroup=qfSeparatorLeft
+            syntax match qfSeparatorLeft /│/ contained nextgroup=qfLineNr
+            syntax match qfLineNr /[^│]*/ contained nextgroup=qfSeparatorRight
+            syntax match qfSeparatorRight '│' contained nextgroup=qfError,qfWarning,qfInfo,qfNote
+            syntax match qfError / E .*$/ contained
+            syntax match qfWarning / W .*$/ contained
+            syntax match qfInfo / I .*$/ contained
+            syntax match qfNote / [NH] .*$/ contained
+
+            highlight default link qfFileName Directory
+            highlight default link qfSeparatorLeft Delimiter
+            highlight default link qfSeparatorRight Delimiter
+            highlight default link qfLineNr LineNr
+            highlight default link qfError DiagnosticError
+            highlight default link qfWarning DiagnosticWarn
+            highlight default link qfInfo DiagnosticInfo
+            highlight default link qfNote DiagnosticHint
+        ]]
+
+        vim.b.qf_custom_syntax_loaded = true
+    end,
+})
 
 return M
