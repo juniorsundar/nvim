@@ -1,4 +1,4 @@
-require("micro.pack").add "gh:nvim-treesitter/nvim-treesitter"
+require("micro.pack").add "gh:juniorsundar/nvim-treesitter"
 require("nvim-treesitter").setup {
     install_dir = vim.fn.stdpath "data" .. "/site",
 }
