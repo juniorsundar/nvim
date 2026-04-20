@@ -190,5 +190,5 @@ vim.keymap.set("n", "<leader>GL", function()
 end, { desc = "lazygit" })
 vim.keymap.set("n", "<leader>o", function()
     _G._yazi_origin_win = vim.api.nvim_get_current_win()
-    vim.cmd "Yazi"
+    vim.cmd "tab Yazi"
 end, { desc = "Yazi" })
