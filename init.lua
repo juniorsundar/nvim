@@ -99,6 +99,7 @@ vim.keymap.set("n", "<leader>e", "<cmd>Explore<cr>", opts)
 
 -- PLUGINS ==========================================================
 if vim.g.vscode then
+    vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/micro.nvim")
     require "plugins"
 else
     -- Custom local plugins
