@@ -1,5 +1,6 @@
 vim.opt.statusline = " "
 vim.opt.scrolloff = 1
+vim.g.micro_statusline = true
 local ns_id = vim.api.nvim_create_namespace "StatusLineNS"
 
 local function get_hl_fg(groups)
@@ -108,6 +109,9 @@ function M.is_ignored(buf_id)
         return true
     end
     if M.config.ignored.filetypes[filetype] then
+        return true
+    end
+    if not vim.g.micro_statusline then
         return true
     end
     return false
