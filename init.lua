@@ -4,7 +4,20 @@ vim.g.maplocalleader = "  "
 vim.keymap.set({ "n", "v" }, "<leader>", "", { desc = "Leader", noremap = false, silent = true })
 vim.keymap.set({ "n", "v" }, "<leader><leader>", "", { desc = "LocalLeader", noremap = false, silent = true })
 
+local osc52 = require "vim.ui.clipboard.osc52"
+vim.g.clipboard = {
+    name = "osc52",
+    copy = {
+        ["+"] = osc52.copy "+",
+        ["*"] = osc52.copy "*",
+    },
+    paste = {
+        ["+"] = osc52.paste "+",
+        ["*"] = osc52.paste "*",
+    },
+}
 vim.opt.clipboard = "unnamedplus"
+
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
 vim.opt.mouse = "a"
 
