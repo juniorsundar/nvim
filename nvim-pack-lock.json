@@ -26,7 +26,7 @@
       "src": "https://github.com/nvim-mini/mini.move"
     },
     "nvim-lint": {
-      "rev": "8b06eeec3c674744b993caecd73343df108c052d",
+      "rev": "d48f3a76189d03b2239f6df1b2f7e3fa8353743b",
       "src": "https://github.com/mfussenegger/nvim-lint"
     },
     "nvim-surround": {
