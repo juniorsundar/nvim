@@ -6,7 +6,7 @@
       "version": "'v1.10.2'"
     },
     "conform.nvim": {
-      "rev": "18aeab3d63d350dcf44d64c462cc489a3412af40",
+      "rev": "24c70347f6b2128679f47d2eb765156ef34bf9e0",
       "src": "https://github.com/stevearc/conform.nvim"
     },
     "doom-one.nvim": {
@@ -38,7 +38,7 @@
       "src": "https://github.com/juniorsundar/nvim-treesitter"
     },
     "nvim-web-devicons": {
-      "rev": "7d8dad2c837fcdf2e65997e68657c1a21c568074",
+      "rev": "0d7d35fa946837b8738b17c18d1faa1ac351e7f9",
       "src": "https://github.com/nvim-tree/nvim-web-devicons"
     },
     "sidekick.nvim": {
