@@ -1,5 +1,42 @@
 local M = {}
 
+local showing_signature = false
+
+-- Check if the cursor is currently inside a function call.
+-- Uses a parenthesis-stack approach: counts unmatched `(` and verifies
+-- an identifier precedes the innermost one. Handles nested calls,
+-- method chains, and multiple param lists.
+local function is_at_function_call()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+    row = row - 1 -- 0-indexed for buffer API
+
+    local line = vim.api.nvim_buf_get_text(bufnr, row, 0, row, col, {})[1] or ""
+
+    local stack = {}
+    for i = 1, #line do
+        local c = line:sub(i, i)
+        if c == "(" then
+            table.insert(stack, i)
+        elseif c == ")" then
+            if #stack > 0 then
+                table.remove(stack)
+            end
+        end
+    end
+
+    if #stack == 0 then
+        return false
+    end
+
+    local last_open = stack[#stack]
+    if last_open <= 1 then
+        return false
+    end
+    local before = line:sub(last_open - 1, last_open - 1)
+    return before:match "[%w_]" ~= nil
+end
+
 local function smart_conceal(text, params, active_idx, max_width)
     if not params or #params == 0 or #text <= max_width then
         return text
@@ -68,7 +105,10 @@ local function print_signature_help()
 
     vim.lsp.buf_request(bufnr, "textDocument/signatureHelp", params, function(err, result, ctx, config)
         if err or not result or not result.signatures or #result.signatures == 0 then
-            vim.api.nvim_echo({ { "" } }, false, {})
+            if showing_signature then
+                vim.api.nvim_echo({ { "" } }, false, {})
+                showing_signature = false
+            end
             return
         end
 
@@ -156,13 +196,21 @@ local function print_signature_help()
             table.insert(chunks, { current_text, current_hl })
         end
 
-        vim.api.nvim_echo({ { "" } }, false, {})
         vim.api.nvim_echo(chunks, false, {})
+        showing_signature = true
     end)
 end
 
 local timer = nil
 local function debounced_signature()
+    if not is_at_function_call() then
+        if showing_signature then
+            vim.api.nvim_echo({ { "" } }, false, {})
+            showing_signature = false
+        end
+        return
+    end
+
     if timer then
         timer:stop()
         timer:close()
@@ -176,12 +224,16 @@ local function debounced_signature()
         300,
         0,
         vim.schedule_wrap(function()
+            if not is_at_function_call() then
+                if showing_signature then
+                    vim.api.nvim_echo({ { "" } }, false, {})
+                    showing_signature = false
+                end
+                return
+            end
             local clients = vim.lsp.get_clients { bufnr = vim.api.nvim_get_current_buf() }
             if #clients > 0 then
                 print_signature_help()
-            else
-                vim.api.nvim_echo({ { "" } }, false, {})
-                vim.api.nvim_echo({}, false, {})
             end
         end)
     )
