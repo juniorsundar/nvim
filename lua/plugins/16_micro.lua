@@ -4,6 +4,7 @@ require("micro").setup {
     breadcrumbs = { enabled = false },
     dynamic_lnum = { enabled = true },
     folds = { enabled = true },
+    follow_mode = { enabled = true },
     hover = { enabled = true },
     pack = { enabled = true },
     quickfix = { enabled = true },
