@@ -183,7 +183,7 @@ compile.setup {
     },
 }
 
-vim.keymap.set("n", "<leader>c", "<cmd>Cling<cr>", { desc = "Cling" })
+vim.keymap.set("n", "<leader>c", "<cmd>vert Cling<cr>", { desc = "Cling" })
 vim.keymap.set("n", "<leader>GL", function()
     vim.cmd "Lazygit"
     vim.cmd "wincmd T"
