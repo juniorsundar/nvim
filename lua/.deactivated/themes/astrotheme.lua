@@ -1,4 +1,4 @@
-MiniDeps.add { source = "AstroNvim/astrotheme" }
+require("micro.pack").add { src = "gh:AstroNvim/astrotheme" }
 local c = require "astrotheme.palettes.astrodark"
 require("astrotheme").setup {
     style = {
