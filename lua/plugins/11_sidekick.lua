@@ -131,7 +131,7 @@ require("sidekick").setup {
             class = "{class}",
         },
         -- preferred picker for selecting files
-        picker = "snacks",
+        picker = "telescope",
     },
     copilot = {
         -- track copilot's status with `didChangeStatus`
