@@ -255,6 +255,17 @@ fetch_page = function(url)
             return
         end
 
+        if not res then
+            render_markdown_buffer(buf, url, {
+                "# Fetch failed",
+                "",
+                url,
+                "",
+                "Jina Reader returned no response.",
+            })
+            return
+        end
+
         if res.status >= 400 then
             render_markdown_buffer(buf, url, {
                 "# Fetch failed",
@@ -317,6 +328,15 @@ local function run_query(buf, query)
                 "```text",
                 err.message,
                 "```",
+            })
+            return
+        end
+
+        if not res then
+            render_markdown_buffer(buf, "[Web Search]", {
+                "# Web Search: " .. query,
+                "",
+                "SearXNG returned no response.",
             })
             return
         end
