@@ -8,7 +8,7 @@ local JINA_READER_URL = "https://r.jina.ai/"
 local state = {
     win = nil,
     buf = nil,
-    --- Separate window/buffer for the Jina Reader page view opened via `go`.
+
     reader_win = nil,
     reader_buf = nil,
 }
@@ -283,17 +283,95 @@ fetch_page = function(url)
     end)
 end
 
-local function web_search(opts)
+local function run_query(buf, query)
+    if not vim.api.nvim_buf_is_valid(buf) then
+        return
+    end
+
+    render_markdown_buffer(buf, "[Web Search]", {
+        "# Web Search: " .. query,
+        "",
+        "Searching...",
+    })
+
+    require("micro.http").request({
+        url = SEARCH_URL,
+        query = {
+            q = query,
+            format = "json",
+        },
+        headers = {
+            Accept = "application/json",
+        },
+    }, function(err, res)
+        if not vim.api.nvim_buf_is_valid(buf) then
+            return
+        end
+
+        if err then
+            render_markdown_buffer(buf, "[Web Search]", {
+                "# Web Search: " .. query,
+                "",
+                "Search failed:",
+                "",
+                "```text",
+                err.message,
+                "```",
+            })
+            return
+        end
+
+        if res.status >= 400 then
+            render_markdown_buffer(buf, "[Web Search]", {
+                "# Web Search: " .. query,
+                "",
+                "Search failed with HTTP " .. res.status .. ".",
+            })
+            return
+        end
+
+        if not res.json then
+            render_markdown_buffer(buf, "[Web Search]", {
+                "# Web Search: " .. query,
+                "",
+                "SearXNG returned a non-JSON response.",
+                "",
+                "```",
+                res.body or "",
+                "```",
+            })
+            return
+        end
+
+        render_markdown_buffer(buf, "[Web Search]", format_search_results(query, res.json))
+    end)
+end
+
+local function web_search(opts, query)
     local win, buf = open_results_window(opts and opts.smods)
+
+    -- If a query was supplied directly (e.g. from the visual-mode keymap),
+    -- skip the input prompt and run immediately.
+    if query and vim.trim(query) ~= "" then
+        query = vim.trim(query)
+        render_markdown_buffer(buf, "[Web Search]", {
+            "# Web Search: " .. query,
+            "",
+            "Searching...",
+        })
+        run_query(buf, query)
+        return
+    end
+
     render_markdown_buffer(buf, "[Web Search]", {
         "# Web Search",
         "",
         "Waiting for query...",
     })
 
-    vim.ui.input({ prompt = "Web Search: " }, function(query)
-        query = query and vim.trim(query) or ""
-        if query == "" then
+    vim.ui.input({ prompt = "Web Search: " }, function(input)
+        input = input and vim.trim(input) or ""
+        if input == "" then
             close_results_window()
             return
         end
@@ -302,63 +380,7 @@ local function web_search(opts)
             return
         end
 
-        render_markdown_buffer(buf, "[Web Search]", {
-            "# Web Search: " .. query,
-            "",
-            "Searching...",
-        })
-
-        require("micro.http").request({
-            url = SEARCH_URL,
-            query = {
-                q = query,
-                format = "json",
-            },
-            headers = {
-                Accept = "application/json",
-            },
-        }, function(err, res)
-            if not vim.api.nvim_buf_is_valid(buf) then
-                return
-            end
-
-            if err then
-                render_markdown_buffer(buf, "[Web Search]", {
-                    "# Web Search: " .. query,
-                    "",
-                    "Search failed:",
-                    "",
-                    "```text",
-                    err.message,
-                    "```",
-                })
-                return
-            end
-
-            if res.status >= 400 then
-                render_markdown_buffer(buf, "[Web Search]", {
-                    "# Web Search: " .. query,
-                    "",
-                    "Search failed with HTTP " .. res.status .. ".",
-                })
-                return
-            end
-
-            if not res.json then
-                render_markdown_buffer(buf, "[Web Search]", {
-                    "# Web Search: " .. query,
-                    "",
-                    "SearXNG returned a non-JSON response.",
-                    "",
-                    "```",
-                    res.body or "",
-                    "```",
-                })
-                return
-            end
-
-            render_markdown_buffer(buf, "[Web Search]", format_search_results(query, res.json))
-        end)
+        run_query(buf, input)
     end)
 end
 
@@ -367,3 +389,35 @@ vim.api.nvim_create_user_command("WebSearch", function(opts)
 end, { bar = true, nargs = 0 })
 
 vim.keymap.set("n", "<leader>s", "<cmd>vert WebSearch<cr>", { desc = "Web Search" })
+
+--- Grab the current visual selection as a single trimmed string.
+local function visual_selection()
+    local pos1 = vim.fn.getpos "v"
+    local pos2 = vim.fn.getpos "."
+    local start_line = math.min(pos1[2], pos2[2])
+    local end_line = math.max(pos1[2], pos2[2])
+    local start_col = math.min(pos1[3], pos2[3])
+    local end_col = math.max(pos1[3], pos2[3])
+
+    local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, false)
+    if #lines == 0 then
+        return ""
+    end
+
+    if #lines == 1 then
+        return vim.trim(lines[1]:sub(start_col, end_col))
+    end
+
+    lines[1] = lines[1]:sub(start_col)
+    lines[#lines] = lines[#lines]:sub(1, end_col)
+    return vim.trim(table.concat(lines, " "))
+end
+
+vim.keymap.set("x", "<leader>s", function()
+    local query = visual_selection()
+    if query == "" then
+        vim.notify("No text selected", vim.log.levels.WARN)
+        return
+    end
+    web_search({ smods = { vertical = true } }, query)
+end, { desc = "Web Search selection", silent = true })
