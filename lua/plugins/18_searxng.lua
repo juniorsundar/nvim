@@ -1,6 +1,23 @@
 local SEARCH_URL = "http://localhost:5340/search"
 local MAX_SEARCH_RESULTS = 10
 
+local function ensure_markdown_conceal(buf)
+    if vim.b[buf].web_search_markdown_conceal then
+        return
+    end
+
+    vim.api.nvim_buf_call(buf, function()
+        vim.cmd [[
+            syntax match WebSearchMarkdownLinkOpen /\[/ conceal
+            syntax match WebSearchMarkdownLinkMiddle /\](/ conceal
+            syntax match WebSearchMarkdownLinkClose /)/ conceal
+            syntax match WebSearchMarkdownLinkUrl /\](\zs[^)]\+\ze)/ conceal
+        ]]
+    end)
+
+    vim.b[buf].web_search_markdown_conceal = true
+end
+
 local function markdown_link_text(text)
     return tostring(text or "Untitled"):gsub("%[", "\\["):gsub("%]", "\\]")
 end
@@ -65,47 +82,78 @@ local function format_search_results(query, payload)
     return lines
 end
 
-local function open_markdown_window(title, lines)
-    local buf = vim.api.nvim_create_buf(false, true)
+local function render_markdown_buffer(buf, title, lines)
+    if not vim.api.nvim_buf_is_valid(buf) then
+        return
+    end
+
+    vim.bo[buf].modifiable = true
     vim.bo[buf].buftype = "nofile"
     vim.bo[buf].bufhidden = "wipe"
     vim.bo[buf].swapfile = false
-    vim.bo[buf].filetype = "markdown"
+    vim.bo[buf].filetype = ""
+    vim.bo[buf].syntax = "markdown"
 
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
     vim.bo[buf].modifiable = false
-
-    local width = math.min(math.floor(vim.o.columns * 0.85), 100)
-    local height = math.min(math.floor(vim.o.lines * 0.75), math.max(#lines + 2, 12))
-    local row = math.floor((vim.o.lines - height) / 2)
-    local col = math.floor((vim.o.columns - width) / 2)
-
-    local win = vim.api.nvim_open_win(buf, true, {
-        relative = "editor",
-        style = "minimal",
-        border = "rounded",
-        title = " " .. title .. " ",
-        title_pos = "center",
-        width = width,
-        height = height,
-        row = row,
-        col = col,
-    })
-
-    vim.wo[win].wrap = true
-    vim.wo[win].conceallevel = 2
+    vim.api.nvim_buf_set_name(buf, title)
+    ensure_markdown_conceal(buf)
     vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = buf, silent = true, desc = "Close search results" })
-    vim.keymap.set("n", "<Esc>", "<cmd>close<cr>", { buffer = buf, silent = true, desc = "Close search results" })
 end
 
-local function web_search()
+local function open_results_window(smods)
+    if smods and smods.tab and smods.tab >= 0 then
+        vim.cmd "tabnew"
+    else
+        local prefix = "botright"
+        if smods and smods.split == "topleft" then
+            prefix = "topleft"
+        elseif smods and smods.split == "botright" then
+            prefix = "botright"
+        end
+
+        if smods and smods.vertical then
+            vim.cmd(prefix .. " vsplit")
+        else
+            vim.cmd(prefix .. " split")
+        end
+    end
+
+    local win = vim.api.nvim_get_current_win()
+    local buf = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_win_set_buf(win, buf)
+    vim.wo[win].wrap = true
+    vim.wo[win].conceallevel = 2
+    vim.wo[win].concealcursor = "nc"
+    return win, buf
+end
+
+local function close_results_window(win)
+    if win and vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+    end
+end
+
+local function web_search(opts)
+    local win, buf = open_results_window(opts and opts.smods)
+    render_markdown_buffer(buf, "[Web Search]", {
+        "# Web Search",
+        "",
+        "Waiting for query...",
+    })
+
     vim.ui.input({ prompt = "Web Search: " }, function(query)
         query = query and vim.trim(query) or ""
         if query == "" then
+            close_results_window(win)
             return
         end
 
-        vim.notify("Searching web for: " .. query, vim.log.levels.INFO)
+        render_markdown_buffer(buf, "[Web Search]", {
+            "# Web Search: " .. query,
+            "",
+            "Searching...",
+        })
 
         require("micro.http").request({
             url = SEARCH_URL,
@@ -117,18 +165,34 @@ local function web_search()
                 Accept = "application/json",
             },
         }, function(err, res)
+            if not vim.api.nvim_buf_is_valid(buf) then
+                return
+            end
+
             if err then
-                vim.notify(err.message, vim.log.levels.ERROR)
+                render_markdown_buffer(buf, "[Web Search]", {
+                    "# Web Search: " .. query,
+                    "",
+                    "Search failed:",
+                    "",
+                    "```text",
+                    err.message,
+                    "```",
+                })
                 return
             end
 
             if res.status >= 400 then
-                vim.notify("Web search failed with HTTP " .. res.status, vim.log.levels.ERROR)
+                render_markdown_buffer(buf, "[Web Search]", {
+                    "# Web Search: " .. query,
+                    "",
+                    "Search failed with HTTP " .. res.status .. ".",
+                })
                 return
             end
 
             if not res.json then
-                open_markdown_window("Web Search", {
+                render_markdown_buffer(buf, "[Web Search]", {
                     "# Web Search: " .. query,
                     "",
                     "SearXNG returned a non-JSON response.",
@@ -140,9 +204,13 @@ local function web_search()
                 return
             end
 
-            open_markdown_window("Web Search", format_search_results(query, res.json))
+            render_markdown_buffer(buf, "[Web Search]", format_search_results(query, res.json))
         end)
     end)
 end
 
-vim.keymap.set("n", "<leader>s", web_search, { desc = "Web Search" })
+vim.api.nvim_create_user_command("WebSearch", function(opts)
+    web_search(opts)
+end, { bar = true, nargs = 0 })
+
+vim.keymap.set("n", "<leader>s", "<cmd>WebSearch<cr>", { desc = "Web Search" })
