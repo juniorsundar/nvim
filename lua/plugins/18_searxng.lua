@@ -1,21 +1,19 @@
 local SEARCH_URL = "http://localhost:5340/search"
 local MAX_SEARCH_RESULTS = 10
 
-local function ensure_markdown_conceal(buf)
-    if vim.b[buf].web_search_markdown_conceal then
-        return
+--- Tracked state for the currently open results window/buffer so that a new
+--- `WebSearch` invocation closes the previous one instead of stacking windows.
+local state = {
+    win = nil,
+    buf = nil,
+}
+
+local function close_results_window()
+    if state.win and vim.api.nvim_win_is_valid(state.win) then
+        vim.api.nvim_win_close(state.win, true)
     end
-
-    vim.api.nvim_buf_call(buf, function()
-        vim.cmd [[
-            syntax match WebSearchMarkdownLinkOpen /\[/ conceal
-            syntax match WebSearchMarkdownLinkMiddle /\](/ conceal
-            syntax match WebSearchMarkdownLinkClose /)/ conceal
-            syntax match WebSearchMarkdownLinkUrl /\](\zs[^)]\+\ze)/ conceal
-        ]]
-    end)
-
-    vim.b[buf].web_search_markdown_conceal = true
+    state.win = nil
+    state.buf = nil
 end
 
 local function markdown_link_text(text)
@@ -91,17 +89,21 @@ local function render_markdown_buffer(buf, title, lines)
     vim.bo[buf].buftype = "nofile"
     vim.bo[buf].bufhidden = "wipe"
     vim.bo[buf].swapfile = false
-    vim.bo[buf].filetype = ""
-    vim.bo[buf].syntax = "markdown"
+    -- `filetype = "markdown"` triggers the FileType autocmd in 02_treesitter.lua,
+    -- which starts the treesitter parser. The bundled markdown_inline highlight
+    -- query already conceals link brackets and the URL, so with `conceallevel=2`
+    -- a result line renders as just the title.
+    vim.bo[buf].filetype = "markdown"
 
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
     vim.bo[buf].modifiable = false
-    vim.api.nvim_buf_set_name(buf, title)
-    ensure_markdown_conceal(buf)
+    pcall(vim.api.nvim_buf_set_name, buf, title)
     vim.keymap.set("n", "q", "<cmd>close<cr>", { buffer = buf, silent = true, desc = "Close search results" })
 end
 
 local function open_results_window(smods)
+    close_results_window()
+
     if smods and smods.tab and smods.tab >= 0 then
         vim.cmd "tabnew"
     else
@@ -125,13 +127,24 @@ local function open_results_window(smods)
     vim.wo[win].wrap = true
     vim.wo[win].conceallevel = 2
     vim.wo[win].concealcursor = "nc"
-    return win, buf
-end
 
-local function close_results_window(win)
-    if win and vim.api.nvim_win_is_valid(win) then
-        vim.api.nvim_win_close(win, true)
-    end
+    state.win = win
+    state.buf = buf
+
+    -- If the buffer is wiped (e.g. user does `:bd` or closes the window), drop
+    -- the tracked state so we don't try to reuse a dead handle.
+    vim.api.nvim_create_autocmd("BufWipeout", {
+        buffer = buf,
+        once = true,
+        callback = function()
+            if state.buf == buf then
+                state.win = nil
+                state.buf = nil
+            end
+        end,
+    })
+
+    return win, buf
 end
 
 local function web_search(opts)
@@ -145,7 +158,11 @@ local function web_search(opts)
     vim.ui.input({ prompt = "Web Search: " }, function(query)
         query = query and vim.trim(query) or ""
         if query == "" then
-            close_results_window(win)
+            close_results_window()
+            return
+        end
+
+        if not vim.api.nvim_buf_is_valid(buf) then
             return
         end
 
@@ -213,4 +230,4 @@ vim.api.nvim_create_user_command("WebSearch", function(opts)
     web_search(opts)
 end, { bar = true, nargs = 0 })
 
-vim.keymap.set("n", "<leader>s", "<cmd>WebSearch<cr>", { desc = "Web Search" })
+vim.keymap.set("n", "<leader>s", "<cmd>vert WebSearch<cr>", { desc = "Web Search" })
