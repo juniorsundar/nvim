@@ -78,7 +78,7 @@ compile.setup {
             binary = "lazygit",
             command = "Lazygit",
             help_cmd = "--help",
-            keymaps = function(buf)
+            keymaps = function(_)
                 vim.cmd "startinsert"
             end,
             close_on_exit = true,
@@ -139,11 +139,11 @@ compile.setup {
             cwd = function()
                 return vim.fn.expand "%:p:h"
             end,
-            keymaps = function(_buf)
+            keymaps = function(_)
                 vim.cmd "horizontal resize"
                 vim.cmd "startinsert"
             end,
-            on_close = function(_buf)
+            on_close = function(_)
                 local chooser = _G._yazi_chooser_file
                 if not chooser then
                     return
