@@ -82,8 +82,8 @@ require("sidekick").setup {
             -- NOTE: zellij only supports `terminal`
             create = "split", ---@type "terminal"|"window"|"split"
             split = {
-                vertical = "vertical", -- vertical or horizontal split
-                size = 0.3, -- size of the split (0-1 for percentage)
+                vertical = false, -- vertical or horizontal split
+                size = 0.4, -- size of the split (0-1 for percentage)
             },
         },
         ---@type table<string, sidekick.cli.Config|{}>
