@@ -21,6 +21,7 @@ require("micro").setup {
     },
     toggle = { enabled = true },
     treesit_navigator = { enabled = true },
+    scratch = { enabled = true },
 }
 
 vim.keymap.set("n", "<leader>Lk", function()
@@ -55,3 +56,4 @@ vim.keymap.set("n", "<leader>Sl", function()
     require("micro.session").load_session()
 end, { desc = "Load session" })
 vim.keymap.set("n", "<C-w><C-f>", "<cmd>Micro follow split<cr>", { desc = "Follow Split" })
+vim.keymap.set("n", "<leader>x", "<cmd>Micro scratch<cr>", { desc = "Open Scratch Buffer" })

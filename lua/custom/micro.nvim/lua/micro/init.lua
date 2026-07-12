@@ -8,6 +8,7 @@ local defaults = {
     hover = { enabled = false },
     pack = { enabled = false },
     quickfix = { enabled = false },
+    scratch = { enabled = false },
     session = { enabled = false },
     signature = { enabled = false },
     split_suffix = { enabled = false },
