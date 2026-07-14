@@ -3,4 +3,5 @@ vim.keymap.set("n", "<tab>", "za", { noremap = false, silent = true, desc = "Exp
 
 vim.lsp.enable {
     "marksman",
+    "markdown_oxide",
 }
