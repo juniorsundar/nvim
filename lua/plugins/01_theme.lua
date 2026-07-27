@@ -29,6 +29,9 @@ require("modus-themes").setup {
     --- Refer to `extras/lua/modus_operandi.lua` or `extras/lua/modus_vivendi.lua` for the Highlights and ColorScheme table
     ---@param highlights Highlights
     ---@param colors ColorScheme
-    on_highlights = function(highlights, colors) end,
+    on_highlights = function(highlights, colors)
+        highlights["CursorLine"] = { fg = colors.none, bg = colors.none }
+        highlights["CursorLineNr"] = { fg = colors.fg_active, bg = colors.none, bold = true }
+    end,
 }
 vim.cmd [[colorscheme modus]]
