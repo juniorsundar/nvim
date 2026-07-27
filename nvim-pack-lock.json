@@ -9,6 +9,10 @@
       "rev": "619363c30309d29ffa631e67c8183f2a72caa373",
       "src": "https://github.com/stevearc/conform.nvim"
     },
+    "cursor-dark.nvim": {
+      "rev": "58820a92c44a842a43bad0acc09542b8a8982470",
+      "src": "https://github.com/ydkulks/cursor-dark.nvim"
+    },
     "doom-one.nvim": {
       "rev": "71b754cd3866210ced8a9cceef9087cc59eb6eca",
       "src": "https://github.com/juniorsundar/doom-one.nvim"
