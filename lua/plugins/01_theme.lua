@@ -1,36 +1,34 @@
-require("micro.pack").add "gh:juniorsundar/doom-one.nvim"
--- Add color to cursor
-vim.g.doom_one_cursor_coloring = false
--- Set :terminal colors
-vim.g.doom_one_terminal_colors = false
--- Enable italic comments
-vim.g.doom_one_italic_comments = true
--- Enable TS support
-vim.g.doom_one_enable_treesitter = true
--- Color whole diagnostic text or only underline
-vim.g.doom_one_diagnostics_text_color = false
--- Enable transparent background
-vim.g.doom_one_transparent_background = false
+require("micro.pack").add "gh:miikanissi/modus-themes.nvim"
+require("modus-themes").setup {
+    -- Theme comes in two styles `modus_operandi` and `modus_vivendi`
+    -- `auto` will automatically set style based on background set with vim.o.background
+    style = "auto",
+    variants = "default", -- Theme comes in four variants `default`, `tinted`, `deuteranopia`, and `tritanopia`
+    transparent = false, -- Transparent background (as supported by the terminal)
+    dim_inactive = false, -- "non-current" windows are dimmed
+    hide_inactive_statusline = true, -- Hide statuslines on inactive windows. Works with the standard **StatusLine**, **LuaLine** and **mini.statusline**
+    line_nr_column_background = false, -- Distinct background colors in line number column. `false` will disable background color and fallback to Normal background
+    sign_column_background = false, -- Distinct background colors in sign column. `false` will disable background color and fallback to Normal background
+    styles = {
+        -- Style to be applied to different syntax groups
+        -- Value is any valid attr-list value for `:help nvim_set_hl`
+        comments = { italic = true },
+        keywords = { italic = true },
+        functions = {},
+        variables = {},
+    },
 
--- Pumblend transparency
-vim.g.doom_one_pumblend_enable = false
-vim.g.doom_one_pumblend_transparency = 0
+    --- You can override specific color groups to use other groups or a hex color
+    --- Function will be called with a ColorScheme table
+    --- Refer to `extras/lua/modus_operandi.lua` or `extras/lua/modus_vivendi.lua` for the ColorScheme table
+    ---@param colors ColorScheme
+    on_colors = function(colors) end,
 
--- Plugins integration
-vim.g.doom_one_plugin_neorg = true
-vim.g.doom_one_plugin_barbar = false
-vim.g.doom_one_plugin_telescope = false
-vim.g.doom_one_plugin_neogit = false
-vim.g.doom_one_plugin_nvim_tree = true
-vim.g.doom_one_plugin_dashboard = true
-vim.g.doom_one_plugin_startify = true
-vim.g.doom_one_plugin_whichkey = true
-vim.g.doom_one_plugin_snacks = true
-vim.g.doom_one_plugin_blink = true
-vim.g.doom_one_plugin_nvim_cmp = true
-vim.g.doom_one_plugin_indent_blankline = true
-vim.g.doom_one_plugin_vim_illuminate = true
-vim.g.doom_one_plugin_lspsaga = false
-vim.g.doom_one_plugin_multicursor = true
-
-vim.cmd "colorscheme doom-one"
+    --- You can override specific highlights to use other groups or a hex color
+    --- Function will be called with a Highlights and ColorScheme table
+    --- Refer to `extras/lua/modus_operandi.lua` or `extras/lua/modus_vivendi.lua` for the Highlights and ColorScheme table
+    ---@param highlights Highlights
+    ---@param colors ColorScheme
+    on_highlights = function(highlights, colors) end,
+}
+vim.cmd [[colorscheme modus]]
