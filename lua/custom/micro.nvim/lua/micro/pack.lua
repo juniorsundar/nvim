@@ -312,8 +312,7 @@ function M.setup(opts)
     M.config = vim.tbl_deep_extend("force", M.config, opts)
 
     local augroup = vim.api.nvim_create_augroup("MicroPack", { clear = true })
-    vim.api.nvim_create_autocmd("User", {
-        pattern = "PackChanged",
+    vim.api.nvim_create_autocmd("PackChanged", {
         group = augroup,
         callback = function(args)
             local data = args.data or {}
