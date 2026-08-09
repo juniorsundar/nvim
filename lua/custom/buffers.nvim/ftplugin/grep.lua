@@ -16,6 +16,14 @@ vim.keymap.set("n", "<CR>", function()
     require("buffers.grep").nav_to_match()
 end, { buffer = bufnr, silent = true, desc = "Jump to grep match" })
 
+vim.keymap.set("n", "<Tab>", function()
+    require("buffers.grep").expand_context()
+end, { buffer = bufnr, silent = true, desc = "Expand grep context" })
+
+vim.keymap.set("n", "<S-Tab>", function()
+    require("buffers.grep").collapse_context()
+end, { buffer = bufnr, silent = true, desc = "Collapse grep context" })
+
 vim.keymap.set("n", "<C-c><C-c>", function()
     require("buffers.grep").apply_edits "direct"
 end, { buffer = bufnr, silent = true, desc = "Apply grep edits (Direct)" })
