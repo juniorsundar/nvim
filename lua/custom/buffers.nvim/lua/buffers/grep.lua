@@ -342,6 +342,7 @@ function M.highlight_buffer(bufnr)
     M._programmatic[bufnr] = true
 
     local new_lines, metas = {}, {}
+    local file_cache = {}
     M.buffer_data[bufnr] = {}
     M.row_index[bufnr] = {}
     api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
@@ -351,12 +352,22 @@ function M.highlight_buffer(bufnr)
     for _, line in ipairs(lines) do
         local parsed = parse_line(line)
         if parsed then
-            table.insert(new_lines, parsed.text)
+            local text = parsed.text
+            if vim.fn.filereadable(parsed.filename) == 1 then
+                if not file_cache[parsed.filename] then
+                    file_cache[parsed.filename] = vim.fn.readfile(parsed.filename)
+                end
+                local disk_line = file_cache[parsed.filename][parsed.lnum]
+                if disk_line and disk_line ~= text then
+                    text = disk_line
+                end
+            end
+            table.insert(new_lines, text)
             table.insert(metas, {
                 filename = parsed.filename,
                 lnum = parsed.lnum,
                 col = parsed.col,
-                original_text = parsed.text,
+                original_text = text,
                 dir_len = parsed.dir_len,
                 prefix_str = parsed.prefix_str,
                 context = {},

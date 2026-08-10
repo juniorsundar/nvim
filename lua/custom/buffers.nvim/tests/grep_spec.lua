@@ -979,6 +979,43 @@ describe("buffers.grep context", function()
         end
     end)
 
+    it("reconciles stale grep text against disk on initial transform", function()
+        local path = write_fixture { "one", "two-disk", "three" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":2:1:two-stale" })
+        table.insert(buffers, buf)
+        local match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+        assert.are.equal("two-disk", api.nvim_buf_get_lines(buf, match_row, match_row + 1, false)[1])
+        local _, meta = next(grep.buffer_data[buf])
+        assert.are.equal("two-disk", meta.original_text)
+    end)
+
+    it("keeps parsed text when the source file is unreadable", function()
+        local buf = make_grep_buffer("/nonexistent/path/file.lua", { "/nonexistent/path/file.lua:2:1:two-stale" })
+        table.insert(buffers, buf)
+        local match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+        assert.are.equal("two-stale", api.nvim_buf_get_lines(buf, match_row, match_row + 1, false)[1])
+        local _, meta = next(grep.buffer_data[buf])
+        assert.are.equal("two-stale", meta.original_text)
+    end)
+
+    it("leaves matching grep text unchanged on initial transform", function()
+        local path = write_fixture { "one", "two", "three" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":2:1:two" })
+        table.insert(buffers, buf)
+        local match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+        assert.are.equal("two", api.nvim_buf_get_lines(buf, match_row, match_row + 1, false)[1])
+        local _, meta = next(grep.buffer_data[buf])
+        assert.are.equal("two", meta.original_text)
+    end)
+
     it("show_help exists and opens a floating window without error", function()
         local path = write_fixture { "one", "two" }
         table.insert(files, path)
