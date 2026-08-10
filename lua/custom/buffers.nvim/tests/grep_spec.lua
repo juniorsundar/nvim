@@ -74,10 +74,7 @@ describe("buffers.grep context", function()
 
         assert.is_true(grep.expand_context(buf, match_row))
         local lines = api.nvim_buf_get_lines(buf, 0, -1, false)
-        assert.are.same(
-            { "one", "two", "three", "four", "five" },
-            { lines[11], lines[12], lines[13], lines[14], lines[15] }
-        )
+        assert.are.same({ "one", "two", "three", "four", "five" }, { lines[1], lines[2], lines[3], lines[4], lines[5] })
         local _, meta = next(grep.buffer_data[buf])
         assert.are.equal(1, meta.expand_up)
         assert.are.equal(3, meta.expand_down)
@@ -94,7 +91,7 @@ describe("buffers.grep context", function()
         assert.are.same({}, meta.context)
         assert.are.equal(0, meta.expand_up)
         assert.are.equal(0, meta.expand_down)
-        assert.are.same({ "two" }, api.nvim_buf_get_lines(buf, 10, -1, false))
+        assert.are.same({ "two" }, api.nvim_buf_get_lines(buf, 0, -1, false))
     end)
 
     it("retains shared rows when collapsing an overlapping context block", function()
@@ -458,7 +455,7 @@ describe("buffers.grep context", function()
         -- Expand context so there is context to collapse.
         assert.is_true(grep.expand_context(buf, match_row))
         local match_count = 1
-        local expected_after_collapse = 10 + match_count
+        local expected_after_collapse = match_count
 
         -- Simulate a user inserting a whole line, then fire TextChanged
         -- as Neovim would for a user-initiated change.
@@ -484,7 +481,7 @@ describe("buffers.grep context", function()
         -- Expand context so there is context to collapse.
         assert.is_true(grep.expand_context(buf, match_row))
         local match_count = 1
-        local expected_after_collapse = 10 + match_count
+        local expected_after_collapse = match_count
 
         local lines_before = api.nvim_buf_get_lines(buf, 0, -1, false)
         api.nvim_buf_set_lines(buf, match_row, match_row + 1, false, {})
@@ -688,7 +685,7 @@ describe("buffers.grep context", function()
         api.nvim_exec_autocmds("TextChangedI", { buffer = buf })
 
         -- After the rejected edit, all context is collapsed.
-        local expected_after_collapse = 10 + 1
+        local expected_after_collapse = 1
         assert.are.equal(expected_after_collapse, api.nvim_buf_line_count(buf))
         for _, meta in pairs(grep.buffer_data[buf]) do
             assert.are.same({}, meta.context)
@@ -697,6 +694,232 @@ describe("buffers.grep context", function()
         -- The guard must have returned to Normal mode.
         assert.are.not_equal("i", vim.fn.mode())
         assert.are.not_equal("R", vim.fn.mode())
+    end)
+
+    it("toggle_context expands a collapsed match and collapses an expanded match", function()
+        local path = write_fixture { "one", "two", "three", "four", "five", "six", "seven", "eight" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":4:1:four" })
+        table.insert(buffers, buf)
+        local match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+
+        -- Match starts collapsed: toggle expands it.
+        assert.is_true(grep.toggle_context(buf, match_row))
+        local _, meta = next(grep.buffer_data[buf])
+        assert.is_true(#meta.context > 0)
+        assert.are.equal(3, meta.expand_up)
+        assert.are.equal(3, meta.expand_down)
+
+        -- Match now has context: toggle collapses it.
+        match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+        assert.is_true(grep.toggle_context(buf, match_row))
+        _, meta = next(grep.buffer_data[buf])
+        assert.are.same({}, meta.context)
+        assert.are.equal(0, meta.expand_up)
+        assert.are.equal(0, meta.expand_down)
+    end)
+
+    it("toggle_context collapses a match expanded beyond ±3", function()
+        local path =
+            write_fixture { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":6:1:six" })
+        table.insert(buffers, buf)
+        local match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+
+        -- Grow twice to reach ±6.
+        assert.is_true(grep.grow_context(buf, match_row))
+        assert.is_true(grep.grow_context(buf, match_row))
+        local _, meta = next(grep.buffer_data[buf])
+        assert.are.equal(5, meta.expand_up)
+        assert.are.equal(5, meta.expand_down)
+        assert.is_true(#meta.context > 0)
+
+        -- Toggle collapses fully to 0 even though it was expanded beyond ±3.
+        match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+        assert.is_true(grep.toggle_context(buf, match_row))
+        _, meta = next(grep.buffer_data[buf])
+        assert.are.same({}, meta.context)
+        assert.are.equal(0, meta.expand_up)
+        assert.are.equal(0, meta.expand_down)
+    end)
+
+    it("grow_context expands a collapsed match and grows an expanded match", function()
+        local path = write_fixture { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":5:1:five" })
+        table.insert(buffers, buf)
+        local match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+
+        -- Collapsed: grow expands to ±3.
+        assert.is_true(grep.grow_context(buf, match_row))
+        local _, meta = next(grep.buffer_data[buf])
+        assert.are.equal(3, meta.expand_up)
+        assert.are.equal(3, meta.expand_down)
+        assert.are.equal(6, #meta.context)
+
+        -- Already expanded: grow grows to ±6.
+        match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+        assert.is_true(grep.grow_context(buf, match_row))
+        _, meta = next(grep.buffer_data[buf])
+        assert.are.equal(4, meta.expand_up)
+        assert.are.equal(5, meta.expand_down)
+        assert.are.equal(9, #meta.context)
+    end)
+
+    it("shrink_context shrinks an expanded window and collapses to 0", function()
+        local path =
+            write_fixture { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":6:1:six" })
+        table.insert(buffers, buf)
+        local match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+
+        -- Grow twice to ±6 (clamped by file edges to ±5).
+        assert.is_true(grep.grow_context(buf, match_row))
+        assert.is_true(grep.grow_context(buf, match_row))
+        local _, meta = next(grep.buffer_data[buf])
+        assert.are.equal(5, meta.expand_up)
+        assert.are.equal(5, meta.expand_down)
+
+        -- Shrink by ±3: should go to ±2 (clamped).
+        match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+        assert.is_true(grep.shrink_context(buf, match_row))
+        _, meta = next(grep.buffer_data[buf])
+        assert.are.equal(2, meta.expand_up)
+        assert.are.equal(2, meta.expand_down)
+
+        -- The outermost rows (lnum 1 and lnum 11) should no longer be shown.
+        local shown_lnums = {}
+        for row, location in pairs(grep.row_index[buf]) do
+            local m = grep.buffer_data[buf][location.match_id]
+            local lnum = location.kind == "match" and m.lnum or m.context[location.context_index].lnum
+            shown_lnums[lnum] = true
+        end
+        assert.is_nil(shown_lnums[1])
+        assert.is_nil(shown_lnums[11])
+        assert.is.truthy(shown_lnums[4])
+        assert.is.truthy(shown_lnums[8])
+
+        -- Shrink again: ±2 - 3 = 0, fully collapsed.
+        match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+        assert.is_true(grep.shrink_context(buf, match_row))
+        _, meta = next(grep.buffer_data[buf])
+        assert.are.same({}, meta.context)
+        assert.are.equal(0, meta.expand_up)
+        assert.are.equal(0, meta.expand_down)
+    end)
+
+    it("shrink_context is a no-op on a collapsed match", function()
+        local path = write_fixture { "one", "two", "three", "four", "five", "six", "seven" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":4:1:four" })
+        table.insert(buffers, buf)
+        local match_row = row_for(buf, function(location)
+            return location.kind == "match"
+        end)
+
+        assert.is_false(grep.shrink_context(buf, match_row))
+        local _, meta = next(grep.buffer_data[buf])
+        assert.are.same({}, meta.context)
+        assert.are.equal(0, meta.expand_up)
+        assert.are.equal(0, meta.expand_down)
+    end)
+
+    it("shrink_context removes only rows not covered by another expanded match", function()
+        local path = write_fixture { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":4:1:four", path .. ":6:1:six" })
+        table.insert(buffers, buf)
+
+        local first_match_row = row_for(buf, function(location)
+            return location.kind == "match" and grep.buffer_data[buf][location.match_id].lnum == 4
+        end)
+        assert.is_true(grep.expand_context(buf, first_match_row))
+        -- Re-fetch second match row AFTER first expansion (buffer layout changed).
+        local second_match_row = row_for(buf, function(location)
+            return location.kind == "match" and grep.buffer_data[buf][location.match_id].lnum == 6
+        end)
+        assert.is_true(grep.expand_context(buf, second_match_row))
+
+        -- Shrink match 4 by ±3: from ±3 to ±0 (collapse). Rows shared
+        -- with match 6 (e.g. lnum 5, 6, 7) must NOT be deleted.
+        first_match_row = row_for(buf, function(location)
+            return location.kind == "match" and grep.buffer_data[buf][location.match_id].lnum == 4
+        end)
+        assert.is_true(grep.shrink_context(buf, first_match_row))
+
+        local first_meta = nil
+        for _, m in pairs(grep.buffer_data[buf]) do
+            if m.lnum == 4 then
+                first_meta = m
+            end
+        end
+        assert.are.same({}, first_meta.context)
+        assert.are.equal(0, first_meta.expand_up)
+        assert.are.equal(0, first_meta.expand_down)
+
+        -- Rows covered by match 6 (lnums 3–9) must still be shown.
+        local shown_lnums = {}
+        for row, location in pairs(grep.row_index[buf]) do
+            local m = grep.buffer_data[buf][location.match_id]
+            local lnum = location.kind == "match" and m.lnum or m.context[location.context_index].lnum
+            shown_lnums[lnum] = true
+        end
+        assert.is.truthy(shown_lnums[3])
+        assert.is.truthy(shown_lnums[5])
+        assert.is.truthy(shown_lnums[6])
+        assert.is.truthy(shown_lnums[7])
+        assert.is.truthy(shown_lnums[9])
+        -- Row 1 (only covered by match 4's old context) should be gone.
+        assert.is_nil(shown_lnums[1])
+    end)
+
+    it("expand_all grows every match and collapse_all collapses every match", function()
+        local path = write_fixture { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":3:1:three", path .. ":8:1:eight" })
+        table.insert(buffers, buf)
+
+        -- Expand all: both matches should grow.
+        grep.expand_all(buf)
+        local metas = vim.tbl_values(grep.buffer_data[buf])
+        table.sort(metas, function(a, b)
+            return a.lnum < b.lnum
+        end)
+        assert.is_true(#metas[1].context > 0)
+        assert.is_true(#metas[2].context > 0)
+
+        -- Collapse all: both matches should lose context.
+        grep.collapse_all(buf)
+        metas = vim.tbl_values(grep.buffer_data[buf])
+        table.sort(metas, function(a, b)
+            return a.lnum < b.lnum
+        end)
+        assert.are.same({}, metas[1].context)
+        assert.are.same({}, metas[2].context)
+        assert.are.equal(0, metas[1].expand_up)
+        assert.are.equal(0, metas[1].expand_down)
+        assert.are.equal(0, metas[2].expand_up)
+        assert.are.equal(0, metas[2].expand_down)
     end)
 
     it("keeps same-line multi-match anchors as distinct rows and allows in-place edits", function()
@@ -711,8 +934,8 @@ describe("buffers.grep context", function()
         table.insert(buffers, buf)
 
         -- expected_line_count must equal the actual buffer line count:
-        -- HEADER_LINES (10) + 2 match anchors = 12.
-        assert.are.equal(12, grep.expected_line_count[buf])
+        -- 2 match anchors = 2.
+        assert.are.equal(2, grep.expected_line_count[buf])
         assert.are.equal(grep.expected_line_count[buf], api.nvim_buf_line_count(buf))
 
         -- Both match anchors must be distinct rows with distinct extmarks.
@@ -754,5 +977,17 @@ describe("buffers.grep context", function()
         for _, meta in pairs(grep.buffer_data[buf]) do
             assert.are.same({}, meta.context)
         end
+    end)
+
+    it("show_help exists and opens a floating window without error", function()
+        local path = write_fixture { "one", "two" }
+        table.insert(files, path)
+        local buf = make_grep_buffer(path, { path .. ":2:1:two" })
+        table.insert(buffers, buf)
+
+        assert.is_true(type(grep.show_help) == "function")
+        local win = grep.show_help(buf)
+        assert.is_true(api.nvim_win_is_valid(win))
+        api.nvim_win_close(win, true)
     end)
 end)

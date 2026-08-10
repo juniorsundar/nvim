@@ -2,20 +2,6 @@ local M = {}
 
 local api = vim.api
 local EXPAND_STEP = 3
-local HEADER_LINES = 10
-local HEADER_TEXT = {
-    "# GREP EDIT BUFFER",
-    "# ------------------",
-    "# <CR>        -> Jump to shown line",
-    "# <Tab>       -> Expand context (+3 each side)",
-    "# <S-Tab>     -> Collapse context",
-    "# <C-c><C-c>  -> Apply edits (Direct)",
-    "# <C-c><C-s>  -> Apply edits (Conflict Markers)",
-    "# <C-c><C-r>  -> Refresh content from disk",
-    "# q           -> Kill buffer",
-    "",
-}
-assert(#HEADER_TEXT == HEADER_LINES, "header line count mismatch")
 
 --- Set during programmatic line-count changes so the structural-edit
 --- guard does not treat them as user edits.
@@ -324,7 +310,7 @@ local function refresh_views(bufnr)
     M.rebuild_row_index(bufnr)
     render_frames(bufnr)
     M.refresh_virt_text(bufnr)
-    M.expected_line_count[bufnr] = HEADER_LINES + #shown_source_rows(bufnr)
+    M.expected_line_count[bufnr] = #shown_source_rows(bufnr)
     M._programmatic[bufnr] = false
 end
 
@@ -354,9 +340,8 @@ function M.highlight_buffer(bufnr)
 
     vim.b[bufnr].grep_processed = true
     M._programmatic[bufnr] = true
-    local header = HEADER_TEXT
 
-    local new_lines, metas = vim.deepcopy(header), {}
+    local new_lines, metas = {}, {}
     M.buffer_data[bufnr] = {}
     M.row_index[bufnr] = {}
     api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
@@ -387,8 +372,9 @@ function M.highlight_buffer(bufnr)
     api.nvim_buf_set_lines(bufnr, 0, -1, false, new_lines)
     for i, meta in ipairs(metas) do
         if meta then
-            local id = api.nvim_buf_set_extmark(bufnr, ns_id, HEADER_LINES + i - 1, 0, {})
-            meta.buffer_row = HEADER_LINES + i - 1
+            local row = i - 1
+            local id = api.nvim_buf_set_extmark(bufnr, ns_id, row, 0, {})
+            meta.buffer_row = row
             M.buffer_data[bufnr][id] = meta
         end
     end
@@ -574,8 +560,8 @@ local function reorder_buffer(bufnr)
         return a.kind == "match"
     end)
 
-    -- Build new buffer lines: header + sorted source rows.
-    local new_lines = vim.deepcopy(HEADER_TEXT)
+    -- Build new buffer lines: sorted source rows only.
+    local new_lines = {}
     for _, source in ipairs(source_rows) do
         local text = api.nvim_buf_get_lines(bufnr, source.row, source.row + 1, false)[1]
         table.insert(new_lines, text)
@@ -592,7 +578,7 @@ local function reorder_buffer(bufnr)
     for i, source in ipairs(source_rows) do
         local key = source.filename .. "\0" .. source.lnum
         row_lookup[key] = row_lookup[key] or {}
-        table.insert(row_lookup[key], HEADER_LINES + i - 1)
+        table.insert(row_lookup[key], i - 1)
     end
 
     -- Update buffer_row for all matches. Each match anchor gets its
@@ -771,6 +757,134 @@ function M.collapse_context(bufnr, row)
         pcall(api.nvim_win_set_cursor, 0, { anchor_row + 1, 0 })
     end
     return true
+end
+
+---Shrink the owning match's window by ±3. Context entries that fall
+---outside the new narrower window are removed; physical rows are only
+---deleted when no OTHER expanded match still covers them.
+---@param bufnr? integer
+---@param row? integer zero-based buffer row; defaults to cursor
+function M.shrink_context(bufnr, row)
+    bufnr = bufnr or api.nvim_get_current_buf()
+    local location = current_location(bufnr, row)
+    if not location then
+        vim.notify("No grep result on this line", vim.log.levels.WARN)
+        return false
+    end
+
+    local meta = location.meta
+    -- Guard: if there is no context, there is nothing to shrink.
+    if #(meta.context or {}) == 0 then
+        return false
+    end
+
+    M._programmatic[bufnr] = true
+
+    local target_up = math.max(0, meta.expand_up - EXPAND_STEP)
+    local target_down = math.max(0, meta.expand_down - EXPAND_STEP)
+
+    -- Determine which context entries fall outside the new window.
+    local keep = {}
+    local remove = {}
+    for _, entry in ipairs(meta.context) do
+        if entry.lnum >= meta.lnum - target_up and entry.lnum <= meta.lnum + target_down then
+            table.insert(keep, entry)
+        else
+            table.insert(remove, entry)
+        end
+    end
+
+    -- Build the set of physical rows still covered by ANY OTHER expanded
+    -- match (excluding this one), so we don't delete a row another match
+    -- still needs. Then add back this match's kept entries.
+    local covered_rows = {}
+    for id, other_meta in pairs(M.buffer_data[bufnr] or {}) do
+        if id ~= location.match_id then
+            covered_rows[other_meta.buffer_row] = true
+            for _, entry in ipairs(other_meta.context or {}) do
+                covered_rows[context_row(bufnr, entry)] = true
+            end
+        end
+    end
+    for _, entry in ipairs(keep) do
+        covered_rows[context_row(bufnr, entry)] = true
+    end
+
+    -- Collect physical rows to delete: removed entries not covered by anyone.
+    local rows_to_delete = {}
+    for _, entry in ipairs(remove) do
+        local r = context_row(bufnr, entry)
+        if not covered_rows[r] then
+            table.insert(rows_to_delete, r)
+        end
+    end
+    table.sort(rows_to_delete, function(a, b)
+        return a > b
+    end)
+
+    -- Update metadata before deleting rows so shift_rows works correctly.
+    meta.context = keep
+    meta.expand_up = target_up
+    meta.expand_down = target_down
+
+    for _, entry_row in ipairs(rows_to_delete) do
+        api.nvim_buf_set_lines(bufnr, entry_row, entry_row + 1, false, {})
+        shift_rows(bufnr, entry_row + 1, -1)
+    end
+
+    reorder_buffer(bufnr)
+    refresh_views(bufnr)
+
+    local anchor_row = match_row(bufnr, location.match_id)
+    if anchor_row and api.nvim_get_current_buf() == bufnr then
+        pcall(api.nvim_win_set_cursor, 0, { anchor_row + 1, 0 })
+    end
+    return true
+end
+
+---Toggle the owning match's context: expand if collapsed, collapse if expanded.
+---@param bufnr? integer
+---@param row? integer zero-based buffer row; defaults to cursor
+function M.toggle_context(bufnr, row)
+    bufnr = bufnr or api.nvim_get_current_buf()
+    local location = current_location(bufnr, row)
+    if not location then
+        vim.notify("No grep result on this line", vim.log.levels.WARN)
+        return false
+    end
+    local meta = location.meta
+    if #(meta.context or {}) > 0 then
+        return M.collapse_context(bufnr, row)
+    else
+        return M.expand_context(bufnr, row)
+    end
+end
+
+---Alias for expand_context: grow the owning match's window by ±3.
+M.grow_context = M.expand_context
+
+---Expand context on every match in the buffer (grow all by ±3).
+---@param bufnr? integer
+function M.expand_all(bufnr)
+    bufnr = bufnr or api.nvim_get_current_buf()
+    for _, extmark in ipairs(match_extmarks(bufnr)) do
+        local meta = M.buffer_data[bufnr][extmark[1]]
+        if meta then
+            M.expand_context(bufnr, meta.buffer_row)
+        end
+    end
+end
+
+---Collapse context on every match that has context.
+---@param bufnr? integer
+function M.collapse_all(bufnr)
+    bufnr = bufnr or api.nvim_get_current_buf()
+    for _, extmark in ipairs(match_extmarks(bufnr)) do
+        local meta = M.buffer_data[bufnr][extmark[1]]
+        if meta and #(meta.context or {}) > 0 then
+            M.collapse_context(bufnr, meta.buffer_row)
+        end
+    end
 end
 
 ---Navigate from a match or context row to its source line.
@@ -986,8 +1100,8 @@ function M._guard_callback(bufnr)
         mm.meta.expand_down = 0
     end
 
-    -- Rebuild buffer lines: header + bare match lines.
-    local new_lines = vim.deepcopy(HEADER_TEXT)
+    -- Rebuild buffer lines: bare match lines only.
+    local new_lines = {}
     for _, mm in ipairs(match_metas) do
         table.insert(new_lines, mm.meta.original_text)
     end
@@ -997,7 +1111,7 @@ function M._guard_callback(bufnr)
     api.nvim_buf_clear_namespace(bufnr, frame_ns_id, 0, -1)
     api.nvim_buf_clear_namespace(bufnr, visual_ns_id, 0, -1)
     for i, mm in ipairs(match_metas) do
-        local row = HEADER_LINES + i - 1
+        local row = i - 1
         api.nvim_buf_set_extmark(bufnr, ns_id, row, 0, { id = mm.id })
         mm.meta.buffer_row = row
     end
@@ -1027,6 +1141,80 @@ function M._setup_guard(bufnr)
             M._guard_callback(bufnr)
         end,
     })
+end
+
+---Display a floating window with the keymap reference for the grep buffer.
+---Closes on any keypress.
+---@param bufnr? integer grep buffer to anchor the floating window over; defaults to current
+function M.show_help(bufnr)
+    bufnr = bufnr or api.nvim_get_current_buf()
+
+    local help_lines = {
+        "GREP BUFFER KEYMAPS",
+        "──────────────────────",
+        "<CR>        Jump to grep match",
+        "za          Toggle grep context",
+        "zA          Toggle grep context",
+        "z+          Grow grep context (+3)",
+        "z-          Shrink grep context (-3)",
+        "zr          Expand all grep context",
+        "zR          Expand all grep context",
+        "zm          Collapse all grep context",
+        "zM          Collapse all grep context",
+        "<C-c><C-c>  Apply grep edits (Direct)",
+        "<C-c><C-s>  Apply grep edits (Conflict Markers)",
+        "<C-c><C-r>  Refresh content from disk",
+        "q           Kill buffer",
+        "g?          Show this help",
+    }
+
+    local width = 0
+    for _, line in ipairs(help_lines) do
+        width = math.max(width, #line)
+    end
+    local height = #help_lines
+    local row = math.floor((vim.o.lines - height) / 2)
+    local col = math.floor((vim.o.columns - width) / 2)
+
+    local help_buf = api.nvim_create_buf(false, true)
+    api.nvim_buf_set_lines(help_buf, 0, -1, false, help_lines)
+    vim.bo[help_buf].bufhidden = "wipe"
+
+    local float_win = api.nvim_open_win(help_buf, false, {
+        relative = "editor",
+        row = row,
+        col = col,
+        width = width,
+        height = height,
+        style = "minimal",
+        border = "rounded",
+        title = " GREP BUFFER HELP ",
+        title_pos = "center",
+        zindex = 100,
+    })
+
+    local function close()
+        if api.nvim_win_is_valid(float_win) then
+            api.nvim_win_close(float_win, true)
+        end
+    end
+
+    -- Close the floating window on common keys.
+    for _, key in ipairs { "<Esc>", "<CR>", "<Space>", "q", "g?" } do
+        vim.keymap.set("n", key, close, { buffer = help_buf, silent = true, nowait = true })
+    end
+
+    -- Close when leaving the window (clicking elsewhere, switching buffer, etc.).
+    api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
+        buffer = help_buf,
+        once = true,
+        callback = close,
+    })
+
+    -- Focus the floating window so its keymaps take effect.
+    api.nvim_set_current_win(float_win)
+
+    return float_win
 end
 
 return M
