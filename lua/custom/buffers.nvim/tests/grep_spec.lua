@@ -221,8 +221,16 @@ describe("buffers.grep context", function()
                 return chunk[1]
             end, vim.list_slice(header, 2, #header - 1)))
         )
-        assert.is_true(header[#header][1]:match "^ " .. string.rep("─", 80) ~= nil)
-        assert.are.equal("└" .. string.rep("─", 82), frames[2][4].virt_lines[1][1][1])
+        -- Top and bottom borders must be equal display width (filename-dependent dash count).
+        -- Use display width, not byte length, since box-drawing chars are multibyte.
+        local bottom = frames[2][4].virt_lines[1][1][1]
+        local top_chunks = frames[1][4].virt_lines[1]
+        local top_width = 0
+        for _, chunk in ipairs(top_chunks) do
+            top_width = top_width + vim.api.nvim_strwidth(chunk[1])
+        end
+        assert.are.equal(vim.api.nvim_strwidth(bottom), top_width)
+        assert.are.equal("└" .. string.rep("─", 82), bottom)
 
         grep.collapse_context(buf, match_row)
         assert.are.equal(0, #api.nvim_buf_get_extmarks(buf, frame_ns, 0, -1, {}))

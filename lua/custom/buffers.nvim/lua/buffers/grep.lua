@@ -1090,7 +1090,7 @@ function M._guard_callback(bufnr)
         return
     end
 
-    -- Rebuild the buffer to bare match lines: header + one line per
+    -- Rebuild the buffer to bare match lines: one line per
     -- match (using original_text for a known-consistent state).
     M._programmatic[bufnr] = true
 
