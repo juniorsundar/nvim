@@ -1,20 +1,19 @@
-require("micro.pack").add { src = "gh:saghen/blink.cmp", version = "v1.10.2" }
+require("micro.pack").add { src = "gh:saghen/blink.cmp" }
+require("micro.pack").add { src = "gh:saghen/blink.lib" }
 
 vim.api.nvim_create_autocmd({ "CmdlineEnter", "LspAttach" }, {
     pattern = "*",
     once = true,
     callback = function()
-        -- build = (vim.fn.executable "nix" == 1) and "nix run .#build-plugin" or "cargo build --release",
+        require("blink.cmp").build():pwait()
+
         require("blink.cmp").setup {
             -- 'default' for mappings similar to built-in completion
             -- 'super-tab' for mappings similar to vscode (tab to accept, arrow keys to navigate)
             -- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
             -- See the full "keymap" documentation for information on defining your own keymap.
             fuzzy = {
-                implementation = "prefer_rust",
-                prebuilt_binaries = {
-                    download = true,
-                },
+                implementation = "rust",
             },
             keymap = {
                 preset = "enter",
