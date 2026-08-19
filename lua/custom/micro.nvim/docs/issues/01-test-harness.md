@@ -6,7 +6,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] A `tests/` directory exists under `micro.nvim` with a `minimal_init.lua` that boots plenary (cloning it if absent, like `refer.nvim/tests/minimal_init.lua`) and runs `plenary.busted`.
-- [ ] A trivial spec file runs and passes under the harness (e.g. asserting `require("micro.pack")` loads).
-- [ ] A test demonstrates that `vim.pack.get` can be stubbed (e.g. via `luassert.stub`) and the stub is observed by code under test, proving the seam is usable for later gate tests.
-- [ ] Running the suite headless exits green.
+- [X] A `tests/` directory exists under `micro.nvim` with a `minimal_init.lua` that boots plenary (cloning it if absent, like `refer.nvim/tests/minimal_init.lua`) and runs `plenary.busted`.
+- [X] A trivial spec file runs and passes under the harness (e.g. asserting `require("micro.pack")` loads).
+- [X] A test demonstrates that `vim.pack.get` can be stubbed (e.g. via `luassert.stub`) and the stub is observed by code under test, proving the seam is usable for later gate tests.
+- [X] Running the suite headless exits green.

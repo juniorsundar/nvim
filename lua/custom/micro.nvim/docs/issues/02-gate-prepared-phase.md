@@ -6,14 +6,14 @@
 
 **Status:** ready-for-agent
 
-- [ ] Calling `M.add` with a spec carrying a gate field creates a gate for that plugin; a spec without gate fields creates no gate and behaves exactly as today.
-- [ ] `M.is_prepared(name)` returns `false` before prepare, `true` after a synchronous-success `prepare`, `nil` for an unknown name, and `false` after a failed prepare. It never starts or blocks on work.
-- [ ] `M.ensure_prepared(name)` on an idle gate runs `prepare` and returns `(true, nil)` for a sync-success prepare.
-- [ ] `M.ensure_prepared(name)` on a gate with an async (thenable) `prepare` `:pwait`s and returns the thenable's outcome.
-- [ ] `M.ensure_prepared(name)` does **not** run `setup` (a stubbed `setup` is never called by it).
-- [ ] `M.ensure_prepared(name)` is idempotent: a second call returns the stored outcome without re-running `prepare`.
-- [ ] `M.ensure_prepared(name)` joins an in-flight thenable rather than starting a second `prepare` (`prepare` stub invoked once across two concurrent calls).
-- [ ] When `prepare` fails, the gate enters the failed state with the stored error; `ensure_prepared` returns `(false, err)` and re-throws the stored error on subsequent calls.
-- [ ] `M.ensure_prepared(name)` distinguishes "plugin absent" (no gate) from "prepare failed" via its `(ok, err)` return.
-- [ ] `M.on_prepared(name, cb)` registered before settlement fires `(true, nil)` on success / `(false, err)` on failure; registered after settlement fires immediately with the stored outcome; it never starts `prepare`.
-- [ ] A `prepare` return with `:pwait()` + (`:map` or `.status`) is awaited; a `nil`/non-thenable return is treated as synchronous success.
+- [x] Calling `M.add` with a spec carrying a gate field creates a gate for that plugin; a spec without gate fields creates no gate and behaves exactly as today.
+- [x] `M.is_prepared(name)` returns `false` before prepare, `true` after a synchronous-success `prepare`, `nil` for an unknown name, and `false` after a failed prepare. It never starts or blocks on work.
+- [x] `M.ensure_prepared(name)` on an idle gate runs `prepare` and returns `(true, nil)` for a sync-success prepare.
+- [x] `M.ensure_prepared(name)` on a gate with an async (thenable) `prepare` `:pwait`s and returns the thenable's outcome.
+- [x] `M.ensure_prepared(name)` does **not** run `setup` (a stubbed `setup` is never called by it).
+- [x] `M.ensure_prepared(name)` is idempotent: a second call returns the stored outcome without re-running `prepare`.
+- [x] `M.ensure_prepared(name)` joins an in-flight thenable rather than starting a second `prepare` (`prepare` stub invoked once across two concurrent calls).
+- [x] When `prepare` fails, the gate enters the failed state with the stored error; `ensure_prepared` returns `(false, err)` and re-throws the stored error on subsequent calls.
+- [x] `M.ensure_prepared(name)` distinguishes "plugin absent" (no gate) from "prepare failed" via its `(ok, err)` return.
+- [x] `M.on_prepared(name, cb)` registered before settlement fires `(true, nil)` on success / `(false, err)` on failure; registered after settlement fires immediately with the stored outcome; it never starts `prepare`.
+- [x] A `prepare` return with `:pwait()` + (`:map` or `.status`) is awaited; a `nil`/non-thenable return is treated as synchronous success.
