@@ -4,6 +4,9 @@ local lsp = require "refer.providers.lsp"
 local files = require "refer.providers.files"
 
 refer.setup {
+    blink_prepare = function()
+        return select(1, require("micro.pack").ensure_prepared "blink.cmp")
+    end,
     extras = { find_file = true },
 }
 
