@@ -4,12 +4,12 @@
 
 **Blocked by:** 04 — reset and failed-state edge cases (the full gate API must be in place before the user's config can rely on it).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The user's blink config entry declares `event`, `prepare`, and `setup` on the `blink.cmp` spec passed to `M.add`, instead of a hand-rolled autocmd.
-- [ ] `prepare` returns `require("blink.cmp").build()` (a `blink.lib.Task` thenable, satisfying the duck-typed contract).
-- [ ] `setup` calls `require("blink.cmp").setup { ... }` with the same options as before (keymap, sources, completion, etc.).
-- [ ] The old hand-rolled `CmdlineEnter`/`LspAttach` autocmd is removed from the blink config entry.
-- [ ] blink's completion still works after the first `CmdlineEnter`/`LspAttach`: the native library is built (or is a no-op if already present for the current commit) and blink is configured, matching prior behavior.
-- [ ] `blink.cmp` source files are unchanged (no `micro.pack` import introduced into the plugin).
-- [ ] Verified headless: after the event fires, `require("blink.cmp.fuzzy.rust")` succeeds and blink completion behaves as before.
+- [x] The user's blink config entry declares `event`, `prepare`, and `setup` on the `blink.cmp` spec passed to `M.add`, instead of a hand-rolled autocmd.
+- [x] `prepare` returns `require("blink.cmp").build()` (a `blink.lib.Task` thenable, satisfying the duck-typed contract).
+- [x] `setup` calls `require("blink.cmp").setup { ... }` with the same options as before (keymap, sources, completion, etc.).
+- [x] The old hand-rolled `CmdlineEnter`/`LspAttach` autocmd is removed from the blink config entry.
+- [x] blink's completion still works after the first `CmdlineEnter`/`LspAttach`: the native library is built (or is a no-op if already present for the current commit) and blink is configured, matching prior behavior.
+- [x] `blink.cmp` source files are unchanged (no `micro.pack` import introduced into the plugin).
+- [x] Verified headless: after the event fires, `require("blink.cmp.fuzzy.rust")` succeeds and blink completion behaves as before.

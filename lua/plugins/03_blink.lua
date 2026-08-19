@@ -1,12 +1,10 @@
-require("micro.pack").add { src = "gh:saghen/blink.cmp" }
-require("micro.pack").add { src = "gh:saghen/blink.lib" }
-
-vim.api.nvim_create_autocmd({ "CmdlineEnter", "LspAttach" }, {
-    pattern = "*",
-    once = true,
-    callback = function()
-        require("blink.cmp").build():pwait()
-
+require("micro.pack").add {
+    src = "gh:saghen/blink.cmp",
+    event = { "CmdlineEnter", "LspAttach" },
+    prepare = function()
+        return require("blink.cmp").build()
+    end,
+    setup = function()
         require("blink.cmp").setup {
             -- 'default' for mappings similar to built-in completion
             -- 'super-tab' for mappings similar to vscode (tab to accept, arrow keys to navigate)
@@ -117,4 +115,5 @@ vim.api.nvim_create_autocmd({ "CmdlineEnter", "LspAttach" }, {
             },
         }
     end,
-})
+}
+require("micro.pack").add { src = "gh:saghen/blink.lib" }
