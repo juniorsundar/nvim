@@ -1,3 +1,4 @@
+require("micro.pack").add { src = "gh:saghen/blink.lib" }
 require("micro.pack").add {
     src = "gh:saghen/blink.cmp",
     event = { "CmdlineEnter", "LspAttach" },
@@ -116,4 +117,3 @@ require("micro.pack").add {
         }
     end,
 }
-require("micro.pack").add { src = "gh:saghen/blink.lib" }
