@@ -4,14 +4,14 @@
 
 **Blocked by:** 03 — Ready phase: event-triggered setup.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `M.reset(name)` on a prepared gate clears the prepared/ready/failed flags and stored error.
-- [ ] After `reset`, `M.is_prepared(name)` returns `false` and the gate behaves as idle.
-- [ ] `M.reset(name)` re-creates the `event` autocmd; a subsequent event fire re-runs the full prepare→setup→ready cycle.
-- [ ] `M.reset(name)` fires any pending `on_prepared`/`on_ready` callbacks with `(false, "reset")` so no waiter hangs.
-- [ ] `M.reset(name)` on a gate with no `event` is a no-op beyond clearing state (does not error).
-- [ ] `M.reset(name)` on an absent gate (no such plugin) does not error.
-- [ ] `M.ensure_prepared(name)` on a failed gate re-throws the stored error and does not re-run `prepare`.
-- [ ] `M.on_prepared`/`M.on_ready` registered on a failed gate fire immediately with `(false, err)` before any reset.
-- [ ] After `reset` clears a failed gate, a subsequent `ensure_prepared` runs `prepare` afresh (the failed state is not sticky).
+- [X] `M.reset(name)` on a prepared gate clears the prepared/ready/failed flags and stored error.
+- [X] After `reset`, `M.is_prepared(name)` returns `false` and the gate behaves as idle.
+- [X] `M.reset(name)` re-creates the `event` autocmd; a subsequent event fire re-runs the full prepare→setup→ready cycle.
+- [X] `M.reset(name)` fires any pending `on_prepared`/`on_ready` callbacks with `(false, "reset")` so no waiter hangs.
+- [X] `M.reset(name)` on a gate with no `event` is a no-op beyond clearing state (does not error).
+- [X] `M.reset(name)` on an absent gate (no such plugin) does not error.
+- [X] `M.ensure_prepared(name)` on a failed gate re-throws the stored error and does not re-run `prepare`.
+- [X] `M.on_prepared`/`M.on_ready` registered on a failed gate fire immediately with `(false, err)` before any reset.
+- [X] After `reset` clears a failed gate, a subsequent `ensure_prepared` runs `prepare` afresh (the failed state is not sticky).

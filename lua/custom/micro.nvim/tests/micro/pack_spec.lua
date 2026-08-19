@@ -839,3 +839,215 @@ describe("micro.pack gate (ready phase)", function()
         assert.is_table(sctx.spec)
     end)
 end)
+
+describe("micro.pack gate (reset and failed-state edges)", function()
+    local stub_add
+
+    before_each(function()
+        package.loaded["micro.pack"] = nil
+        stub_add = stub(vim.pack, "add")
+    end)
+
+    after_each(function()
+        stub_add:revert()
+    end)
+
+    it("reset on a prepared gate clears the prepared/ready flags and stored error", function()
+        local pack = require "micro.pack"
+        pack.add {
+            src = "/tmp/plugins/rs1",
+            name = "rs1",
+            prepare = function() end,
+            setup = function() end,
+        }
+        local ok, err = pack.ensure_ready "rs1"
+        assert.is_true(ok)
+        assert.is_true(pack.is_prepared "rs1")
+        assert.is_true(pack.is_ready "rs1")
+
+        local ret = pack.reset "rs1"
+        assert.equal(pack, ret) -- chainable, like M.add
+
+        assert.is_false(pack.is_prepared "rs1") -- prepared flag cleared
+        assert.is_false(pack.is_ready "rs1") -- ready flag cleared
+        -- (stored-error drop on a failed gate is observed in the non-sticky test below)
+    end)
+
+    it("after reset, is_prepared returns false and the gate behaves as idle", function()
+        local pack = require "micro.pack"
+        local prepare_calls = 0
+        pack.add {
+            src = "/tmp/plugins/rsidle",
+            name = "rsidle",
+            prepare = function()
+                prepare_calls = prepare_calls + 1
+            end,
+            setup = function() end,
+        }
+        pack.ensure_ready "rsidle"
+        assert.is_true(pack.is_prepared "rsidle")
+
+        pack.reset "rsidle"
+        assert.is_false(pack.is_prepared "rsidle")
+
+        -- the gate behaves as idle: forcing prepare runs it afresh
+        local ok, err = pack.ensure_prepared "rsidle"
+        assert.is_true(ok)
+        assert.is_nil(err)
+        assert.are.equal(2, prepare_calls)
+    end)
+
+    it("reset re-creates the event autocmd: a subsequent fire re-runs prepare then setup to ready", function()
+        local pack = require "micro.pack"
+        local prepare_calls = 0
+        local setup_calls = 0
+        pack.add {
+            src = "/tmp/plugins/rs2",
+            name = "rs2",
+            prepare = function()
+                prepare_calls = prepare_calls + 1
+            end,
+            setup = function()
+                setup_calls = setup_calls + 1
+            end,
+            event = { { "User", "MicroGateRs2" } },
+        }
+        vim.cmd "doautocmd User MicroGateRs2"
+        assert.are.equal(1, prepare_calls)
+        assert.are.equal(1, setup_calls)
+        assert.is_true(pack.is_ready "rs2")
+
+        pack.reset "rs2"
+        vim.cmd "doautocmd User MicroGateRs2" -- once-autocmd was consumed; re-created by reset
+        assert.are.equal(2, prepare_calls) -- the full cycle ran again
+        assert.are.equal(2, setup_calls)
+        assert.is_true(pack.is_ready "rs2")
+    end)
+
+    it('reset fires pending on_prepared and on_ready callbacks with (false, "reset") so no waiter hangs', function()
+        local pack = require "micro.pack"
+        pack.add {
+            src = "/tmp/plugins/rs3",
+            name = "rs3",
+            prepare = function() end,
+            setup = function() end,
+        }
+        local prepared_cb, ready_cb = nil, nil
+        pack.on_prepared("rs3", function(ok, err)
+            prepared_cb = { ok, err }
+        end)
+        pack.on_ready("rs3", function(ok, err)
+            ready_cb = { ok, err }
+        end)
+        assert.is_nil(prepared_cb) -- still pending, gate not settled
+        assert.is_nil(ready_cb)
+
+        pack.reset "rs3"
+        assert.same({ false, "reset" }, prepared_cb) -- waiter notified, not lost
+        assert.same({ false, "reset" }, ready_cb)
+    end)
+
+    it("reset on a gate with no event is a no-op beyond clearing state (does not error)", function()
+        local pack = require "micro.pack"
+        pack.add {
+            src = "/tmp/plugins/rs4",
+            name = "rs4",
+            prepare = function() end,
+        }
+        local ok, err = pcall(pack.reset, "rs4") -- no event autocmd to re-create
+        assert.is_true(ok)
+        assert.is_false(pack.is_prepared "rs4")
+    end)
+
+    it("reset on an absent gate (no such plugin) does not error", function()
+        local pack = require "micro.pack"
+        local ok, err = pcall(pack.reset, "never-declared")
+        assert.is_true(ok)
+        assert.is_nil(pack.is_prepared "never-declared") -- unchanged: no gate exists
+    end)
+
+    it("ensure_prepared on a failed gate re-throws the stored error and does not re-run prepare", function()
+        local pack = require "micro.pack"
+        local prepare_calls = 0
+        pack.add {
+            src = "/tmp/plugins/rs5",
+            name = "rs5",
+            prepare = function()
+                prepare_calls = prepare_calls + 1
+                error "build exploded"
+            end,
+        }
+        local ok, err = pack.ensure_prepared "rs5"
+        assert.is_false(ok)
+        assert.truthy(tostring(err):find("build exploded", 1, true))
+
+        local retry_ok, retry_err = pcall(pack.ensure_prepared, "rs5")
+        assert.is_false(retry_ok) -- the stored error is re-thrown
+        assert.truthy(tostring(retry_err):find("build exploded", 1, true))
+        assert.are.equal(1, prepare_calls) -- and prepare is not re-run on the re-throw
+    end)
+
+    it("on_prepared/on_ready registered on a failed gate fire immediately with (false, err)", function()
+        local pack = require "micro.pack"
+        pack.add {
+            src = "/tmp/plugins/rs6",
+            name = "rs6",
+            prepare = function()
+                error "build broke"
+            end,
+            setup = function() end,
+        }
+        local ok, err = pack.ensure_prepared "rs6"
+        assert.is_false(ok) -- the gate is in the failed state
+
+        local prepared_cb = nil
+        pack.on_prepared("rs6", function(o, e)
+            prepared_cb = { o, e }
+        end)
+        assert.is_false(prepared_cb[1])
+        assert.truthy(tostring(prepared_cb[2]):find("build broke", 1, true))
+
+        local ready_cb = nil
+        pack.on_ready("rs6", function(o, e)
+            ready_cb = { o, e }
+        end)
+        assert.is_false(ready_cb[1]) -- a failed gate never becomes ready: the waiter is told now
+        assert.truthy(tostring(ready_cb[2]):find("build broke", 1, true))
+    end)
+
+    it(
+        "after reset clears a failed gate, ensure_prepared runs prepare afresh (the failed state is not sticky)",
+        function()
+            local pack = require "micro.pack"
+            local prepare_calls = 0
+            local fail_next = true
+            pack.add {
+                src = "/tmp/plugins/rs7",
+                name = "rs7",
+                prepare = function()
+                    prepare_calls = prepare_calls + 1
+                    if fail_next then
+                        error "build broke once"
+                    end
+                end,
+            }
+            local ok, err = pack.ensure_prepared "rs7"
+            assert.is_false(ok)
+            assert.truthy(tostring(err):find("build broke once", 1, true))
+
+            -- without a reset the failed state is sticky: the stored error is re-thrown
+            local retry_ok, retry_err = pcall(pack.ensure_prepared, "rs7")
+            assert.is_false(retry_ok)
+            assert.are.equal(1, prepare_calls)
+
+            pack.reset "rs7"
+            fail_next = false -- the second attempt succeeds (e.g. after a manual fix)
+
+            local ok2, err2 = pack.ensure_prepared "rs7"
+            assert.is_true(ok2)
+            assert.is_nil(err2)
+            assert.are.equal(2, prepare_calls) -- prepare ran afresh, not re-thrown
+            assert.is_true(pack.is_prepared "rs7")
+        end
+    )
+end)

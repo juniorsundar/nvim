@@ -620,6 +620,44 @@ function M.ensure_ready(name)
     return ok, err
 end
 
+--- Clear the gate back to its initial un-prepared, un-ready state and drop
+--- stored errors, so a subsequent force or event fire runs the cycle afresh.
+--- No-op (no error) if no gate exists for `name`.
+---@param name string Plugin name (spec.name)
+---@return table M
+function M.reset(name)
+    local gate = M._gates[name]
+    if gate then
+        gate.state = "pending"
+        gate.err = nil
+        gate.thenable = nil
+        gate.fail_returned = false
+        gate.ready = false
+        gate.setup_failed = false
+        gate.setup_err = nil
+        gate.setup_returned = false
+        gate.ready_outcome = nil
+        -- fire pending waiters with (false, "reset") so none are silently lost
+        local p_cbs, r_cbs = gate.on_prepared, gate.on_ready
+        gate.on_prepared = {}
+        gate.on_ready = {}
+        for _, cb in ipairs(p_cbs) do
+            pcall(cb, false, "reset")
+        end
+        for _, cb in ipairs(r_cbs) do
+            pcall(cb, false, "reset")
+        end
+
+        -- re-create the event autocmd so a new cycle can trigger
+        for _, id in ipairs(gate.autotids) do
+            pcall(vim.api.nvim_del_autocmd, id)
+        end
+        gate.autotids = {}
+        install_event(gate)
+    end
+    return M
+end
+
 --- Pure observer: fires `cb(ok, err)` when the gate becomes ready
 --- (prepared + setup done, or setup failed), or immediately if it is
 --- already settled. Never starts `prepare` or `setup`.
@@ -633,6 +671,9 @@ function M.on_ready(name, cb)
     local outcome = gate.ready_outcome
     if outcome then
         cb(outcome.ok, outcome.ok and nil or outcome.err)
+    elseif gate.state == "failed" then
+        -- a failed gate can never become ready: notify the waiter now
+        cb(false, gate.err)
     else
         table.insert(gate.on_ready, cb)
     end
