@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] `refer.nvim`'s `setup` accepts a new optional `ReferOptions` field for a prepare hook.
-- [ ] When the blink native-module load fails, refer calls the hook (if supplied) and retries the load on a truthy return, skipping the download prompt.
-- [ ] When there is no hook or the hook returns falsy, refer falls through to the existing fallback-download prompt (behavior unchanged for users who don't supply a hook).
-- [ ] `refer.nvim` does **not** `require` or import `micro.pack` anywhere; the hook is treated as an opaque function.
-- [ ] A plenary test in `refer.nvim/tests/` drives the hook with a stub: a truthy-returning hook causes refer to retry a failing module and not prompt; a falsy/absent hook preserves the existing prompt behavior.
-- [ ] Existing refer tests still pass (the new option is optional and backward compatible).
+- [x] `refer.nvim`'s `setup` accepts a new optional `ReferOptions` field for a prepare hook.
+- [x] When the blink native-module load fails, refer calls the hook (if supplied) and retries the load on a truthy return, skipping the download prompt.
+- [x] When there is no hook or the hook returns falsy, refer falls through to the existing fallback-download prompt (behavior unchanged for users who don't supply a hook).
+- [x] `refer.nvim` does **not** `require` or import `micro.pack` anywhere; the hook is treated as an opaque function.
+- [x] A plenary test in `refer.nvim/tests/` drives the hook with a stub: a truthy-returning hook causes refer to retry a failing module and not prompt; a falsy/absent hook preserves the existing prompt behavior.
+- [x] Existing refer tests still pass (the new option is optional and backward compatible).
