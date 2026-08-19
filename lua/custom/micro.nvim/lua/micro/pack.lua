@@ -18,8 +18,225 @@ local function create_gate(name, spec)
         err = nil,
         thenable = nil, -- in-flight prepare thenable
         fail_returned = false, -- first ensure_prepared call already returned (false, err)
+        ready = false, -- setup succeeded (implies prepared)
+        setup_failed = false, -- setup ran and errored
+        setup_err = nil,
+        setup_returned = false, -- first ensure_ready after setup failure already returned (false, err)
+        ready_outcome = nil, -- { ok, err } once the on_ready queue has settled
         on_prepared = {},
+        on_ready = {},
+        autotids = {}, -- event autocmd ids (re-created on reset)
     }
+end
+
+--- Duck-type check from CONTEXT.md: has `:pwait()` and (`:map` or `.status`).
+---@param x any
+---@return boolean
+local function is_thenable(x)
+    return type(x) == "table" and type(x.pwait) == "function" and (type(x.map) == "function" or x.status ~= nil)
+end
+
+--- Settle a gate into prepared or failed and fire its on_prepared observers.
+---@param gate table
+---@param ok boolean
+---@param err string?
+local function settle(gate, ok, err)
+    gate.err = ok and nil or err
+    gate.state = ok and "prepared" or "failed"
+    gate.thenable = nil
+
+    local cbs = gate.on_prepared
+    gate.on_prepared = {}
+    for _, cb in ipairs(cbs) do
+        pcall(cb, ok, ok and nil or err)
+    end
+end
+
+--- Build the context passed to `prepare`/`setup`: `{ name, path, spec }`.
+--- `path` is sourced via `vim.pack.get`; if the plugin is not (yet)
+--- resolvable on disk it degrades to nil rather than erroring the gate.
+---@param gate table
+---@return table ctx
+local function build_ctx(gate)
+    local ctx = {
+        name = gate.name,
+        spec = gate.spec,
+    }
+    local ok, res = pcall(vim.pack.get, { gate.name }, { info = false })
+    if ok and type(res) == "table" and res[1] then
+        ctx.path = res[1].path
+    end
+    return ctx
+end
+
+--- Force the gate to prepared: run (or join) `prepare` if pending.
+--- Never runs `setup`. On a failed gate the first call returns
+--- `(false, err)`; later calls re-throw the stored error.
+---@param gate table
+---@return boolean ok
+---@return string? err
+local function gate_ensure_prepared(gate)
+    if gate.state == "prepared" then
+        return true, nil
+    end
+
+    if gate.state == "failed" then
+        if gate.fail_returned then
+            error(gate.err)
+        end
+        gate.fail_returned = true
+        return false, gate.err
+    end
+
+    -- pending: run `prepare` exactly once, join an in-flight thenable
+    if gate.spec.prepare == nil then
+        settle(gate, true, nil)
+        return true, nil
+    end
+
+    if gate.thenable then
+        local ok, err = gate.thenable:pwait()
+        settle(gate, ok and true or false, err)
+        if not ok then
+            gate.fail_returned = true
+        end
+        return ok and true or false, err
+    end
+
+    local ok, res = pcall(gate.spec.prepare, build_ctx(gate))
+    if not ok then
+        settle(gate, false, res)
+        gate.fail_returned = true
+        return false, res
+    end
+
+    if is_thenable(res) then
+        gate.thenable = res
+        local t_ok, err = res:pwait()
+        settle(gate, t_ok and true or false, err)
+        if not t_ok then
+            gate.fail_returned = true
+        end
+        return t_ok and true or false, err
+    end
+
+    settle(gate, true, nil) -- nil / non-thenable return is a synchronous success
+    return true, nil
+end
+
+--- Settle the gate's ready outcome and fire its on_ready observers.
+--- Idempotent: the first settlement is final (cleared only by reset).
+---@param gate table
+---@param ok boolean
+---@param err string?
+local function settle_ready(gate, ok, err)
+    if gate.ready_outcome then
+        return
+    end
+    gate.ready_outcome = { ok = ok, err = err }
+
+    local cbs = gate.on_ready
+    gate.on_ready = {}
+    for _, cb in ipairs(cbs) do
+        pcall(cb, ok, ok and nil or err)
+    end
+end
+
+--- Run the gate's `setup` exactly once, after prepare succeeded.
+--- A missing `setup` settles the gate as ready immediately.
+---@param gate table
+---@return boolean ok
+---@return string? err
+local function run_setup(gate)
+    if gate.ready or gate.setup_failed then
+        if gate.ready then
+            return true, nil
+        end
+        return false, gate.setup_err
+    end
+
+    if gate.spec.setup == nil then
+        gate.ready = true
+        settle_ready(gate, true, nil)
+        return true, nil
+    end
+
+    local ok, res = pcall(gate.spec.setup, build_ctx(gate))
+    if not ok then
+        gate.setup_failed = true
+        gate.setup_err = res
+        settle_ready(gate, false, res)
+        return false, res
+    end
+
+    gate.ready = true
+    settle_ready(gate, true, nil)
+    return true, nil
+end
+
+--- Drive the gate's full cycle: prepare (force/join) then setup.
+--- A failed prepare settles the ready outcome as (false, err) so no
+--- on_ready waiter is silently lost; setup never runs.
+---@param gate table
+---@return boolean ok
+---@return string? err
+local function run_cycle(gate)
+    local ok, err = pcall(gate_ensure_prepared, gate)
+    if gate.state ~= "prepared" then
+        settle_ready(gate, false, gate.err)
+        if ok then
+            return false, gate.err
+        end
+        error(err) -- stored error re-thrown by gate_ensure_prepared
+    end
+    return run_setup(gate)
+end
+
+--- Normalise a spec's `event` field into a list of entries.
+--- Each entry is a plain event name (string) or a 2-element
+--- `{ event, pattern }` table for User-pattern events.
+---@param event any
+---@return table[]
+local function normalize_event(event)
+    if type(event) == "string" then
+        return { event }
+    end
+    if type(event) == "table" then
+        return event
+    end
+    return {}
+end
+
+--- Install the gate's event autocmd(s): one `once` autocmd per entry.
+--- Whichever fires first runs the prepare → setup cycle; the rest
+--- no-op because the cycle is idempotent on the gate's state.
+---@param gate table
+local function install_event(gate)
+    for _, entry in ipairs(normalize_event(gate.spec.event)) do
+        local ev, pattern
+        if type(entry) == "string" then
+            ev = entry
+        elseif type(entry) == "table" then
+            ev, pattern = entry[1], entry[2]
+        end
+        if type(ev) == "string" then
+            local opts = {
+                once = true,
+                callback = function()
+                    -- the lazy path must never raise into the event loop;
+                    -- outcomes are observable through the public API
+                    pcall(run_cycle, gate)
+                end,
+            }
+            if pattern ~= nil then
+                opts.pattern = pattern
+            end
+            local ok, id = pcall(vim.api.nvim_create_autocmd, ev, opts)
+            if ok then
+                table.insert(gate.autotids, id)
+            end
+        end
+    end
 end
 
 --- Expand URI shorthand prefixes into full HTTPS URLs.
@@ -160,7 +377,15 @@ function M.add(specs, opts)
             M._build_queue[name] = true
         end
         if spec.prepare or spec.setup or spec.event then
-            M._gates[name] = create_gate(name, spec)
+            local old = M._gates[name]
+            if old then
+                for _, id in ipairs(old.autotids) do
+                    pcall(vim.api.nvim_del_autocmd, id)
+                end
+            end
+            local gate = create_gate(name, spec)
+            install_event(gate)
+            M._gates[name] = gate
         end
     end
 
@@ -351,29 +576,6 @@ function M.setup(opts)
     end
 end
 
---- Duck-type check from CONTEXT.md: has `:pwait()` and (`:map` or `.status`).
----@param x any
----@return boolean
-local function is_thenable(x)
-    return type(x) == "table" and type(x.pwait) == "function" and (type(x.map) == "function" or x.status ~= nil)
-end
-
---- Settle a gate into prepared or failed and fire its on_prepared observers.
----@param gate table
----@param ok boolean
----@param err string?
-local function settle(gate, ok, err)
-    gate.err = ok and nil or err
-    gate.state = ok and "prepared" or "failed"
-    gate.thenable = nil
-
-    local cbs = gate.on_prepared
-    gate.on_prepared = {}
-    for _, cb in ipairs(cbs) do
-        pcall(cb, ok, ok and nil or err)
-    end
-end
-
 --- Force the gate to prepared: run (or join) `prepare` if pending.
 --- Never runs `setup`. On a failed gate the first call returns
 --- `(false, err)`; later calls re-throw the stored error.
@@ -385,53 +587,55 @@ function M.ensure_prepared(name)
     if not gate then
         return false, "micro.pack: no gate for '" .. name .. "' (plugin absent?)"
     end
+    return gate_ensure_prepared(gate)
+end
 
-    if gate.state == "prepared" then
-        return true, nil
+--- Force the gate to ready: run (or join) `prepare`, then run `setup`,
+--- and complete. The lazy path's synchronous escape hatch for callers
+--- that need full configuration, not just the artifact. On a gate whose
+--- `setup` failed, the first call returns `(false, err)` and later calls
+--- re-throw the stored error (mirroring the prepared-phase convention).
+---@param name string Plugin name (spec.name)
+---@return boolean ok true ready, false failed or no gate
+---@return string? err nil on success; stored error, or "absent" if no gate exists
+function M.ensure_ready(name)
+    local gate = M._gates[name]
+    if not gate then
+        return false, "micro.pack: no gate for '" .. name .. "' (plugin absent?)"
     end
 
-    if gate.state == "failed" then
-        if gate.fail_returned then
-            error(gate.err)
+    if gate.setup_failed then
+        if gate.setup_returned then
+            error(gate.setup_err)
         end
-        gate.fail_returned = true
-        return false, gate.err
+        gate.setup_returned = true
+        return false, gate.setup_err
     end
 
-    -- pending: run `prepare` exactly once, join an in-flight thenable
-    if gate.spec.prepare == nil then
-        settle(gate, true, nil)
-        return true, nil
+    local ok, err = run_cycle(gate)
+    if not ok and gate.setup_failed then
+        -- this call returns (false, err); the next one re-throws
+        gate.setup_returned = true
     end
+    return ok, err
+end
 
-    if gate.thenable then
-        local ok, err = gate.thenable:pwait()
-        settle(gate, ok and true or false, err)
-        if not ok then
-            gate.fail_returned = true
-        end
-        return ok and true or false, err
+--- Pure observer: fires `cb(ok, err)` when the gate becomes ready
+--- (prepared + setup done, or setup failed), or immediately if it is
+--- already settled. Never starts `prepare` or `setup`.
+---@param name string Plugin name (spec.name)
+---@param cb function callback(ok: boolean, err: string?)
+function M.on_ready(name, cb)
+    local gate = M._gates[name]
+    if not gate or type(cb) ~= "function" then
+        return
     end
-
-    local ok, res = pcall(gate.spec.prepare)
-    if not ok then
-        settle(gate, false, res)
-        gate.fail_returned = true
-        return false, res
+    local outcome = gate.ready_outcome
+    if outcome then
+        cb(outcome.ok, outcome.ok and nil or outcome.err)
+    else
+        table.insert(gate.on_ready, cb)
     end
-
-    if is_thenable(res) then
-        gate.thenable = res
-        local t_ok, err = res:pwait()
-        settle(gate, t_ok and true or false, err)
-        if not t_ok then
-            gate.fail_returned = true
-        end
-        return t_ok and true or false, err
-    end
-
-    settle(gate, true, nil) -- nil / non-thenable return is a synchronous success
-    return true, nil
 end
 
 --- Pure observer: fires cb(ok, err) when the gate settles, or immediately
@@ -461,6 +665,18 @@ function M.is_prepared(name)
         return nil
     end
     return gate.state == "prepared"
+end
+
+--- Cheap, non-blocking observer: is the plugin's gate ready (prepared
+--- and setup done)?
+---@param name string Plugin name (spec.name)
+---@return boolean|nil true ready, false prepared-but-not-ready or pending, nil no gate exists (absent)
+function M.is_ready(name)
+    local gate = M._gates[name]
+    if gate == nil then
+        return nil
+    end
+    return gate.ready == true
 end
 
 return M

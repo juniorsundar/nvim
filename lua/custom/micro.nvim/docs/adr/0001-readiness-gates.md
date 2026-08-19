@@ -42,10 +42,13 @@ chose the explicit state machine instead of growing `M.after` into one.
 ## Decided API
 
 - `M.add{ …, event, prepare, setup }` — presence of these fields creates a
-  gate. `event` triggers `prepare → setup` once-across-any.
+  gate. `event` triggers `prepare → setup` once-across-any. `event` entries
+  are plain event names or `{ event, pattern }` tables (for `User` events),
+  one `once` autocmd per entry.
 - `M.is_prepared(name)`, `M.ensure_prepared(name)`, `M.on_prepared(name, cb)`
   — the `prepared` surface (the user's config wires this into refer's hook).
-- `M.ensure_ready(name)`, `M.on_ready(name, cb)` — the `ready` surface.
+- `M.is_ready(name)`, `M.ensure_ready(name)`, `M.on_ready(name, cb)` — the
+  `ready` surface. `is_ready` mirrors `is_prepared` (`true`/`false`/`nil`).
 - `M.reset(name)` — clears the gate, re-creates the `event` autocmd, fires
   pending cbs with `(false, "reset")`. Not auto-invoked on `PackChanged`
   update in v1; updates take effect next session.

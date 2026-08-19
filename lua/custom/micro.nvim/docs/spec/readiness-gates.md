@@ -156,8 +156,11 @@ nor `blink.cmp` imports `micro.pack`.
 
 `M.add` accepts these additional optional fields on a spec:
 
-- **`event`** — a string or list of strings; the Neovim event(s) that trigger
-  `prepare` → `setup`. Treated as a single `once`-across-any trigger.
+- **`event`** — a string or list of entries; the Neovim event(s) that trigger
+  `prepare` → `setup`. An entry is a plain event name (`"CmdlineEnter"`) or a
+  2-element `{ event, pattern }` table (e.g. `{ "User", "BlinkReady" }`) for
+  `User`-pattern events. One `once` autocmd is installed per entry;
+  whichever fires first starts the cycle (once-across-any), the rest no-op.
 - **`prepare`** — a function performing the heavy work. Receives a context
   table and may return a thenable (see "Thenable contract") for async work,
   or `nil`/a non-thenable for synchronous success.
@@ -179,6 +182,9 @@ arbitrary plugins' setup signatures.
   work. Returns `true` if prepared, `false` if failed, `nil` if no gate
   exists for `name` (plugin not installed / not declared). Intended for hot
   paths.
+- `M.is_ready(name)` → `boolean | nil`. Cheap, non-blocking. `true` if the
+  gate is ready (prepared + setup done), `false` if prepared-but-not-ready or
+  pending, `nil` if no gate exists.
 - `M.ensure_prepared(name)` → `(ok, err)`. Forces `prepare` to run and
   complete if it hasn't (`:pwait()`ing the thenable if needed). Returns
   `(true, nil)` if prepared, `(false, err)` if failed, and a distinct `err`
@@ -245,9 +251,10 @@ in-flight thenable (`:pwait()`), it does not start a second prepare.
 
 ### Event semantics
 
-- `event` is a single autocmd per gate, created with `once = true` and all
-  listed events as patterns. Whichever fires first runs `prepare` → `setup`
-  → marks ready; the autocmd self-deletes.
+- One `once` autocmd per `event` entry (plain name or `{ event, pattern }`
+  for `User` events). Whichever fires first runs `prepare` → `setup` → marks
+  ready; the autocmd self-deletes and the cycle is idempotent on the gate's
+  state, so any later entry firing is a no-op.
 - `setup` is triggered **only** by `event`. `ensure_prepared` never runs
   `setup`. This invariant protects a plugin's lazy strategy (forcing the
   library never forces configuration).
