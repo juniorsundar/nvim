@@ -1,9 +1,7 @@
-require("micro.pack").add "gh:MeanderingProgrammer/render-markdown.nvim"
-
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = "markdown",
-    once = true,
-    callback = function()
+require("micro.pack").add {
+    src = "gh:MeanderingProgrammer/render-markdown.nvim",
+    event = { { "FileType", "markdown" } },
+    setup = function()
         require("render-markdown").setup {
             -- Visually indent content according to its enclosing heading level.
             indent = {
@@ -35,4 +33,4 @@ vim.api.nvim_create_autocmd("FileType", {
             },
         }
     end,
-})
+}
