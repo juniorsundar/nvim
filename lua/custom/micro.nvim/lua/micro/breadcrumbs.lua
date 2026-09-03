@@ -254,7 +254,7 @@ local function debounced_breadcrumbs_set()
     )
 end
 
-local function toggle_breadcrumbs()
+function M.toggle_breadcrumbs()
     if vim.Micro.breadcrumbs == nil then
         vim.notify("`vim.Micro.breadcrumbs` doesn't exists!", vim.log.levels.WARN, { title = "LSP" })
         return
@@ -276,7 +276,7 @@ end
 function M.setup(opts)
     vim.Micro.breadcrumbs = vim.tbl_deep_extend("force", { enabled = false }, opts or {})
 
-    -- Create a dedicated augroup
+    ---Create a dedicated augroup
     ---@type number
     local breadcrumbs_augroup = vim.api.nvim_create_augroup("Breadcrumbs", { clear = true })
 
@@ -293,13 +293,6 @@ function M.setup(opts)
         end,
         desc = "Clear breadcrumbs when leaving window.",
     })
-
-    vim.keymap.set(
-        "n",
-        "<leader><leader>TB",
-        toggle_breadcrumbs,
-        { desc = "Toggle LSP breadcrumbs", noremap = false, silent = true }
-    )
 end
 
 return M

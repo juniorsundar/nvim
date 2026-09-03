@@ -6,6 +6,7 @@ local default = {
         line_numbers = { modes = { "n" }, key = "n" },
         lsp_inlay_hints = { modes = { "n" }, key = "i" },
         lsp_code_lens = { modes = { "n" }, key = "c" },
+        breadcrumbs = { modes = { "n" }, key = "b" },
     },
 }
 
@@ -56,6 +57,10 @@ function M.setup(opts)
         end,
         { desc = "LSP CodeLens" }
     )
+
+    vim.keymap.set(default.toggle.breadcrumbs.modes, default.toggle_prefix .. default.toggle.breadcrumbs.key, function()
+        require("micro.breadcrumbs").toggle_breadcrumbs()
+    end, { desc = "Breadcrumbs" })
 end
 
 return M
