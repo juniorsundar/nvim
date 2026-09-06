@@ -1,11 +1,11 @@
 {
   "plugins": {
     "blink.cmp": {
-      "rev": "2befba190e0ffa3692ab364f75604c9c2d248adf",
+      "rev": "49d39fda6350d7f789d1da1053e86c9e256f8108",
       "src": "https://github.com/saghen/blink.cmp"
     },
     "blink.lib": {
-      "rev": "c8fdc12c8a2fab6cf786dd7141a283f8079f902b",
+      "rev": "f55df8a6e0a7acccf45ef0ffbb4ce46110fcf7d0",
       "src": "https://github.com/saghen/blink.lib"
     },
     "conform.nvim": {
@@ -25,7 +25,7 @@
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
     "md-render.nvim": {
-      "rev": "bafbb493792f7121f411135da579a427c4fd3e3e",
+      "rev": "957fe64ab8244772d7d61f9b402c6ac0fd085928",
       "src": "https://github.com/delphinus/md-render.nvim"
     },
     "mini.move": {
@@ -48,9 +48,17 @@
       "rev": "5f032a85be210cd1c6ac98861eb3b187ff3bd5eb",
       "src": "https://github.com/nvim-tree/nvim-web-devicons"
     },
+    "oil.nvim": {
+      "rev": "b73018b75affd13fa38e2fc94ef753b465f770d7",
+      "src": "https://github.com/stevearc/oil.nvim"
+    },
     "sidekick.nvim": {
       "rev": "208e1c5b8170c01fd1d07df0139322a76479b235",
       "src": "https://github.com/folke/sidekick.nvim"
+    },
+    "vim-fugitive": {
+      "rev": "3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0",
+      "src": "https://github.com/tpope/vim-fugitive"
     },
     "which-key.nvim": {
       "rev": "3aab2147e74890957785941f0c1ad87d0a44c15a",
