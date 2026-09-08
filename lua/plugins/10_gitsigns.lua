@@ -45,6 +45,12 @@ require("micro.pack").add {
         vim.keymap.set("n", "<space>Gl", function()
             gs.blame_line()
         end, { desc = "Blame Line", noremap = false, silent = true })
+        vim.keymap.set(
+            "n",
+            "<space>GDt",
+            "<cmd>Gitsigns diffthis<cr>",
+            { desc = "Diff this", noremap = false, silent = true }
+        )
 
         require("gitsigns").setup {
             signs = {
