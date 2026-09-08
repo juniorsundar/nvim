@@ -34,6 +34,8 @@ vim.opt.splitright = true
 vim.opt.termguicolors = true
 vim.opt.showmode = false
 vim.opt.showtabline = 0
+vim.opt.relativenumber = true
+vim.opt.number = true
 
 -- Searching
 vim.opt.incsearch = true
