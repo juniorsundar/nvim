@@ -16,6 +16,7 @@ require("micro").setup {
         ignored = {
             names = {
                 ["[Lazygit]"] = true,
+                ["NeogitStatus"] = true,
             },
         },
     },
