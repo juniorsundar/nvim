@@ -1,7 +1,7 @@
 local pack = require "micro.pack"
 
 require("micro").setup {
-    breadcrumbs = { enabled = true },
+    breadcrumbs = { enabled = false },
     dynamic_lnum = { enabled = true },
     folds = { enabled = true },
     follow_mode = { enabled = true },
