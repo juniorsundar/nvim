@@ -1,11 +1,11 @@
 {
   "plugins": {
     "blink.cmp": {
-      "rev": "49d39fda6350d7f789d1da1053e86c9e256f8108",
+      "rev": "f72465357ede7f8d899f34816d49408813c374c6",
       "src": "https://github.com/saghen/blink.cmp"
     },
     "blink.lib": {
-      "rev": "f55df8a6e0a7acccf45ef0ffbb4ce46110fcf7d0",
+      "rev": "fd9a48ebbe6ec30d5dfcc5b42c243941ccdca1aa",
       "src": "https://github.com/saghen/blink.lib"
     },
     "conform.nvim": {
@@ -25,7 +25,7 @@
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
     "md-render.nvim": {
-      "rev": "957fe64ab8244772d7d61f9b402c6ac0fd085928",
+      "rev": "03545aee6f1c14838f0be2979b50553fa1df646c",
       "src": "https://github.com/delphinus/md-render.nvim"
     },
     "mini.move": {
@@ -53,7 +53,7 @@
       "src": "https://github.com/stevearc/oil.nvim"
     },
     "sidekick.nvim": {
-      "rev": "208e1c5b8170c01fd1d07df0139322a76479b235",
+      "rev": "3d80a47e6375f6d647c9695d3afea6fa1b3275df",
       "src": "https://github.com/folke/sidekick.nvim"
     },
     "vim-fugitive": {
