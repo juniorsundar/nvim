@@ -24,10 +24,6 @@
       "rev": "5be654f2232c10ddcad19c1607a67b6b4b78fc29",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
-    "lazydev.nvim": {
-      "rev": "ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d",
-      "src": "https://github.com/folke/lazydev.nvim"
-    },
     "md-render.nvim": {
       "rev": "03545aee6f1c14838f0be2979b50553fa1df646c",
       "src": "https://github.com/delphinus/md-render.nvim"
