@@ -413,14 +413,19 @@ function M.render_window(parent_win, buf_id)
     local border_group = "Comment"
     if is_active then
         local mode = vim.api.nvim_get_mode().mode
+        local mode_name = mode
         if mode == "\22" then
-            mode = "VBlock"
+            mode_name = "VBlock"
         end
         if mode == "\19" then
-            mode = "SBlock"
+            mode_name = "SBlock"
         end
+        -- Highlight group names may only contain [A-Za-z0-9_]; modes like "r?"
+        -- (prompt shown by e.g. neogit's blocking confirm dialog) or "noCTRL-V"
+        -- contain illegal characters, so sanitize the suffix.
+        mode_name = mode_name:gsub("[^%w_]", "")
 
-        local hl_name = "StatusBorderActive" .. mode
+        local hl_name = "StatusBorderActive" .. mode_name
         vim.api.nvim_set_hl(0, hl_name, { fg = M.get_mode_color() })
         border_group = hl_name
     end
@@ -433,14 +438,17 @@ function M.update()
         for parent, status in pairs(M.state.wins) do
             if not vim.api.nvim_win_is_valid(parent) then
                 if vim.api.nvim_win_is_valid(status) then
-                    vim.api.nvim_win_close(status, true)
+                    pcall(vim.api.nvim_win_close, status, true)
                 end
                 M.state.wins[parent] = nil
             end
         end
         for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
             if vim.api.nvim_win_is_valid(win) then
-                M.render_window(win, vim.api.nvim_win_get_buf(win))
+                -- Never let a statusline error propagate into whatever context
+                -- runs this callback (e.g. a blocking dialog of another plugin,
+                -- whose host task would otherwise be aborted).
+                pcall(M.render_window, win, vim.api.nvim_win_get_buf(win))
             end
         end
     end)
