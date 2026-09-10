@@ -72,7 +72,11 @@ local function populate_quickfix(buf)
     end
 end
 
-compile.setup {
+-- Setup is deferred until just after the UI is ready: loading the cached
+-- completion trees for every wrapper costs 17-32ms and is never needed
+-- before the first `:` keystroke. `:Cling` itself is defined by the
+-- plugin's plugin/cling.lua and works regardless.
+local setup_args = {
     wrappers = {
         {
             binary = "lazygit",
@@ -182,6 +186,24 @@ compile.setup {
         },
     },
 }
+
+local function run_deferred_setup()
+    compile.setup(setup_args)
+end
+
+if #vim.api.nvim_list_uis() == 0 then
+    -- No UI (headless): UIEnter never fires, so fall back to the event loop.
+    vim.defer_fn(run_deferred_setup, 100)
+else
+    vim.api.nvim_create_autocmd("UIEnter", {
+        once = true,
+        callback = function()
+            -- defer_fn(0) pushes setup past the first screen update, keeping it
+            -- off the startup critical path entirely.
+            vim.defer_fn(run_deferred_setup, 0)
+        end,
+    })
+end
 
 vim.keymap.set("n", "<leader>c", "<cmd>vert Cling<cr>", { desc = "Cling" })
 vim.keymap.set("n", "<leader>GL", function()

@@ -1,77 +1,99 @@
 require("micro.pack").add "gh:NeogitOrg/neogit"
 
-require("neogit").setup {
-    disable_hint = true,
-    signs = {
-        hunk = { "", "" },
-        item = { "", "" },
-        section = { "", "" },
-    },
-    graph_style = "unicode",
-    integrations = {
-        telescope = nil,
-        diffview = nil,
-        fzf_lua = nil,
-        mini_pick = nil,
-        snacks = nil,
-    },
-}
+local neogit_loaded = false
 
--- Route neogit's async fuzzy finder through refer.nvim.
-local neogit_async = require "neogit.lib.async"
-local FuzzyFinderBuffer = require "neogit.buffers.fuzzy_finder"
-local refer = require "refer"
-
-local function refocus_status_buffer()
-    local status = require "neogit.buffers.status"
-    if status.instance() then
-        status.instance():focus()
-        status.instance():dispatch_refresh(nil, "finder.refocus")
+local function load_neogit(args)
+    if neogit_loaded then
+        return
     end
-end
+    neogit_loaded = true
 
-FuzzyFinderBuffer.open_async = neogit_async.wrap(function(self, opts, cb)
-    opts = opts or {}
-
-    -- neogit resumes its async task on this callback; it must fire exactly once.
-    local delivered = false
-    local function deliver(value)
-        if delivered then
-            return
-        end
-        delivered = true
-        cb(value)
-        if opts.refocus_status ~= false then
-            vim.schedule(refocus_status_buffer)
-        end
-    end
-
-    local picker_opts = {
-        _refer_internal = true,
-        multiselect = opts.allow_multi == true,
-        prompt = (opts.prompt_prefix or "select") .. ": ",
-        on_close = function()
-            vim.schedule(function()
-                deliver(nil)
-            end)
-        end,
-        keymaps = opts.allow_multi == true and {} or {
-            ["<CR>"] = { action = "select_entry", desc = "Choose entry" },
+    require("neogit").setup {
+        disable_hint = true,
+        signs = {
+            hunk = { "", "" },
+            item = { "", "" },
+            section = { "", "" },
+        },
+        graph_style = "unicode",
+        integrations = {
+            telescope = nil,
+            diffview = nil,
+            fzf_lua = nil,
+            mini_pick = nil,
+            snacks = nil,
         },
     }
 
-    local height = opts.layout_config and opts.layout_config.height
-    if height then
-        picker_opts.max_height = height > 1 and math.floor(height) or math.floor(vim.o.lines * height)
+    -- Route neogit's async fuzzy finder through refer.nvim.
+    local neogit_async = require "neogit.lib.async"
+    local FuzzyFinderBuffer = require "neogit.buffers.fuzzy_finder"
+    local refer = require "refer"
+
+    local function refocus_status_buffer()
+        local status = require "neogit.buffers.status"
+        if status.instance() then
+            status.instance():focus()
+            status.instance():dispatch_refresh(nil, "finder.refocus")
+        end
     end
 
-    refer.pick(self.list, function(selection)
-        deliver(selection)
-    end, picker_opts)
-end, 3)
+    FuzzyFinderBuffer.open_async = neogit_async.wrap(function(self, opts, cb)
+        opts = opts or {}
 
-vim.keymap.set("n", "<leader>Gg", "<cmd>Neogit<cr>", { desc = "Neogit" })
-vim.keymap.set("n", "<leader>G.", "<cmd>Neogit cwd=%:p:h<cr>", { desc = "Open to CWD" })
+        -- neogit resumes its async task on this callback; it must fire exactly once.
+        local delivered = false
+        local function deliver(value)
+            if delivered then
+                return
+            end
+            delivered = true
+            cb(value)
+            if opts.refocus_status ~= false then
+                vim.schedule(refocus_status_buffer)
+            end
+        end
+
+        local picker_opts = {
+            _refer_internal = true,
+            multiselect = opts.allow_multi == true,
+            prompt = (opts.prompt_prefix or "select") .. ": ",
+            on_close = function()
+                vim.schedule(function()
+                    deliver(nil)
+                end)
+            end,
+            keymaps = opts.allow_multi == true and {} or {
+                ["<CR>"] = { action = "select_entry", desc = "Choose entry" },
+            },
+        }
+
+        local height = opts.layout_config and opts.layout_config.height
+        if height then
+            picker_opts.max_height = height > 1 and math.floor(height) or math.floor(vim.o.lines * height)
+        end
+
+        refer.pick(self.list, function(selection)
+            deliver(selection)
+        end, picker_opts)
+    end, 3)
+
+    -- Replace the lazy shims with the real commands.
+    vim.keymap.set("n", "<leader>Gg", "<cmd>Neogit<cr>", { desc = "Neogit" })
+    vim.keymap.set("n", "<leader>G.", "<cmd>Neogit cwd=%:p:h<cr>", { desc = "Open to CWD" })
+
+    -- Run the command that triggered the load.
+    if args then
+        vim.cmd(args)
+    end
+end
+
+vim.keymap.set("n", "<leader>Gg", function()
+    load_neogit "Neogit"
+end, { desc = "Neogit" })
+vim.keymap.set("n", "<leader>G.", function()
+    load_neogit "Neogit cwd=%:p:h"
+end, { desc = "Open to CWD" })
 
 vim.keymap.set("n", "<leader>GDd", function()
     local abs_file = vim.fn.expand "%:p"
