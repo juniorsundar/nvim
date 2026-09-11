@@ -25,7 +25,7 @@
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
     "md-render.nvim": {
-      "rev": "977c8e4fd73bd1656836c87895458a54098920ba",
+      "rev": "00a83b8a25b9d2d50dd15efaf4c701c19de21688",
       "src": "https://github.com/delphinus/md-render.nvim"
     },
     "mini.move": {
