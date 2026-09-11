@@ -1,7 +1,8 @@
-require("micro.pack").add {
-    src = "gh:nvim-mini/mini.move",
-    event = "BufEnter",
-    setup = function()
+vim.pack.add { "https://github.com/nvim-mini/mini.move" }
+
+vim.api.nvim_create_autocmd("BufEnter", {
+    once = true,
+    callback = function()
         require("mini.move").setup {
             mappings = {
                 left = "<S-left>",
@@ -15,4 +16,4 @@ require("micro.pack").add {
             },
         }
     end,
-}
+})

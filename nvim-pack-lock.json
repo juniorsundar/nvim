@@ -1,7 +1,7 @@
 {
   "plugins": {
     "blink.cmp": {
-      "rev": "f72465357ede7f8d899f34816d49408813c374c6",
+      "rev": "473c928d8b9b5b3f638cd085a01899972cf205c6",
       "src": "https://github.com/saghen/blink.cmp"
     },
     "blink.lib": {
@@ -21,11 +21,11 @@
       "src": "https://github.com/folke/flash.nvim"
     },
     "gitsigns.nvim": {
-      "rev": "5be654f2232c10ddcad19c1607a67b6b4b78fc29",
+      "rev": "f2421c550618d257048afa650413d9e542ddbe67",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
     "md-render.nvim": {
-      "rev": "03545aee6f1c14838f0be2979b50553fa1df646c",
+      "rev": "977c8e4fd73bd1656836c87895458a54098920ba",
       "src": "https://github.com/delphinus/md-render.nvim"
     },
     "mini.move": {

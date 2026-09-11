@@ -1,7 +1,8 @@
-require("micro.pack").add {
-    src = "gh:lewis6991/gitsigns.nvim",
-    event = "BufEnter",
-    setup = function()
+vim.pack.add { "https://github.com/lewis6991/gitsigns.nvim" }
+
+vim.api.nvim_create_autocmd("BufEnter", {
+    once = true,
+    callback = function()
         local gs = require "gitsigns"
         vim.keymap.set("n", "<leader>G", "", { desc = "Git", noremap = false, silent = true })
         vim.keymap.set("n", "<leader>Gd", function()
@@ -92,7 +93,7 @@ require("micro.pack").add {
             },
         }
     end,
-}
+})
 
 function _G.MyStatusColumn()
     local winid = vim.g.statusline_winid

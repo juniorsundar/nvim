@@ -1,12 +1,9 @@
-local pack = require "micro.pack"
-
 require("micro").setup {
     breadcrumbs = { enabled = false },
     dynamic_lnum = { enabled = true },
     folds = { enabled = true },
     follow_mode = { enabled = true },
     hover = { enabled = true },
-    pack = { enabled = true },
     quickfix = { enabled = true },
     session = { enabled = true },
     signature = { enabled = true },
@@ -36,17 +33,11 @@ end, { desc = "Scroll eldoc up" })
 
 vim.keymap.set("n", "<leader>P", "", { desc = "Package", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>Pu", function()
-    pack.update()
+    vim.pack.update()
 end, { desc = "Update all plugins" })
-vim.keymap.set("n", "<leader>Pc", function()
-    pack.clean()
-end, { desc = "Clean orphaned plugins" })
 vim.keymap.set("n", "<leader>Pr", function()
-    pack.rollback()
+    vim.pack.update(nil, { target = "lockfile" })
 end, { desc = "Rollback plugins to lockfile" })
-vim.keymap.set("n", "<leader>Ph", function()
-    pack.health()
-end, { desc = "Check plugin health" })
 
 vim.keymap.set("n", "<leader>S", "", { desc = "Session", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>Ss", function()

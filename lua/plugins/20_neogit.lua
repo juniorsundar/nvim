@@ -1,4 +1,4 @@
-require("micro.pack").add "gh:NeogitOrg/neogit"
+vim.pack.add { "https://github.com/NeogitOrg/neogit" }
 
 local neogit_loaded = false
 

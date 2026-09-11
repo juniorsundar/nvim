@@ -6,7 +6,6 @@ local defaults = {
     folds = { enabled = false },
     follow_mode = { enabled = false },
     hover = { enabled = false },
-    pack = { enabled = false },
     quickfix = { enabled = false },
     scratch = { enabled = false },
     session = { enabled = false },

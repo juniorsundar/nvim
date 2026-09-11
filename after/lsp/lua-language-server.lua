@@ -1,11 +1,10 @@
 local capabilities = require "config.lsp.serve_capabilities"
 
 local root_markers1 = {
+    ".git",
     ".emmyrc.json",
     ".luarc.json",
     ".luarc.jsonc",
-}
-local root_markers2 = {
     ".luacheckrc",
     ".stylua.toml",
     "stylua.toml",
@@ -16,8 +15,7 @@ local root_markers2 = {
 return {
     cmd = { "lua-language-server" },
     filetypes = { "lua" },
-    root_markers = vim.fn.has "nvim-0.11.3" == 1 and { root_markers1, root_markers2, { ".git" } }
-        or vim.list_extend(vim.list_extend(root_markers1, root_markers2), { ".git" }),
+    root_markers = root_markers1,
     capabilities = capabilities,
     settings = {
         Lua = {

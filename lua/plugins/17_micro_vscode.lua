@@ -3,6 +3,5 @@ if not vim.g.vscode then
 end
 
 require("micro").setup {
-    pack = { enabled = true },
     split_suffix = { enabled = true },
 }

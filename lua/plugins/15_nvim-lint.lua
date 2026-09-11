@@ -1,4 +1,4 @@
-require("micro.pack").add "gh:mfussenegger/nvim-lint"
+vim.pack.add { "https://github.com/mfussenegger/nvim-lint" }
 
 require("lint").linters_by_ft = {
     rust = { "clippy" },
