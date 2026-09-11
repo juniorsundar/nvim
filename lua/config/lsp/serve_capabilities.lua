@@ -1,21 +1,28 @@
-M = {
-    capabilities = vim.lsp.protocol.make_client_capabilities(),
-}
+local capabilities = vim.lsp.protocol.make_client_capabilities()
 
 local blink_loaded, blink = pcall(require, "blink.cmp")
 if blink_loaded then
-    M.capabilities = vim.tbl_deep_extend("force", M.capabilities, blink.get_lsp_capabilities(M.capabilities))
+    capabilities = vim.tbl_deep_extend("force", capabilities, blink.get_lsp_capabilities(capabilities))
 end
 
-M.capabilities.textDocument.codeLens = {
+-- Some servers (e.g. lua-language-server) only register `completionProvider`
+-- dynamically via `client/registerCapability` when we advertise dynamic
+-- registration support for completion. blink.cmp's LSP source only checks
+-- the static `server_capabilities.completionProvider`, so it never sees a
+-- dynamically-registered one and silently excludes the client. Disabling
+-- dynamicRegistration here makes such servers declare completionProvider
+-- statically in `initialize` instead.
+capabilities.textDocument.completion.dynamicRegistration = false
+
+capabilities.textDocument.codeLens = {
     dynamicRegistration = true,
     refreshSupport = true,
 }
-M.capabilities.textDocument.foldingRange = {
+capabilities.textDocument.foldingRange = {
     dynamicRegistration = false,
     lineFoldingOnly = true,
 }
-M.capabilities.workspace = {
+capabilities.workspace = {
     didChangeWatchedFiles = {
         dynamicRegistration = true,
     },
@@ -50,4 +57,4 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end,
 })
 
-return M
+return capabilities
