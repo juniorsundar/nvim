@@ -4,3 +4,9 @@
 [submodule "refer.nvim"]
 	path = lua/custom/refer.nvim
 	url = https://github.com/juniorsundar/refer.nvim.git
+[submodule "outpost.nvim"]
+	path = lua/custom/outpost.nvim
+	url = https://github.com/juniorsundar/outpost.nvim
+[submodule "lua/custom/outpost.nvim"]
+	path = lua/custom/outpost.nvim
+	url = https://github.com/juniorsundar/outpost.nvim
