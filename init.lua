@@ -123,7 +123,7 @@ else
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/cling.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/buffers.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/micro.nvim")
-    vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/nvremote.nvim")
+    vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/outpost.nvim")
 
     require "plugins"
 
