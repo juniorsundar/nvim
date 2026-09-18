@@ -257,4 +257,11 @@ function M.setup(opts)
     vim.keymap.set("n", "<leader>Ls", print_signature_help, { desc = "Signature" })
 end
 
+-- Export subcommands for the global :Micro command
+M.subcommands = {
+    signature = {
+        print = print_signature_help,
+    },
+}
+
 return M

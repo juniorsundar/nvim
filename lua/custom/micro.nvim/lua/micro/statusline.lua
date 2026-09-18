@@ -114,7 +114,32 @@ function M.is_ignored(buf_id)
     if not vim.g.micro_statusline then
         return true
     end
+    -- Per-buffer runtime toggle, exported via :Micro statusline enable/disable/toggle
+    if vim.b[buf_id].micro_statusline_disabled then
+        return true
+    end
     return false
+end
+
+function M.enable(buf_id)
+    buf_id = buf_id or vim.api.nvim_get_current_buf()
+    pcall(vim.api.nvim_buf_del_var, buf_id, "micro_statusline_disabled")
+    M.update()
+end
+
+function M.disable(buf_id)
+    buf_id = buf_id or vim.api.nvim_get_current_buf()
+    vim.b[buf_id].micro_statusline_disabled = true
+    M.update()
+end
+
+function M.toggle(buf_id)
+    buf_id = buf_id or vim.api.nvim_get_current_buf()
+    if vim.b[buf_id].micro_statusline_disabled then
+        M.enable(buf_id)
+    else
+        M.disable(buf_id)
+    end
 end
 
 function M.get_mode_color()
@@ -445,9 +470,6 @@ function M.update()
         end
         for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
             if vim.api.nvim_win_is_valid(win) then
-                -- Never let a statusline error propagate into whatever context
-                -- runs this callback (e.g. a blocking dialog of another plugin,
-                -- whose host task would otherwise be aborted).
                 pcall(M.render_window, win, vim.api.nvim_win_get_buf(win))
             end
         end
@@ -481,6 +503,22 @@ function M.autoscroll()
         end
     end
 end
+
+-- Export subcommands for the global :Micro command; the "statusline" node nests
+-- enable/disable/toggle as sub-subcommands (operate on the current buffer)
+M.subcommands = {
+    statusline = {
+        enable = function()
+            M.enable()
+        end,
+        disable = function()
+            M.disable()
+        end,
+        toggle = function()
+            M.toggle()
+        end,
+    },
+}
 
 function M.setup(opts)
     M.config = vim.tbl_deep_extend("force", M.config, opts or {})

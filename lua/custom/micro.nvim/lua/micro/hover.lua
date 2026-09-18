@@ -226,24 +226,24 @@ local function eldoc()
     vim.lsp.buf_request(bufnr, "textDocument/hover", params, handler)
 end
 
-function M.setup(opts)
-    local default_opts = {
+local default_opts = {
+    enabled = false,
+    auto_hover = {
         enabled = false,
-        auto_hover = {
-            enabled = false,
-            delay = 500,
-        },
-        layout = "eldoc",
-        reduce_split_jank = true,
-        opts = {
-            border = "rounded",
-            relative = "editor",
-            offset_x = vim.o.columns,
-            ratio = 0.4,
-            max_height = 15,
-        },
-    }
+        delay = 500,
+    },
+    layout = "eldoc",
+    reduce_split_jank = true,
+    opts = {
+        border = "rounded",
+        relative = "editor",
+        offset_x = vim.o.columns,
+        ratio = 0.4,
+        max_height = 15,
+    },
+}
 
+function M.setup(opts)
     ---@type table
     vim.Micro.hover = vim.tbl_deep_extend("force", default_opts, opts or {})
 
@@ -300,5 +300,18 @@ function M.scroll(direction, step)
         vim.cmd(string.format("normal! %d%s", lines, scroll_key))
     end)
 end
+
+-- Export subcommands for the global :Micro command; leaf handlers receive
+-- leftover fargs as strings, so numeric args are converted here
+M.subcommands = {
+    hover = {
+        show = function()
+            eldoc()
+        end,
+        scroll = function(direction, step)
+            M.scroll(tonumber(direction) or 1, tonumber(step))
+        end,
+    },
+}
 
 return M

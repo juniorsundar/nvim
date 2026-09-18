@@ -320,8 +320,10 @@ end
 
 -- Export subcommands for the global :Micro command
 M.subcommands = {
-    ["follow split"] = follow_split,
-    ["follow mode"] = follow_mode,
+    follow = {
+        split = follow_split,
+        mode = follow_mode,
+    },
 }
 
 return M

@@ -94,4 +94,12 @@ M.setup = function(opts)
     setup_autocmds()
 end
 
+-- Export subcommands for the global :Micro command
+M.subcommands = {
+    session = {
+        save = M.save_session,
+        load = M.load_session,
+    },
+}
+
 return M
