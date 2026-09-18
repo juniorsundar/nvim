@@ -20,16 +20,12 @@
       "rev": "9258f9f10c4c729d8296fce0e3ecb12543daad06",
       "src": "https://github.com/NotAShelf/direnv.nvim"
     },
-    "doom-one.nvim": {
-      "rev": "d7d634c67ecf865f7da3352fcbe04fd3997f721f",
-      "src": "https://github.com/juniorsundar/doom-one.nvim"
-    },
     "flash.nvim": {
       "rev": "5f0f270fdc7c5b0c21d903ee85b9cb06f2ac636a",
       "src": "https://github.com/folke/flash.nvim"
     },
     "gitsigns.nvim": {
-      "rev": "5eb287fdbd523c3a1b3d01f304f43570e73e259b",
+      "rev": "8d79f2410c76e62b92e51c28c82e28c1c5a3daeb",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
     "md-render.nvim": {
@@ -57,16 +53,12 @@
       "src": "https://github.com/juniorsundar/nvim-treesitter"
     },
     "nvim-web-devicons": {
-      "rev": "5f032a85be210cd1c6ac98861eb3b187ff3bd5eb",
+      "rev": "914decffe650296c87312c53b7933ecb86718499",
       "src": "https://github.com/nvim-tree/nvim-web-devicons"
     },
     "oil.nvim": {
       "rev": "b73018b75affd13fa38e2fc94ef753b465f770d7",
       "src": "https://github.com/stevearc/oil.nvim"
-    },
-    "orgmode": {
-      "rev": "3bfd89bcfb210c5768be41f00c51f3f4721e55e7",
-      "src": "https://github.com/nvim-orgmode/orgmode"
     },
     "sidekick.nvim": {
       "rev": "3d80a47e6375f6d647c9695d3afea6fa1b3275df",

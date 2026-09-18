@@ -3,6 +3,7 @@ local c = require "astrotheme.palettes.astrodark"
 require("astrotheme").setup {
     style = {
         transparent = false,
+        inactive = false,
         float = false,
     },
     plugin_default = true,
