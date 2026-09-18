@@ -1,5 +1,9 @@
 {
   "plugins": {
+    "astrotheme": {
+      "rev": "f6883da9b88ac810e6e5568db9a74ba6d6672d4b",
+      "src": "https://github.com/AstroNvim/astrotheme"
+    },
     "blink.cmp": {
       "rev": "473c928d8b9b5b3f638cd085a01899972cf205c6",
       "src": "https://github.com/saghen/blink.cmp"
