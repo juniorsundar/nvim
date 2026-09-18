@@ -1,4 +1,4 @@
-vim.pack.add { "https://github.com/juniorsundar/nvim-treesitter" }
+vim.pack.add { "https://github.com/nvim-treesitter/nvim-treesitter" }
 
 local install_dir = vim.env.OUTPOST_SESSION == "1" and vim.fs.joinpath(vim.env.HOME, ".cache/outpost/treesitter")
     or vim.fn.stdpath "data" .. "/site"
