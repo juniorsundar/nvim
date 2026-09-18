@@ -742,8 +742,8 @@ describe("buffers.grep context", function()
         end)
 
         -- Grow twice to reach ±6.
-        assert.is_true(grep.grow_context(buf, match_row))
-        assert.is_true(grep.grow_context(buf, match_row))
+        assert.is_true(grep.expand_context(buf, match_row))
+        assert.is_true(grep.expand_context(buf, match_row))
         local _, meta = next(grep.buffer_data[buf])
         assert.are.equal(5, meta.expand_up)
         assert.are.equal(5, meta.expand_down)
@@ -760,7 +760,7 @@ describe("buffers.grep context", function()
         assert.are.equal(0, meta.expand_down)
     end)
 
-    it("grow_context expands a collapsed match and grows an expanded match", function()
+    it("expand_context expands a collapsed match and grows an expanded match", function()
         local path = write_fixture { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten" }
         table.insert(files, path)
         local buf = make_grep_buffer(path, { path .. ":5:1:five" })
@@ -770,7 +770,7 @@ describe("buffers.grep context", function()
         end)
 
         -- Collapsed: grow expands to ±3.
-        assert.is_true(grep.grow_context(buf, match_row))
+        assert.is_true(grep.expand_context(buf, match_row))
         local _, meta = next(grep.buffer_data[buf])
         assert.are.equal(3, meta.expand_up)
         assert.are.equal(3, meta.expand_down)
@@ -780,7 +780,7 @@ describe("buffers.grep context", function()
         match_row = row_for(buf, function(location)
             return location.kind == "match"
         end)
-        assert.is_true(grep.grow_context(buf, match_row))
+        assert.is_true(grep.expand_context(buf, match_row))
         _, meta = next(grep.buffer_data[buf])
         assert.are.equal(4, meta.expand_up)
         assert.are.equal(5, meta.expand_down)
@@ -798,8 +798,8 @@ describe("buffers.grep context", function()
         end)
 
         -- Grow twice to ±6 (clamped by file edges to ±5).
-        assert.is_true(grep.grow_context(buf, match_row))
-        assert.is_true(grep.grow_context(buf, match_row))
+        assert.is_true(grep.expand_context(buf, match_row))
+        assert.is_true(grep.expand_context(buf, match_row))
         local _, meta = next(grep.buffer_data[buf])
         assert.are.equal(5, meta.expand_up)
         assert.are.equal(5, meta.expand_down)

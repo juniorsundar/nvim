@@ -82,10 +82,6 @@ local function match_row(bufnr, id)
     return meta and meta.buffer_row
 end
 
-local function context_row(_, entry)
-    return entry.buffer_row
-end
-
 -- Context and match row metadata deliberately remains independent of extmark
 -- gravity, so replacing a whole line through the public buffer API is stable.
 local function shift_rows(bufnr, start_row, delta)
@@ -314,6 +310,17 @@ local function refresh_views(bufnr)
     M._programmatic[bufnr] = false
 end
 
+---Refresh views after a context operation, then return the cursor to the
+---owning match's anchor row if it lives in the current buffer.
+local function finish_and_focus(bufnr, match_id)
+    refresh_views(bufnr)
+    local anchor_row = match_row(bufnr, match_id)
+    if anchor_row and api.nvim_get_current_buf() == bufnr then
+        pcall(api.nvim_win_set_cursor, 0, { anchor_row + 1, 0 })
+    end
+    return true
+end
+
 ---Highlights the buffer using virtual text and transforms raw grep lines once.
 function M.highlight_buffer(bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
@@ -438,51 +445,52 @@ function M.refresh_virt_text(bufnr)
     M.refresh_syntax(bufnr)
 end
 
+local function highlight_syntax_row(bufnr, source)
+    local line = api.nvim_buf_get_lines(bufnr, source.row, source.row + 1, false)[1]
+    if not line or #line == 0 then
+        return
+    end
+    local ft = vim.filetype.match { filename = source.meta.filename }
+    local lang = ft and vim.treesitter.language.get_lang(ft)
+    if not lang then
+        return
+    end
+    local ok, parser = pcall(vim.treesitter.get_string_parser, line, lang)
+    if not ok or not parser then
+        return
+    end
+    local ok_tree, tree = pcall(function()
+        return parser:parse()[1]
+    end)
+    if not ok_tree or not tree then
+        return
+    end
+    local query = vim.treesitter.query.get(lang, "highlights")
+    if not query then
+        return
+    end
+    for capture_id, node in query:iter_captures(tree:root(), line, 0, -1) do
+        local _, s_col, _, e_col = node:range()
+        api.nvim_buf_set_extmark(bufnr, syntax_ns_id, source.row, s_col, {
+            end_col = e_col,
+            hl_group = "@" .. query.captures[capture_id] .. "." .. lang,
+            priority = 100,
+        })
+    end
+end
+
 function M.refresh_syntax(bufnr)
     bufnr = bufnr or api.nvim_get_current_buf()
     api.nvim_buf_clear_namespace(bufnr, syntax_ns_id, 0, -1)
     for _, source in ipairs(shown_source_rows(bufnr)) do
-        local line = api.nvim_buf_get_lines(bufnr, source.row, source.row + 1, false)[1]
-        if line and #line > 0 then
-            local ft = vim.filetype.match { filename = source.meta.filename }
-            if ft then
-                local lang = vim.treesitter.language.get_lang(ft)
-                if lang then
-                    local ok, parser = pcall(vim.treesitter.get_string_parser, line, lang)
-                    if ok and parser then
-                        local ok_tree, tree = pcall(function()
-                            return parser:parse()[1]
-                        end)
-                        if ok_tree and tree then
-                            local query = vim.treesitter.query.get(lang, "highlights")
-                            if query then
-                                for capture_id, node in query:iter_captures(tree:root(), line, 0, -1) do
-                                    local _, s_col, _, e_col = node:range()
-                                    api.nvim_buf_set_extmark(bufnr, syntax_ns_id, source.row, s_col, {
-                                        end_col = e_col,
-                                        hl_group = "@" .. query.captures[capture_id] .. "." .. lang,
-                                        priority = 100,
-                                    })
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
+        highlight_syntax_row(bufnr, source)
     end
 end
 
 local function source_rows(bufnr)
     local rows = {}
-    for _, extmark in ipairs(match_extmarks(bufnr)) do
-        local meta = M.buffer_data[bufnr][extmark[1]]
-        if meta then
-            rows[meta.filename .. "\0" .. meta.lnum] = meta.buffer_row
-            for _, entry in ipairs(meta.context or {}) do
-                rows[meta.filename .. "\0" .. entry.lnum] = entry.buffer_row
-            end
-        end
+    for _, source in ipairs(shown_source_rows(bufnr)) do
+        rows[source.filename .. "\0" .. source.lnum] = source.row
     end
     return rows
 end
@@ -735,7 +743,7 @@ function M.collapse_context(bufnr, row)
     M._programmatic[bufnr] = true
     local owned_rows = {}
     for _, entry in ipairs(meta.context) do
-        owned_rows[context_row(bufnr, entry)] = true
+        owned_rows[entry.buffer_row] = true
     end
     meta.context = {}
     meta.expand_up = 0
@@ -745,7 +753,7 @@ function M.collapse_context(bufnr, row)
     for _, other_meta in pairs(M.buffer_data[bufnr] or {}) do
         covered_rows[other_meta.buffer_row] = true
         for _, entry in ipairs(other_meta.context or {}) do
-            covered_rows[context_row(bufnr, entry)] = true
+            covered_rows[entry.buffer_row] = true
         end
     end
     local rows = {}
@@ -761,13 +769,7 @@ function M.collapse_context(bufnr, row)
         api.nvim_buf_set_lines(bufnr, entry_row, entry_row + 1, false, {})
         shift_rows(bufnr, entry_row + 1, -1)
     end
-    refresh_views(bufnr)
-
-    local anchor_row = match_row(bufnr, location.match_id)
-    if anchor_row and api.nvim_get_current_buf() == bufnr then
-        pcall(api.nvim_win_set_cursor, 0, { anchor_row + 1, 0 })
-    end
-    return true
+    return finish_and_focus(bufnr, location.match_id)
 end
 
 ---Shrink the owning match's window by ±3. Context entries that fall
@@ -813,18 +815,18 @@ function M.shrink_context(bufnr, row)
         if id ~= location.match_id then
             covered_rows[other_meta.buffer_row] = true
             for _, entry in ipairs(other_meta.context or {}) do
-                covered_rows[context_row(bufnr, entry)] = true
+                covered_rows[entry.buffer_row] = true
             end
         end
     end
     for _, entry in ipairs(keep) do
-        covered_rows[context_row(bufnr, entry)] = true
+        covered_rows[entry.buffer_row] = true
     end
 
     -- Collect physical rows to delete: removed entries not covered by anyone.
     local rows_to_delete = {}
     for _, entry in ipairs(remove) do
-        local r = context_row(bufnr, entry)
+        local r = entry.buffer_row
         if not covered_rows[r] then
             table.insert(rows_to_delete, r)
         end
@@ -844,13 +846,7 @@ function M.shrink_context(bufnr, row)
     end
 
     reorder_buffer(bufnr)
-    refresh_views(bufnr)
-
-    local anchor_row = match_row(bufnr, location.match_id)
-    if anchor_row and api.nvim_get_current_buf() == bufnr then
-        pcall(api.nvim_win_set_cursor, 0, { anchor_row + 1, 0 })
-    end
-    return true
+    return finish_and_focus(bufnr, location.match_id)
 end
 
 ---Toggle the owning match's context: expand if collapsed, collapse if expanded.
@@ -870,9 +866,6 @@ function M.toggle_context(bufnr, row)
         return M.expand_context(bufnr, row)
     end
 end
-
----Alias for expand_context: grow the owning match's window by ±3.
-M.grow_context = M.expand_context
 
 ---Expand context on every match in the buffer (grow all by ±3).
 ---@param bufnr? integer
@@ -942,7 +935,7 @@ local function collect_edits(bufnr)
                 })
             end
             for _, entry in ipairs(meta.context) do
-                local entry_row = context_row(bufnr, entry)
+                local entry_row = entry.buffer_row
                 current = api.nvim_buf_get_lines(bufnr, entry_row, entry_row + 1, false)[1]
                 if current and current ~= entry.original_text then
                     table.insert(edits, {
@@ -1054,7 +1047,7 @@ function M.refresh_content()
             for _, entry in ipairs(meta.context) do
                 text = file_lines[entry.lnum]
                 if text then
-                    local entry_row = context_row(bufnr, entry)
+                    local entry_row = entry.buffer_row
                     if api.nvim_buf_get_lines(bufnr, entry_row, entry_row + 1, false)[1] ~= text then
                         api.nvim_buf_set_lines(bufnr, entry_row, entry_row + 1, false, { text })
                         updates_made = true
@@ -1139,8 +1132,9 @@ function M._guard_callback(bufnr)
     pcall(vim.cmd, "stopinsert")
 end
 
----Register the structural-edit guard autocmd for a processed buffer.
----Called once per buffer from highlight_buffer. Not in ftplugin.
+---Register the per-buffer autocmd for a processed buffer. Not in ftplugin.
+---Re-renders virtual/visual text after in-place edits, and rejects
+---user-driven structural line edits (insert/delete of whole lines).
 function M._setup_guard(bufnr)
     if vim.b[bufnr].grep_guard_setup then
         return
@@ -1149,6 +1143,7 @@ function M._setup_guard(bufnr)
     api.nvim_create_autocmd({ "TextChanged", "TextChangedI", "InsertLeave" }, {
         buffer = bufnr,
         callback = function()
+            M.highlight_buffer(bufnr) -- early-returns to refresh_virt_text on processed buffers
             M._guard_callback(bufnr)
         end,
     })

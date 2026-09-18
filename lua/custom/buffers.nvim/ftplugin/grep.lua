@@ -25,7 +25,7 @@ vim.keymap.set("n", "zA", function()
 end, { buffer = bufnr, silent = true, desc = "Toggle grep context" })
 
 vim.keymap.set("n", "z+", function()
-    require("buffers.grep").grow_context()
+    require("buffers.grep").expand_context()
 end, { buffer = bufnr, silent = true, desc = "Grow grep context (+3)" })
 
 vim.keymap.set("n", "z-", function()
@@ -69,10 +69,3 @@ vim.keymap.set("n", "g?", function()
 end, { buffer = bufnr, silent = true, desc = "Show grep buffer keymap help" })
 
 require("buffers.grep").highlight_buffer(bufnr)
-
-vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
-    buffer = bufnr,
-    callback = function()
-        require("buffers.grep").highlight_buffer(bufnr)
-    end,
-})
