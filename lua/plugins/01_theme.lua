@@ -4,7 +4,7 @@ require("astrotheme").setup {
     style = {
         transparent = false,
         inactive = false,
-        float = false,
+        float = true,
     },
     plugin_default = true,
     highlights = {

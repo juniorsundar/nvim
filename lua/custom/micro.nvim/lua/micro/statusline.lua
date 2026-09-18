@@ -41,6 +41,7 @@ M.config = {
             ["snacks_dashboard"] = true,
             ["snacks_picker_list"] = true,
             ["snacks_picker_input"] = true,
+            ["snacks_terminal"] = true,
             ["refer_input"] = true,
             ["refer_results"] = true,
         },
