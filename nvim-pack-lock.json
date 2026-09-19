@@ -24,10 +24,6 @@
       "rev": "5f0f270fdc7c5b0c21d903ee85b9cb06f2ac636a",
       "src": "https://github.com/folke/flash.nvim"
     },
-    "fzf-lua": {
-      "rev": "02bc882f208f3481aa959dbbee8ce5edad2fd8b2",
-      "src": "https://github.com/ibhagwan/fzf-lua"
-    },
     "gitsigns.nvim": {
       "rev": "8d79f2410c76e62b92e51c28c82e28c1c5a3daeb",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
@@ -53,8 +49,8 @@
       "src": "https://github.com/kylechui/nvim-surround"
     },
     "nvim-treesitter": {
-      "rev": "9a168f6357ed21c3a636e1727bc7d382abc451b8",
-      "src": "https://github.com/juniorsundar/nvim-treesitter"
+      "rev": "f603a2f4da48728f80257fb5fbb90145fd1dc173",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "nvim-web-devicons": {
       "rev": "914decffe650296c87312c53b7933ecb86718499",
