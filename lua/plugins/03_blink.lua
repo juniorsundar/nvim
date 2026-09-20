@@ -3,9 +3,12 @@ vim.pack.add {
     "https://github.com/saghen/blink.cmp",
 }
 
-require("blink.cmp").build():pwait()
+local blink = require "blink.cmp"
+if type(blink.build) == "function" then
+    blink.build():pwait()
+end
 
-require("blink.cmp").setup {
+blink.setup {
     -- 'default' for mappings similar to built-in completion
     -- 'super-tab' for mappings similar to vscode (tab to accept, arrow keys to navigate)
     -- 'enter' for mappings similar to 'super-tab' but with 'enter' to accept
