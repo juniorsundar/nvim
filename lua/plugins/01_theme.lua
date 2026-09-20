@@ -9,8 +9,6 @@ require("astrotheme").setup {
     plugin_default = true,
     highlights = {
         global = {
-            ["BlinkCmpMenu"] = { fg = c.ui.text, bg = c.ui.base },
-            ["BlinkCmpMenuBorder"] = { fg = c.ui.text, bg = c.ui.base },
             ["Folded"] = { fg = c.ui.text, bg = c.ui.base },
         },
     },
