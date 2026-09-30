@@ -1,9 +1,5 @@
 {
   "plugins": {
-    "astrotheme": {
-      "rev": "f6883da9b88ac810e6e5568db9a74ba6d6672d4b",
-      "src": "https://github.com/AstroNvim/astrotheme"
-    },
     "blink.cmp": {
       "rev": "8219b58f1c11a2fb1644d3c7116c509fa8348ec0",
       "src": "https://github.com/saghen/blink.cmp"
@@ -35,6 +31,10 @@
     "direnv.nvim": {
       "rev": "9258f9f10c4c729d8296fce0e3ecb12543daad06",
       "src": "https://github.com/NotAShelf/direnv.nvim"
+    },
+    "doom-one.nvim": {
+      "rev": "9a1ca1bd2f21cafc250114e6fb9a45c952b59a1c",
+      "src": "https://github.com/juniorsundar/doom-one.nvim"
     },
     "flash.nvim": {
       "rev": "5f0f270fdc7c5b0c21d903ee85b9cb06f2ac636a",
