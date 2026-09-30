@@ -4,6 +4,7 @@ local lsp = require "refer.providers.lsp"
 local files = require "refer.providers.files"
 
 refer.setup {
+    default_sorter = "lua",
     extras = { find_file = true },
 }
 

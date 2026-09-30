@@ -3,10 +3,10 @@ vim.pack.add {
         src = "https://www.github.com/hrsh7th/nvim-cmp",
         name = "nvim-cmp",
     },
-    "hrsh7th/cmp-nvim-lsp",
-    "hrsh7th/cmp-buffer",
-    "hrsh7th/cmp-nvim-lsp-signature-help",
-    "hrsh7th/cmp-path",
+    "https://www.github.com/hrsh7th/cmp-nvim-lsp",
+    "https://www.github.com/hrsh7th/cmp-buffer",
+    "https://www.github.com/hrsh7th/cmp-nvim-lsp-signature-help",
+    "https://www.github.com/hrsh7th/cmp-path",
 }
 
 local global_snippets = {

@@ -5,6 +5,11 @@ if blink_loaded then
     capabilities = vim.tbl_deep_extend("force", capabilities, blink.get_lsp_capabilities(capabilities))
 end
 
+local cmp_loaded, cmp = pcall(require, "cmp_nvim_lsp")
+if cmp_loaded then
+    capabilities = vim.tbl_deep_extend("force", capabilities, cmp.default_capabilities())
+end
+
 -- Some servers (e.g. lua-language-server) only register `completionProvider`
 -- dynamically via `client/registerCapability` when we advertise dynamic
 -- registration support for completion. blink.cmp's LSP source only checks
