@@ -160,3 +160,6 @@ cmp.setup {
         { name = "buffer" },
     }),
 }
+
+-- refer's prompt owns <Tab> (complete_selection); cmp would hijack it
+cmp.setup.filetype({ "refer_input", "refer_results" }, { enabled = false })
