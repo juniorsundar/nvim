@@ -1,5 +1,6 @@
 require("micro").setup {
     breadcrumbs = { enabled = false },
+    completion = { enabled = true },
     dynamic_lnum = { enabled = true },
     folds = { enabled = true },
     follow_mode = { enabled = true },
@@ -20,6 +21,7 @@ require("micro").setup {
     treesit_navigator = { enabled = true },
     scratch = { enabled = true },
 }
+require("micro.completion_keys").setup()
 
 vim.keymap.set("n", "<leader>Lk", function()
     vim.Micro.eldoc()

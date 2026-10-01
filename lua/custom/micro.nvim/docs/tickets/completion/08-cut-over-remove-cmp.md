@@ -4,11 +4,11 @@
 
 **Blocked by:** 03, 04, 06, 07
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Active configuration completes natively with the agreed sources and keys
-- [ ] No cmp plugin config, cmp lock entries or cmp/blink capability merging remain
-- [ ] `dynamicRegistration` is restored or the workaround is kept with a recorded reason
-- [ ] The full editor test suite passes on 0.12.5 and nightly after cut-over
+- [x] Active configuration completes natively with the agreed sources and keys
+- [x] No cmp plugin config, cmp lock entries or cmp/blink capability merging remain
+- [x] `dynamicRegistration` is restored or the workaround is kept with a recorded reason
+- [x] The full editor test suite passes on 0.12.5 and nightly after cut-over
 
 Spec: `docs/specs/completion/spec.md`. Evidence: `docs/completion-scope.md`.

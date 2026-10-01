@@ -1,14 +1,14 @@
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 
-local blink_loaded, blink = pcall(require, "blink.cmp")
-if blink_loaded then
-    capabilities = vim.tbl_deep_extend("force", capabilities, blink.get_lsp_capabilities(capabilities))
-end
-
-local cmp_loaded, cmp = pcall(require, "cmp_nvim_lsp")
-if cmp_loaded then
-    capabilities = vim.tbl_deep_extend("force", capabilities, cmp.default_capabilities())
-end
+-- local blink_loaded, blink = pcall(require, "blink.cmp")
+-- if blink_loaded then
+--     capabilities = vim.tbl_deep_extend("force", capabilities, blink.get_lsp_capabilities(capabilities))
+-- end
+--
+-- local cmp_loaded, cmp = pcall(require, "cmp_nvim_lsp")
+-- if cmp_loaded then
+--     capabilities = vim.tbl_deep_extend("force", capabilities, cmp.default_capabilities())
+-- end
 
 -- Some servers (e.g. lua-language-server) only register `completionProvider`
 -- dynamically via `client/registerCapability` when we advertise dynamic
@@ -17,7 +17,7 @@ end
 -- dynamically-registered one and silently excludes the client. Disabling
 -- dynamicRegistration here makes such servers declare completionProvider
 -- statically in `initialize` instead.
-capabilities.textDocument.completion.dynamicRegistration = false
+-- capabilities.textDocument.completion.dynamicRegistration = false
 
 capabilities.textDocument.codeLens = {
     dynamicRegistration = true,

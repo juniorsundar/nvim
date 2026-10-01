@@ -240,3 +240,7 @@ Results (lua-language-server 3.19.1, nightly):
 - The snippet path was not exercised against lua-language-server (its default `callSnippet` is off); snippet acceptance is covered by the scripted-server specs.
 - `cmd` wrappers pass `cmd_cwd or root_dir` on nightly, as native does; a spec compares the server's actual working directory.
 - Not done: the active configuration (cmp, `serve_capabilities.lua`) is unchanged; ticket 08 removes the cmp/blink capability merge and the `dynamicRegistration=false` workaround.
+
+## Cut-over (ticket 08)
+
+`15_micro.lua` enables `micro.completion` and calls `micro.completion_keys.setup()`. `03_nvim-cmp.lua` and the five cmp lock entries are removed, and `serve_capabilities.lua` no longer merges cmp/blink capabilities. The `dynamicRegistration=false` workaround is dropped (native default restored) because ticket 07 showed native handles dynamic registration and the module enables completion once the client is capable. Smoke-tested against the real config with lua-language-server: auto menu, Enter without selection inserts a newline, Tab selects, Enter accepts, `./` gives filesystem candidates. The cmp-only snippet source and `lazydev`/signature-help sources are gone by design (spec out-of-scope).
