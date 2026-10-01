@@ -17,6 +17,16 @@ local is_wrapper = setmetatable({}, { __mode = "k" })
 local watched = {}
 local group = api.nvim_create_augroup("micro_completion", { clear = true })
 
+local excluded_filetypes = { refer_input = true, refer_results = true }
+
+--- Buffers that never get completion: refer prompt/results, any non-file buffer,
+--- and anything that opts out with `vim.b.completion = false`.
+local function excluded(buf)
+    return vim.b[buf].completion == false
+        or vim.bo[buf].buftype ~= ""
+        or excluded_filetypes[vim.bo[buf].filetype] == true
+end
+
 -- Edits outside the request line expire tickets. `changedtick` cannot be used:
 -- native completion temporarily edits and restores the query line itself.
 local function watch(buf)
@@ -65,7 +75,7 @@ end
 
 local function current(ticket)
     local s = ticket.snapshot
-    if ticket.dead or epoch ~= s.epoch then
+    if ticket.dead or epoch ~= s.epoch or excluded(s.buf) then
         return false
     end
     local mode = api.nvim_get_mode().mode
@@ -137,7 +147,7 @@ function M.wrap_cmd(cmd)
             -- Send-time eligibility: a native trigger timer may already be queued
             -- when the route changes, and manual get() bypasses autotrigger.
             local owner = request_buf(params.textDocument.uri)
-            if owner and M.route_of(owner) ~= "language" then
+            if owner and (excluded(owner) or M.route_of(owner) ~= "language") then
                 return false
             end
             watch(api.nvim_get_current_buf())
@@ -286,6 +296,8 @@ end
 ---------------------------------------------------------------------------
 
 local ROUTE_VAR = "micro_completion_route"
+-- True while the module itself writes options, so its own OptionSet events do not invalidate.
+local tuning = false
 
 function M.route_of(buf)
     return vim.b[buf][ROUTE_VAR] or "language"
@@ -298,7 +310,9 @@ local function route(buf, wanted, force)
     if not api.nvim_buf_is_valid(buf) then
         return
     end
-    if not wanted then
+    if excluded(buf) then
+        wanted = "disabled"
+    elseif not wanted or wanted == "disabled" then
         local ctx = buf == api.nvim_get_current_buf() and cursor_context()
         wanted = ctx and "path" or "language"
     end
@@ -311,6 +325,15 @@ local function route(buf, wanted, force)
         vim.lsp.completion.enable(false, client.id, buf)
     end
     vim.b[buf][ROUTE_VAR] = wanted
+    if wanted == "disabled" then
+        -- Leave the buffer's own omnifunc/complete alone; just stop automatic completion.
+        tuning = true
+        pcall(function()
+            vim.bo[buf].autocomplete = false
+        end)
+        tuning = false
+        return
+    end
     vim.bo[buf].omnifunc = "v:lua.vim.lsp.omnifunc"
     vim.bo[buf].complete = wanted == "path" and "Fv:lua.require'micro.completion'.path" or ".,o"
     if wanted == "language" then
@@ -320,8 +343,6 @@ local function route(buf, wanted, force)
     end
 end
 
-local tuning = false
-
 --- Native `'autocomplete'` has no minimum word length, so the module owns the switch:
 --- in a language context it is on only once the word before the cursor (including the
 --- character being inserted) reaches `min_word_length`. Native `'autocompletedelay'` is
@@ -329,7 +350,7 @@ local tuning = false
 --- nightly; add a module timer if stable needs it). Paths open at once. Server trigger characters use native LSP autotrigger,
 --- which does not depend on `'autocomplete'`.
 local function tune(buf, prefix)
-    if buf ~= api.nvim_get_current_buf() then
+    if buf ~= api.nvim_get_current_buf() or M.route_of(buf) == "disabled" then
         return
     end
     local path = M.route_of(buf) == "path"
@@ -366,6 +387,8 @@ function M.setup(user_opts)
             vim.o.autocompletedelay = opts.debounce
         end,
     })
+    -- `vim.b.completion` is a plain variable with no event, so re-check on the events
+    -- that follow most changes to it; the transport gate covers requests in between.
     api.nvim_create_autocmd("OptionSet", {
         group = group,
         pattern = { "complete", "omnifunc", "autocomplete", "iskeyword" },

@@ -4,10 +4,10 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] refer-shaped prompt and results buffers get no automatic completion and keep their own buffer-local Tab mapping
-- [ ] `vim.b.completion = false` disables completion and drops pending replies; setting it back re-enables completion
-- [ ] Non-file (`buftype` set) buffers are excluded
+- [x] refer-shaped prompt and results buffers get no automatic completion and keep their own buffer-local Tab mapping
+- [x] `vim.b.completion = false` disables completion and drops pending replies; setting it back re-enables completion
+- [x] Non-file (`buftype` set) buffers are excluded
 
 Spec: `docs/specs/completion/spec.md`. Evidence: `docs/completion-scope.md`.

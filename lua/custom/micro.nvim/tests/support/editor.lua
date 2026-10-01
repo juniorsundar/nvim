@@ -65,7 +65,7 @@ function Editor:state()
 end
 
 --- Opens a scratch buffer and starts the scripted server through the guarded cmd.
---- opts: lines, row, server (server.py options), micro (extra micro.completion opts)
+--- opts: lines, row, filetype, buftype, server (server.py options), micro (micro.completion opts)
 function Editor:session(opts)
     opts = opts or {}
     self:lua(
@@ -74,7 +74,8 @@ function Editor:session(opts)
         require("micro.completion").setup(o.micro or {})
         vim.api.nvim_buf_set_lines(0, 0, -1, false, o.lines or { "BufThing", "" })
         vim.api.nvim_win_set_cursor(0, { o.row or 2, 0 })
-        vim.bo.filetype = "probe"
+        vim.bo.buftype = o.buftype or ""
+        vim.bo.filetype = o.filetype or "probe"
         local cmd = { vim.env.PYTHON or "python3", server, vim.json.encode(o.server or {}) }
         vim.lsp.start {
             name = o.name or "probe",
