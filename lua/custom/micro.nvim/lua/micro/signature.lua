@@ -95,15 +95,18 @@ local function smart_conceal(text, params, active_idx, max_width)
     return new_text
 end
 
-local function print_signature_help()
-    local params = vim.lsp.util.make_position_params(0, "utf-8")
-    local bufnr = vim.api.nvim_get_current_buf()
-    local clients = vim.lsp.get_clients { bufnr = bufnr }
-    if not clients[1]:supports_method "textDocument/signatureHelp" then
-        return
+local function clear_signature()
+    require("micro.lsp").cancel "signature"
+    if showing_signature then
+        vim.api.nvim_echo({ { "" } }, false, {})
+        showing_signature = false
     end
+end
 
-    vim.lsp.buf_request(bufnr, "textDocument/signatureHelp", params, function(err, result, ctx, config)
+---@param debounce? integer
+local function request_signature(debounce)
+    -- Returns true once a signature has been echoed, so later clients' replies are ignored.
+    local function handler(err, result, ctx)
         if err or not result or not result.signatures or #result.signatures == 0 then
             if showing_signature then
                 vim.api.nvim_echo({ { "" } }, false, {})
@@ -111,6 +114,7 @@ local function print_signature_help()
             end
             return
         end
+        local bufnr = ctx.bufnr
 
         local active_idx = (result.activeSignature or 0) + 1
         local signature = result.signatures[active_idx] or result.signatures[1]
@@ -140,13 +144,13 @@ local function print_signature_help()
         local ok, parser = pcall(vim.treesitter.get_string_parser, text, lang)
         if not ok then
             print(text)
-            return
+            return true
         end
 
         local query = vim.treesitter.query.get(lang, "highlights")
         if not query then
             print(text)
-            return
+            return true
         end
 
         local tree = parser:parse()[1]
@@ -198,45 +202,24 @@ local function print_signature_help()
 
         vim.api.nvim_echo(chunks, false, {})
         showing_signature = true
-    end)
+        return true
+    end
+
+    require("micro.lsp").request("signature", 0, "textDocument/signatureHelp", function(client)
+        return vim.lsp.util.make_position_params(0, client.offset_encoding)
+    end, handler, { debounce = debounce })
 end
 
-local timer = nil
+local function print_signature_help()
+    request_signature()
+end
+
 local function debounced_signature()
-    if not is_at_function_call() then
-        if showing_signature then
-            vim.api.nvim_echo({ { "" } }, false, {})
-            showing_signature = false
-        end
-        return
+    if is_at_function_call() then
+        request_signature(300)
+    else
+        clear_signature()
     end
-
-    if timer then
-        timer:stop()
-        timer:close()
-    end
-
-    timer = vim.uv.new_timer()
-    if timer == nil then
-        return
-    end
-    timer:start(
-        300,
-        0,
-        vim.schedule_wrap(function()
-            if not is_at_function_call() then
-                if showing_signature then
-                    vim.api.nvim_echo({ { "" } }, false, {})
-                    showing_signature = false
-                end
-                return
-            end
-            local clients = vim.lsp.get_clients { bufnr = vim.api.nvim_get_current_buf() }
-            if #clients > 0 then
-                print_signature_help()
-            end
-        end)
-    )
 end
 
 function M.setup(opts)

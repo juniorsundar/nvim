@@ -64,30 +64,45 @@ function Editor:state()
     ]]
 end
 
+--- Starts the scripted server (server.py options in `opts`) for the current buffer.
+--- name: client name (distinct names give distinct clients); wrap: launch through micro.completion's cmd guard.
+function Editor:server(opts, name, wrap)
+    local count = self:lua "return #vim.lsp.get_clients { bufnr = 0 }"
+    self:lua(
+        [[
+        local o, server, name, wrap = ...
+        local cmd = { vim.env.PYTHON or "python3", server, vim.json.encode(next(o) and o or vim.empty_dict()) }
+        vim.lsp.start {
+            name = name,
+            cmd = wrap and require("micro.completion").wrap_cmd(cmd) or cmd,
+            root_dir = vim.fn.getcwd(),
+        }
+    ]],
+        opts or vim.empty_dict(),
+        server,
+        name or "probe",
+        wrap or false
+    )
+    self:wait(("#vim.lsp.get_clients { bufnr = 0 } > %d"):format(count))
+end
+
 --- Opens a scratch buffer and starts the scripted server through the guarded cmd.
 --- opts: lines, row, filetype, buftype, server (server.py options), micro (micro.completion opts)
 function Editor:session(opts)
     opts = opts or {}
     self:lua(
         [[
-        local o, server = ...
+        local o = ...
         require("micro.completion").setup(o.micro or {})
         require("micro.completion_keys").setup()
         vim.api.nvim_buf_set_lines(0, 0, -1, false, o.lines or { "BufThing", "" })
         vim.api.nvim_win_set_cursor(0, { o.row or 2, 0 })
         vim.bo.buftype = o.buftype or ""
         vim.bo.filetype = o.filetype or "probe"
-        local cmd = { vim.env.PYTHON or "python3", server, vim.json.encode(o.server or {}) }
-        vim.lsp.start {
-            name = o.name or "probe",
-            cmd = require("micro.completion").wrap_cmd(cmd),
-            root_dir = vim.fn.getcwd(),
-        }
     ]],
-        opts,
-        server
+        opts
     )
-    self:wait [[#vim.lsp.get_clients { bufnr = 0 } > 0]]
+    self:server(opts.server, opts.name, true)
     self:wait [[vim.b.micro_completion_route ~= nil]]
 end
 

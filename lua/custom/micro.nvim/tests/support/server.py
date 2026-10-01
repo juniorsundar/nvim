@@ -5,14 +5,19 @@ Options (JSON argv[1]): label, kind (LSP CompletionItemKind, default 3), snippet
 delays (per-completion-request ms, last repeats), incomplete, cancel_error,
 log (file path; one line appended per textDocument/completion request received),
 dynamic (as lua-language-server does: when the client advertises dynamic completion registration, omit completionProvider from initialize and register it afterwards),
-cwd_log (file path; the working directory is written once, at initialize).
+cwd_log (file path; the working directory is written once, at initialize),
+hover (advertise hoverProvider; reply markdown "<hover> @line:char", or null when ""), signature (advertise
+signatureHelpProvider; reply with this label), symbols (advertise documentSymbolProvider; reply with this list),
+encoding (positionEncoding to pick from the client's offer), reply_delays (per hover/signature/symbols request ms,
+last repeats). `log` also gets one line per hover/signature/symbols request.
 It deliberately replies after $/cancelRequest unless cancel_error is set.
 """
 import json, os, re, sys, threading
 
 opts = json.loads(sys.argv[1])
 lock = threading.Lock()
-docs, cancelled, count = {}, set(), 0
+docs, cancelled, count, other = {}, set(), 0, 0
+FEATURES = {"textDocument/hover": "hover", "textDocument/signatureHelp": "signature", "textDocument/documentSymbol": "symbols"}
 dynamic = False
 DOC = "\n".join(["Probe documentation"] + [f"line {i:02}" for i in range(2, 60)])
 
@@ -59,11 +64,27 @@ def reply(req):
         dynamic = bool(opts.get("dynamic") and client.get("dynamicRegistration"))
         if not dynamic:
             caps["completionProvider"] = {"resolveProvider": True, "triggerCharacters": [".", "/"]}
+        if "hover" in opts:
+            caps["hoverProvider"] = True
+        if "signature" in opts:
+            caps["signatureHelpProvider"] = {"triggerCharacters": ["("]}
+        if "symbols" in opts:
+            caps["documentSymbolProvider"] = True
+        if opts.get("encoding"):
+            caps["positionEncoding"] = opts["encoding"]
         result = {"capabilities": caps}
     elif method == "textDocument/completion":
         if req["id"] in cancelled and opts.get("cancel_error"):
             return send({"jsonrpc": "2.0", "id": req["id"], "error": {"code": -32800, "message": "cancelled"}})
         result = completion(req)
+    elif method == "textDocument/hover":
+        pos = params["position"]
+        if opts["hover"]:
+            result = {"contents": {"kind": "markdown", "value": f'{opts["hover"]} @{pos["line"]}:{pos["character"]}'}}
+    elif method == "textDocument/signatureHelp":
+        result = {"signatures": [{"label": opts["signature"], "parameters": []}]}
+    elif method == "textDocument/documentSymbol":
+        result = opts["symbols"]
     elif method == "completionItem/resolve":
         result = dict(params, documentation={"kind": "plaintext", "value": DOC})
         if opts.get("resolve_import"):
@@ -107,4 +128,11 @@ while True:
         delays = opts.get("delays", [40])
         delay = delays[min(count, len(delays) - 1)] / 1000
         count += 1
+    elif method in FEATURES:
+        if opts.get("log"):
+            with open(opts["log"], "a") as f:
+                f.write(FEATURES[method] + "\n")
+        delays = opts.get("reply_delays", [0])
+        delay = delays[min(other, len(delays) - 1)] / 1000
+        other += 1
     threading.Timer(delay, reply, [req]).start()

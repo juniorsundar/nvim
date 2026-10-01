@@ -65,23 +65,8 @@ local function extract_links_to_footnotes(lines)
 end
 
 local function eldoc()
-    local bufnr = vim.api.nvim_get_current_buf()
-    local clients = vim.lsp.get_clients { bufnr = bufnr }
-
-    ---@type boolean
-    local has_hover_provider = false
-    for _, client in ipairs(clients) do
-        if client and client.server_capabilities and client.server_capabilities.hoverProvider then
-            has_hover_provider = true
-            break
-        end
-    end
-
-    if not has_hover_provider then
-        return
-    end
-
-    local handler = function(err, result, _, _)
+    -- Returns true once a reply has been shown, so later clients' replies are ignored.
+    local handler = function(err, result)
         if err or not result or not result.contents then
             return
         end
@@ -213,17 +198,16 @@ local function eldoc()
                 noremap = true,
                 desc = "Close LSP eldoc window",
             })
-            return
+            return true
         elseif vim.Micro.hover.layout == "float" then
             vim.lsp.util.open_floating_preview(lines, "markdown", vim.Micro.hover.opts)
-            return
-        else
-            return
+            return true
         end
     end
 
-    local params = vim.lsp.util.make_position_params(0, "utf-32")
-    vim.lsp.buf_request(bufnr, "textDocument/hover", params, handler)
+    require("micro.lsp").request("hover", 0, "textDocument/hover", function(client)
+        return vim.lsp.util.make_position_params(0, client.offset_encoding)
+    end, handler)
 end
 
 local default_opts = {
@@ -255,6 +239,8 @@ function M.setup(opts)
     vim.api.nvim_create_autocmd({ "CursorMoved" }, {
         group = eldoc_close_augroup,
         callback = function()
+            -- A reply still in flight is for the old cursor position.
+            require("micro.lsp").cancel "hover"
             if not eldoc_win_id or not vim.api.nvim_win_is_valid(eldoc_win_id) then
                 return
             end

@@ -94,21 +94,24 @@ end
 ---@param err any? Error object if the request failed.
 ---@param symbols any[]? The list of DocumentSymbol items from the LSP.
 ---@param ctx table Context object (includes bufnr).
----@param config table Client config.
-local function lsp_callback(err, symbols, ctx, config)
+---@param winnr number Window the request was made for.
+---@return boolean? -- True once the winbar has been set from this reply.
+local function lsp_callback(err, symbols, ctx, winnr)
     if err or not symbols then
         vim.o.winbar = "" -- Clear winbar on error or no symbols
         return
     end
 
-    ---@type number
-    local winnr = vim.api.nvim_get_current_win()
     ---@type number[]
-    local pos = vim.api.nvim_win_get_cursor(0)
+    local pos = vim.api.nvim_win_get_cursor(winnr)
     ---@type number
     local cursor_line = pos[1] - 1
+    -- Symbol ranges are in the client's position encoding; the cursor column is a byte index.
+    local client = vim.lsp.get_client_by_id(ctx.client_id)
+    local line_text = vim.api.nvim_buf_get_lines(ctx.bufnr, cursor_line, cursor_line + 1, false)[1] or ""
     ---@type number
-    local cursor_char = pos[2]
+    local cursor_char =
+        vim.str_utfindex(line_text, client and client.offset_encoding or "utf-16", math.min(pos[2], #line_text), false)
 
     ---@type string
     local file_path = vim.fn.bufname(ctx.bufnr)
@@ -164,7 +167,10 @@ local function lsp_callback(err, symbols, ctx, config)
             if devicons_ok then
                 icon, icon_hl = devicons.get_icon(component)
             end
-            table.insert(breadcrumbs, "%#" .. icon_hl .. "#" .. (icon or file_icon) .. "%#Normal#" .. " " .. component)
+            table.insert(
+                breadcrumbs,
+                "%#" .. (icon_hl or "Normal") .. "#" .. (icon or file_icon) .. "%#Normal#" .. " " .. component
+            )
         else
             table.insert(breadcrumbs, folder_icon .. " " .. component)
         end
@@ -180,78 +186,37 @@ local function lsp_callback(err, symbols, ctx, config)
     else
         vim.api.nvim_set_option_value("winbar", " ", { win = winnr })
     end
+    return true
 end
 
 --- Requests document symbols from the LSP to update the breadcrumbs.
 --- This function initiates the request; `lsp_callback` handles the result.
 ---@return nil
-local function breadcrumbs_set()
+local function breadcrumbs_set(debounce)
     if not vim.Micro.breadcrumbs.enabled then
         return
     end
 
     ---@type number
-    local bufnr = vim.api.nvim_get_current_buf()
+    local winnr = vim.api.nvim_get_current_win()
     ---@type number
-    ---@diagnostic disable-next-line: unused-local
-    local winnr = vim.api.nvim_get_current_buf()
-
-    ---@type vim.lsp.Client[]
-    local clients = vim.lsp.get_clients { bufnr = bufnr }
-
-    if #clients == 0 then
-        return
-    elseif not clients[1]:supports_method "textDocument/documentSymbol" then
-        return
-    end
-
-    ---@type string
-    local uri = vim.lsp.util.make_text_document_params(bufnr)["uri"]
-    if not uri then
-        vim.print "Error: Could not get URI for buffer. Is it saved?"
-        return
-    end
-
-    local params = {
-        textDocument = {
-            uri = uri,
-        },
-    }
+    local bufnr = vim.api.nvim_win_get_buf(winnr)
 
     -- Don't run on non-file buffers (e.g., help tags)
-    ---@type string
-    local buf_src = uri:sub(1, uri:find ":" - 1)
-    if buf_src ~= "file" then
+    if vim.uri_from_bufnr(bufnr):match "^(%a+):" ~= "file" then
         vim.o.winbar = ""
         return
     end
 
-    local result, _ = pcall(vim.lsp.buf_request, bufnr, "textDocument/documentSymbol", params, lsp_callback)
-
-    if not result then
-        return
-    end
+    require("micro.lsp").request("breadcrumbs", winnr, "textDocument/documentSymbol", function(_, buf)
+        return { textDocument = vim.lsp.util.make_text_document_params(buf) }
+    end, function(err, symbols, ctx)
+        return lsp_callback(err, symbols, ctx, winnr)
+    end, { debounce = debounce })
 end
 
-local timer = nil
 local function debounced_breadcrumbs_set()
-    if timer then
-        timer:stop()
-        timer:close()
-    end
-
-    timer = vim.uv.new_timer()
-    if timer == nil then
-        return
-    end
-
-    timer:start(
-        200,
-        0,
-        vim.schedule_wrap(function()
-            breadcrumbs_set()
-        end)
-    )
+    breadcrumbs_set(200)
 end
 
 local function check_breadcrumbs_state()
@@ -273,6 +238,7 @@ local function breadcrumbs_set_enabled(enabled)
         debounced_breadcrumbs_set()
     else
         vim.notify("Breadcrumbs disabled", vim.log.levels.INFO, { title = "LSP" })
+        require("micro.lsp").cancel "breadcrumbs"
         vim.o.winbar = ""
     end
 end
