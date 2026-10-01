@@ -30,7 +30,32 @@ local languages = {
     "regex",
     "v",
     "gleam",
+    "asciidoc",
+    "asciidoc_inline",
 }
+
+vim.api.nvim_create_autocmd("User", {
+    pattern = "TSUpdate",
+    callback = function()
+        local parsers = require "nvim-treesitter.parsers"
+        parsers.asciidoc = {
+            install_info = {
+                url = "https://github.com/cathaysia/tree-sitter-asciidoc",
+                branch = "master",
+                location = "tree-sitter-asciidoc",
+                queries = "tree-sitter-asciidoc/queries",
+            },
+        }
+        parsers.asciidoc_inline = {
+            install_info = {
+                url = "https://github.com/cathaysia/tree-sitter-asciidoc",
+                branch = "master",
+                location = "tree-sitter-asciidoc_inline",
+                queries = "tree-sitter-asciidoc_inline/queries",
+            },
+        }
+    end,
+})
 
 local toolchain = { "tree-sitter", "cc", "curl", "tar" }
 
@@ -50,3 +75,5 @@ vim.api.nvim_create_autocmd("FileType", {
         vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
     end,
 })
+
+vim.treesitter.language.register("asciidoc", { "asciidoc" })
