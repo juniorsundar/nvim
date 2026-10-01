@@ -92,4 +92,112 @@ describe("micro.completion (path context)", function()
         ed:input "<C-n>" -- manual native completion uses whatever route is active
         ed:wait(words_are { "alpha.txt" })
     end)
+
+    describe("path rules", function()
+        local function type_path(line, keys)
+            ed:session { lines = { line }, row = 1, server = { delays = { 20 } } }
+            ed:input("A" .. keys)
+        end
+
+        before_each(function()
+            vim.fn.mkdir(dir .. "/src/inner", "p")
+            vim.fn.mkdir(dir .. "/other", "p")
+            vim.fn.writefile({}, dir .. "/src/index.lua")
+            vim.fn.writefile({}, dir .. "/src/inner/deep.txt")
+            vim.fn.writefile({}, dir .. "/zzz.txt")
+        end)
+
+        it("treats src/-style relative segments as paths and completes nested ones", function()
+            type_path('open("', "src/")
+            ed:input "<C-n>"
+            ed:wait(words_are { "index.lua", "inner/" })
+            ed:input "<C-e>inner/"
+            ed:input "<C-n>"
+            ed:wait(words_are { "deep.txt" })
+        end)
+
+        it("completes ../ from the working directory's parent", function()
+            ed:lua("vim.cmd.cd(...)", dir .. "/src")
+            type_path('open("', "../al")
+            ed:wait(words_are { "alpha.txt" })
+        end)
+
+        it("completes absolute paths, quoted and unquoted", function()
+            type_path('open("', dir .. "/al")
+            ed:wait(words_are { "alpha.txt" })
+            ed:input "<C-e><Esc>cc"
+            ed:input("x = " .. dir .. "/zz")
+            ed:wait(words_are { "zzz.txt" })
+        end)
+
+        it("completes ~/ against the home directory", function()
+            ed:lua("vim.env.HOME = ...", dir .. "/src")
+            type_path('open("', "~/in")
+            ed:wait(words_are { "index.lua", "inner/" })
+        end)
+
+        it("marks directories with a trailing slash and removes unrelated entries", function()
+            type_path('open("', "./ot")
+            ed:wait(words_are { "other/" })
+        end)
+
+        it("lists dotfiles only when the segment starts with a dot", function()
+            type_path('open("', "./")
+            ed:input "<C-n>"
+            ed:wait [[vim.fn.pumvisible() == 1]]
+            assert.is_false(vim.tbl_contains(ed:state().words, ".hidden"))
+            ed:input ".h"
+            ed:wait(words_are { ".hidden" })
+        end)
+
+        it("completes names with spaces inside quoted paths", function()
+            type_path('cp("', "./my fo")
+            ed:wait(words_are { "my folder/" })
+        end)
+
+        it("does not treat environment variables or globs as paths", function()
+            type_path("x = ", "$HOME/Th")
+            ed:wait [[vim.tbl_contains(vim.fn.complete_info({'matches'}).matches[1] and (function() local w = {} for _, i in ipairs(vim.fn.complete_info({'matches'}).matches) do w[#w+1] = i.word end return w end)() or {}, "LspThing")]]
+            ed:input "<C-e><Esc>cc"
+            ed:input "y = */Th"
+            ed:wait [[vim.tbl_contains((function() local w = {} for _, i in ipairs(vim.fn.complete_info({'matches'}).matches or {}) do w[#w+1] = i.word end return w end)(), "LspThing")]]
+        end)
+
+        it("does not treat quoted environment variables or globs as paths", function()
+            type_path('open("', "$HOME/Th")
+            ed:wait [[vim.tbl_contains((function() local w = {} for _, i in ipairs(vim.fn.complete_info({'matches'}).matches or {}) do w[#w+1] = i.word end return w end)(), "LspThing")]]
+            ed:input "<C-e><Esc>cc"
+            ed:input 'open("*/Th'
+            ed:wait [[vim.tbl_contains((function() local w = {} for _, i in ipairs(vim.fn.complete_info({'matches'}).matches or {}) do w[#w+1] = i.word end return w end)(), "LspThing")]]
+        end)
+
+        it("does not treat numeric division as a path", function()
+            type_path("x = 1.5", "/Th")
+            ed:wait [[vim.tbl_contains((function() local w = {} for _, i in ipairs(vim.fn.complete_info({'matches'}).matches or {}) do w[#w+1] = i.word end return w end)(), "LspThing")]]
+        end)
+
+        it("resolves relative paths from the window cwd, not the buffer directory", function()
+            local other = vim.fn.tempname()
+            vim.fn.mkdir(other, "p")
+            vim.fn.writefile({}, other .. "/beta.txt")
+            ed:session { lines = { 'open("' }, row = 1, server = { delays = { 20 } } }
+            ed:lua("vim.api.nvim_buf_set_name(0, ...)", dir .. "/src/x.lua")
+            ed:lua("vim.cmd.lcd(...)", other)
+            ed:input "A./b"
+            ed:wait(words_are { "beta.txt" })
+            ed:input "<C-e><BS><BS><BS>"
+            ed:lua("vim.cmd.tcd(...)", dir .. "/other")
+            ed:input "../zz"
+            ed:wait(words_are { "zzz.txt" })
+            vim.fn.delete(other, "rf")
+        end)
+
+        it("shows nothing for a missing directory without erroring", function()
+            type_path('open("', "./nope/")
+            ed:input "<C-n>"
+            ed:sleep(300)
+            assert.is_false(ed:state().visible)
+            assert.equals("", ed:lua [[return vim.v.errmsg]])
+        end)
+    end)
 end)

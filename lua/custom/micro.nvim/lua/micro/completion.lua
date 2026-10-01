@@ -88,6 +88,19 @@ local function current(ticket)
         and vim.fn.complete_info({ "selected" }).selected < 0
 end
 
+-- Existing buffer whose URI is exactly `uri`, or nil. Never creates buffers.
+local function request_buf(uri)
+    local cur = api.nvim_get_current_buf()
+    if vim.uri_from_bufnr(cur) == uri then
+        return cur
+    end
+    for _, buf in ipairs(api.nvim_list_bufs()) do
+        if api.nvim_buf_is_loaded(buf) and vim.uri_from_bufnr(buf) == uri then
+            return buf
+        end
+    end
+end
+
 --- Decorate a `vim.lsp.Config.cmd` (list or function factory). Must run before the
 --- client starts; idempotent. Only `textDocument/completion` replies are filtered.
 function M.wrap_cmd(cmd)
@@ -122,7 +135,8 @@ function M.wrap_cmd(cmd)
             end
             -- Send-time eligibility: a native trigger timer may already be queued
             -- when the route changes, and manual get() bypasses autotrigger.
-            if M.route_of(vim.uri_to_bufnr(params.textDocument.uri)) ~= "language" then
+            local owner = request_buf(params.textDocument.uri)
+            if owner and M.route_of(owner) ~= "language" then
                 return false
             end
             watch(api.nvim_get_current_buf())
@@ -173,31 +187,56 @@ end
 -- Filesystem source (path context)
 ---------------------------------------------------------------------------
 
--- ponytail: `./` paths only; ticket 03 extends this to ../, src/, /, ~/.
---- Returns { dir = "./sub/", start = <0-based byte col of final segment> } when the
---- text before the cursor ends inside a `./` path, else nil.
-local function path_context(prefix)
-    local init, pos = nil, 1
-    while true do
-        local s = prefix:find("./", pos, true)
-        if not s then
-            break
+-- Text after the last unterminated quote before the end of `prefix`, if any.
+local function open_quote(prefix)
+    local quote
+    local i = 1
+    while i <= #prefix do
+        local c = prefix:sub(i, i)
+        if quote then
+            if c == "\\" then
+                i = i + 1
+            elseif c == quote then
+                quote = nil
+            end
+        elseif c == '"' or c == "'" then
+            quote = c
         end
-        if s == 1 or prefix:sub(s - 1, s - 1):match "[%s\"'(=,]" then
-            init = s
-        end
-        pos = s + 1
+        i = i + 1
     end
-    if not init then
+    return quote and prefix:match("^.*()" .. quote) or nil
+end
+
+--- Returns { dir = "src/", start = <0-based byte col of final segment> } when the text
+--- before the cursor ends inside a path, else nil. Paths are `./`, `../`, `~/`, absolute
+--- `/` and relative `name/` forms. Spaces are allowed only inside an open quote.
+--- `$VAR` and glob characters never form a path; `//` (comments, URLs) does not either.
+--- ponytail: an unquoted `word/` is always a path (needed for `src/`), so `a/b` in prose or a
+--- comment also routes to paths; add lexical (treesitter) context if that proves annoying.
+local function path_context(prefix)
+    local quote_at = open_quote(prefix)
+    local token, token_start
+    if quote_at then
+        token_start = quote_at + 1
+        token = prefix:sub(token_start)
+    else
+        token = prefix:match "[^%s%(%)=,;<>%[%]{}'\"`|]*$"
+        token_start = #prefix - #token + 1
+    end
+    if token:find "[%$%*%?]" or token:find("//", 1, true) then
         return nil
     end
-    local token = prefix:sub(init)
-    local quoted = init > 1 and prefix:sub(init - 1, init - 1):match "[\"']"
-    if token:find "[\"']" or (not quoted and token:find "%s") then
+    local shaped = token:find "^%./" or token:find "^%.%./" or token:find "^~/" or token:find "^/"
+    if not shaped then
+        -- relative `src/...`; unquoted tokens must be a plain word chain, quoted may hold spaces
+        -- A purely numeric first segment (`1./2`, `3/4`) is arithmetic, not a path.
+        shaped = (quote_at and token:find "/" or token:find "^[%w_%.%-@+]+/") and not token:find "^[%d%.]+/"
+    end
+    if not shaped then
         return nil
     end
     local slash = token:match "^.*()/"
-    return { dir = token:sub(1, slash), start = init - 1 + slash }
+    return { dir = token:sub(1, slash), start = token_start - 1 + slash }
 end
 
 local function cursor_context()
@@ -215,14 +254,26 @@ function M.path(findstart, base)
     if not ctx then
         return {}
     end
-    local dir = vim.fs.joinpath(vim.fn.getcwd(), ctx.dir)
-    local items = {}
-    for name, kind in vim.fs.dir(dir) do
-        if base:sub(1, 1) == "." or name:sub(1, 1) ~= "." then
-            local is_dir = kind == "directory" or (kind == "link" and vim.fn.isdirectory(dir .. name) == 1)
-            items[#items + 1] = { word = is_dir and name .. "/" or name }
-        end
+    -- Relative paths resolve from the window's cwd (respects :lcd/:tcd), not the buffer's directory.
+    local dir = ctx.dir
+    if dir:sub(1, 2) == "~/" then
+        dir = vim.fs.joinpath(vim.env.HOME or "", dir:sub(3))
+    elseif dir:sub(1, 1) ~= "/" then
+        dir = vim.fs.joinpath(vim.fn.getcwd(), dir)
     end
+    if dir:sub(-1) ~= "/" then
+        dir = dir .. "/"
+    end
+    local items = {}
+    -- vim.fs.dir throws for missing or unreadable directories.
+    pcall(function()
+        for name, kind in vim.fs.dir(dir) do
+            if base:sub(1, 1) == "." or name:sub(1, 1) ~= "." then
+                local is_dir = kind == "directory" or (kind == "link" and vim.fn.isdirectory(dir .. name) == 1)
+                items[#items + 1] = { word = is_dir and name .. "/" or name }
+            end
+        end
+    end)
     if base ~= "" then
         items = vim.fn.matchfuzzy(items, base, { key = "word" })
     end

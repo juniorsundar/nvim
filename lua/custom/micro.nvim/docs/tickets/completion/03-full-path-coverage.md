@@ -4,13 +4,13 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `../`, `src/`-style relative segments, absolute `/` and `~/` paths are path contexts; `$VAR/` and globs are not
-- [ ] Relative paths resolve from the window's cwd, respecting `:lcd` and `:tcd`, not the buffer's directory
-- [ ] Directories get a trailing slash; nested segments complete one at a time
-- [ ] Dotfiles appear only when the typed segment starts with `.`
-- [ ] Names with spaces complete inside quoted paths
-- [ ] Unrelated entries are removed, not merely ranked lower
+- [x] `../`, `src/`-style relative segments, absolute `/` and `~/` paths are path contexts; `$VAR/` and globs are not
+- [x] Relative paths resolve from the window's cwd, respecting `:lcd` and `:tcd`, not the buffer's directory
+- [x] Directories get a trailing slash; nested segments complete one at a time
+- [x] Dotfiles appear only when the typed segment starts with `.`
+- [x] Names with spaces complete inside quoted paths
+- [x] Unrelated entries are removed, not merely ranked lower
 
 Spec: `docs/specs/completion/spec.md`. Evidence: `docs/completion-scope.md`.
