@@ -3,10 +3,10 @@ local M = {}
 local defaults = {
     breadcrumbs = { enabled = false },
     completion = { enabled = false },
-    dynamic_lnum = { enabled = false },
     folds = { enabled = false },
     follow_mode = { enabled = false },
     hover = { enabled = false },
+    line_numbers = { enabled = false },
     quickfix = { enabled = false },
     scratch = { enabled = false },
     session = { enabled = false },

@@ -16,13 +16,7 @@ local broadcast = function(toggle, state)
 end
 
 local function toggle_line_numbers()
-    local current_win = vim.api.nvim_get_current_win()
-    local number = vim.api.nvim_get_option_value("number", { win = current_win })
-    local relativenumber = vim.api.nvim_get_option_value("relativenumber", { win = current_win })
-
-    broadcast("Line Numbers", not number)
-    vim.api.nvim_set_option_value("number", not number, { win = current_win })
-    vim.api.nvim_set_option_value("relativenumber", not relativenumber, { win = current_win })
+    require("micro.line_numbers").toggle()
 end
 
 local function toggle_lsp_inlay_hints()
