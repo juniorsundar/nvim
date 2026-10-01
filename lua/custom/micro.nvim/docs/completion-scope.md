@@ -210,3 +210,13 @@ Implement the production backend using the verified startup/guard wiring, then v
 - [0.12.5 public command factory and RPC contracts](https://github.com/neovim/neovim/blob/v0.12.5/runtime/doc/lsp.txt)
 - [0.12.5 RPC reply/cancellation handling](https://github.com/neovim/neovim/blob/v0.12.5/runtime/lua/vim/lsp/rpc.lua)
 - Installed nightly runtime: `/nix/store/s6nrg8370lywcl7big7vsnnzq2lhvmdv-neovim-unwrapped-8d5ebdf/share/nvim/runtime`.
+
+
+## Automatic trigger tuning findings
+
+- Native `'autocompletedelay'` is documented in 0.12.5 but has no effect there: with it set to 600 ms the menu
+  opens immediately (plain `complete=.`, no module involved). Nightly honours it. `micro.completion` therefore sets
+  the delay but the debounce only takes effect on nightly; the minimum word length works on both.
+- `micro.completion` owns the window-local switch of `'autocomplete'`: on in a language context only once the
+  word before the cursor (including the character being inserted) reaches `min_word_length`, always on in a path
+  context. LSP server trigger characters use native autotrigger, which does not depend on `'autocomplete'`.

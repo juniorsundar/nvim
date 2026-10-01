@@ -136,13 +136,13 @@ describe("micro.completion (language context)", function()
             vim.fn.getcwd() .. "/tests/support/server.py"
         )
         ed:wait [[#vim.lsp.get_clients { bufnr = 0 } == 2]]
-        ed:input "iT"
+        ed:input "iTh"
         ed:wait(menu_has "BufThing")
         ed:input "<C-n>"
         ed:wait [[vim.fn.complete_info({'selected'}).selected == 0]]
         ed:sleep(900) -- the slow server replies now and must not wipe the selection
         assert.equals(0, ed:state().selected)
-        ed:input "<C-e><Esc>Ah"
+        ed:input "<C-e><Esc>An"
         ed:wait(menu_has "SlowThing")
         assert.is_true(vim.tbl_contains(ed:state().words, "LspThing"))
     end)
@@ -165,7 +165,7 @@ describe("micro.completion (language context)", function()
             vim.fn.getcwd() .. "/tests/support/server.py"
         )
         ed:wait [[#vim.lsp.get_clients { bufnr = 0 } > 0]]
-        ed:wait [[vim.bo.autocomplete]]
+        ed:wait [[vim.b.micro_completion_route ~= nil]]
         ed:input "iTh"
         ed:wait(menu_has "LspThing") -- fresh reply is delivered
         ed:input "<C-n>"

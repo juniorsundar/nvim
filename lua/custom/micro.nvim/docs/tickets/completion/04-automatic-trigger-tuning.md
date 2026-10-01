@@ -4,12 +4,12 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] One word character does not auto-open completion; two do, after the debounce
-- [ ] Fast typing within the debounce does not flicker or flood the server
-- [ ] A server trigger character (e.g. `.`) opens completion immediately
-- [ ] Typing a path separator opens path completion regardless of word length
-- [ ] Threshold and debounce are configurable through module options
+- [x] One word character does not auto-open completion; two do, after the debounce
+- [x] Fast typing within the debounce does not flicker or flood the server
+- [x] A server trigger character (e.g. `.`) opens completion immediately
+- [x] Typing a path separator opens path completion regardless of word length
+- [x] Threshold and debounce are configurable through module options
 
 Spec: `docs/specs/completion/spec.md`. Evidence: `docs/completion-scope.md`.

@@ -86,7 +86,7 @@ function Editor:session(opts)
         server
     )
     self:wait [[#vim.lsp.get_clients { bufnr = 0 } > 0]]
-    self:wait [[vim.bo.autocomplete]]
+    self:wait [[vim.b.micro_completion_route ~= nil]]
 end
 
 function Editor:close()

@@ -4,6 +4,9 @@
 -- `textDocument/completion` replies before they reach native completion.
 local M = {}
 
+local defaults = { min_word_length = 2, debounce = 80 }
+local opts = vim.deepcopy(defaults)
+
 local api = vim.api
 local epoch = 0
 -- ticket -> true; weak so abandoned tickets never leak.
@@ -55,7 +58,6 @@ local function snapshot()
         suffix = line:sub(cursor[2] + 1),
         complete = vim.bo.complete,
         omnifunc = vim.bo.omnifunc,
-        autocomplete = vim.bo.autocomplete,
         iskeyword = vim.bo.iskeyword,
         uri = vim.uri_from_bufnr(0),
     }
@@ -82,7 +84,6 @@ local function current(ticket)
         and vim.fn.matchstr(extra, "^\\k*$") == extra
         and vim.bo.complete == s.complete
         and vim.bo.omnifunc == s.omnifunc
-        and vim.bo.autocomplete == s.autocomplete
         and vim.bo.iskeyword == s.iskeyword
         and vim.uri_from_bufnr(0) == s.uri
         and vim.fn.complete_info({ "selected" }).selected < 0
@@ -312,7 +313,6 @@ local function route(buf, wanted, force)
     vim.b[buf][ROUTE_VAR] = wanted
     vim.bo[buf].omnifunc = "v:lua.vim.lsp.omnifunc"
     vim.bo[buf].complete = wanted == "path" and "Fv:lua.require'micro.completion'.path" or ".,o"
-    vim.bo[buf].autocomplete = true
     if wanted == "language" then
         for _, client in ipairs(clients) do
             vim.lsp.completion.enable(true, client.id, buf, { autotrigger = true })
@@ -320,7 +320,36 @@ local function route(buf, wanted, force)
     end
 end
 
-function M.setup(_)
+local tuning = false
+
+--- Native `'autocomplete'` has no minimum word length, so the module owns the switch:
+--- in a language context it is on only once the word before the cursor (including the
+--- character being inserted) reaches `min_word_length`. Native `'autocompletedelay'` is
+--- the debounce (ponytail: 0.12.5 ignores that option, so the debounce only takes effect on
+--- nightly; add a module timer if stable needs it). Paths open at once. Server trigger characters use native LSP autotrigger,
+--- which does not depend on `'autocomplete'`.
+local function tune(buf, prefix)
+    if buf ~= api.nvim_get_current_buf() then
+        return
+    end
+    local path = M.route_of(buf) == "path"
+    local long_enough = vim.fn.strchars(vim.fn.matchstr(prefix, "\\k*$")) >= opts.min_word_length
+    tuning = true
+    -- pcall: the flag must be reset even if an assignment throws, or invalidation stays muted.
+    pcall(function()
+        vim.bo[buf].autocomplete = path or long_enough
+        vim.o.autocompletedelay = path and 0 or opts.debounce
+    end)
+    tuning = false
+end
+
+local function tune_here(buf)
+    local col = api.nvim_win_get_cursor(0)[2]
+    tune(buf, api.nvim_get_current_line():sub(1, col))
+end
+
+function M.setup(user_opts)
+    opts = vim.tbl_extend("force", defaults, user_opts or {})
     api.nvim_clear_autocmds { group = group }
     M.invalidate()
 
@@ -330,10 +359,21 @@ function M.setup(_)
         group = group,
         callback = M.invalidate,
     })
+    -- 'autocompletedelay' is global; a path context sets it to 0, so restore it on leaving insert.
+    api.nvim_create_autocmd("InsertLeave", {
+        group = group,
+        callback = function()
+            vim.o.autocompletedelay = opts.debounce
+        end,
+    })
     api.nvim_create_autocmd("OptionSet", {
         group = group,
         pattern = { "complete", "omnifunc", "autocomplete", "iskeyword" },
-        callback = M.invalidate,
+        callback = function()
+            if not tuning then
+                M.invalidate()
+            end
+        end,
     })
     api.nvim_create_autocmd("CompleteChanged", {
         group = group,
@@ -350,6 +390,7 @@ function M.setup(_)
             local client = vim.lsp.get_client_by_id(ev.data.client_id)
             if client and client:supports_method("textDocument/completion", ev.buf) then
                 route(ev.buf, nil, true)
+                tune_here(ev.buf)
             end
         end,
     })
@@ -357,6 +398,7 @@ function M.setup(_)
         group = group,
         callback = function(ev)
             route(ev.buf)
+            tune_here(ev.buf)
         end,
     })
     -- Classify the character about to be inserted so the route is switched before
@@ -367,6 +409,7 @@ function M.setup(_)
             local col = api.nvim_win_get_cursor(0)[2]
             local prospective = api.nvim_get_current_line():sub(1, col) .. vim.v.char
             route(ev.buf, path_context(prospective) and "path" or "language")
+            tune(ev.buf, prospective)
         end,
     })
 end

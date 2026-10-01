@@ -51,9 +51,9 @@ describe("micro.completion (path context)", function()
 
     it("never corrupts the prefix when a pending language request is overtaken", function()
         ed:session { lines = { "BufThing", "" }, server = { delays = { 600 } } }
-        ed:input "Ao"
-        ed:sleep(100) -- language request now in flight
-        ed:input 'pen("./my fo'
+        ed:input "Aop"
+        ed:sleep(250) -- language request now in flight
+        ed:input 'en("./my fo'
         ed:wait(words_are { "my folder/" })
         ed:sleep(800) -- the late language reply arrives now
         ed:input "<C-n><C-y>"
