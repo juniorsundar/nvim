@@ -4,14 +4,6 @@ local fn = vim.fn
 function M.qftf(info)
     local items
     local ret = {}
-    -- The name of item in list is based on the directory of quickfix window.
-    -- Change the directory for quickfix window make the name of item shorter.
-    -- It's a good opportunity to change current directory in quickfixtextfunc :)
-    --
-    -- local alterBufnr = fn.bufname('#') -- alternative buffer is the buffer before enter qf window
-    -- local root = getRootByAlterBufnr(alterBufnr)
-    -- vim.cmd(('noa lcd %s'):format(fn.fnameescape(root)))
-    --
     if info.quickfix == 1 then
         items = fn.getqflist({ id = info.id, items = 0 }).items
     else
@@ -30,7 +22,7 @@ function M.qftf(info)
                 if fname == "" then
                     fname = "[No Name]"
                 else
-                    fname = fname:gsub("^" .. vim.env.HOME, "~")
+                    fname = fn.fnamemodify(fname, ":~")
                 end
                 if #fname <= limit then
                     fname = fnameFmt1:format(fname)

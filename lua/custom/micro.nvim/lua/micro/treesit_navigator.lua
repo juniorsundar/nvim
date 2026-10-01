@@ -5,7 +5,6 @@ local panel = require "micro.panel"
 ---@field icons { branch_mid: string, branch_end: string, indent_mid: string, indent_end: string }
 ---@field window { border: string, width_padding: number }
 ---@field keymaps { enable: boolean, prefix: string, toggle: string, next: string, prev: string, parent: string, child: string, node_start: string, node_end: string }
----@field transient_keymaps { enable: boolean }
 
 ---@class TreesitNavigator
 local M = {}
@@ -39,9 +38,6 @@ local defaults = {
         node_start = "0",
         node_end = "$",
     },
-    transient_keymaps = {
-        enable = true,
-    },
 }
 local config = defaults
 
@@ -69,24 +65,12 @@ local function clear_highlights()
     end
 end
 
-local function get_transient_key(name)
-    return config.transient_keymaps[name] or config.keymaps[name]
-end
+local TRANSIENT = { "parent", "child", "next", "prev", "node_start", "node_end" }
 
 local function clear_transient_keymaps()
-    if not config.transient_keymaps.enable then
-        return
-    end
     if state.source_buf and vim.api.nvim_buf_is_valid(state.source_buf) then
-        local keys = {
-            get_transient_key "parent",
-            get_transient_key "child",
-            get_transient_key "next",
-            get_transient_key "prev",
-            get_transient_key "node_start",
-            get_transient_key "node_end",
-        }
-        for _, key in ipairs(keys) do
+        for _, name in ipairs(TRANSIENT) do
+            local key = config.keymaps[name]
             if key then
                 for _, mode in ipairs { "n", "v" } do
                     pcall(vim.keymap.del, mode, key, { buffer = state.source_buf })
@@ -97,13 +81,10 @@ local function clear_transient_keymaps()
 end
 
 local function set_transient_keymaps()
-    if not config.transient_keymaps.enable then
-        return
-    end
     if state.source_buf and vim.api.nvim_buf_is_valid(state.source_buf) then
         local opts = { buffer = state.source_buf, nowait = true, silent = true }
         local function set(name, func)
-            local key = get_transient_key(name)
+            local key = config.keymaps[name]
             if type(key) == "string" then
                 vim.keymap.set({ "n", "v" }, key, func, opts)
             end
@@ -132,23 +113,11 @@ local function dive_into_block(node)
         return nil
     end
     while node do
-        if node:type() == "block" or node:type() == "statement_block" then
-            local found_child = false
-            local count = node:child_count()
-            for i = 0, count - 1 do
-                local child = node:child(i)
-                if child and child:named() then
-                    node = child
-                    found_child = true
-                    break
-                end
-            end
-            if not found_child then
-                break
-            end
-        else
+        local child = (node:type() == "block" or node:type() == "statement_block") and node:named_child(0)
+        if not child then
             break
         end
+        node = child
     end
     return node
 end
@@ -258,13 +227,7 @@ M.ts_tree_display = function()
         table.insert(highlights, { #lines - 1, conf.highlights.tree_node })
     end
 
-    local children = {}
-    for i = 0, root_of_view:child_count() - 1 do
-        local child = root_of_view:child(i)
-        if child and child:named() then
-            table.insert(children, child)
-        end
-    end
+    local children = root_of_view:named_children()
 
     for i, child in ipairs(children) do
         local is_last = (i == #children)
@@ -277,13 +240,7 @@ M.ts_tree_display = function()
             table.insert(highlights, { #lines - 1, conf.highlights.tree_node })
 
             local indent = is_last and conf.icons.indent_end or conf.icons.indent_mid
-            local grandchildren = {}
-            for j = 0, child:child_count() - 1 do
-                local grandchild = child:child(j)
-                if grandchild and grandchild:named() then
-                    table.insert(grandchildren, grandchild)
-                end
-            end
+            local grandchildren = child:named_children()
             for j, grandchild in ipairs(grandchildren) do
                 local g_is_last = (j == #grandchildren)
                 local g_marker = g_is_last and conf.icons.branch_end or conf.icons.branch_mid
@@ -394,22 +351,16 @@ M.goto_parent = function()
 end
 
 local function find_first_child_jump(node, root_start_row, root_start_col)
-    local count = node:child_count()
-    for i = 0, count - 1 do
-        local child = node:child(i)
-        if child and child:named() then
-            local r, c = child:start()
-            if r ~= root_start_row or c ~= root_start_col then
-                return child
-            else
-                local found = find_first_child_jump(child, root_start_row, root_start_col)
-                if found then
-                    return found
-                end
-            end
+    for _, child in ipairs(node:named_children()) do
+        local r, c = child:start()
+        if r ~= root_start_row or c ~= root_start_col then
+            return child
+        end
+        local found = find_first_child_jump(child, root_start_row, root_start_col)
+        if found then
+            return found
         end
     end
-    return nil
 end
 
 ---Moves the cursor to the first child of the current navigation node.

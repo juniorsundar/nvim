@@ -10,16 +10,6 @@ local function get_hl_fg(groups)
     return "NONE"
 end
 
-local function get_hl_bg(groups)
-    for _, group in ipairs(groups) do
-        local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = group, link = false })
-        if ok and hl and type(hl.bg) == "number" then
-            return string.format("#%06x", hl.bg)
-        end
-    end
-    return "NONE"
-end
-
 local panel = require "micro.panel"
 
 local M = {}
@@ -58,7 +48,6 @@ local config = defaults
 function M.refresh_colors()
     local c = config.colors
     c.fg = get_hl_fg { "Normal" }
-    c.bg = get_hl_bg { "StatusLine", "Normal" }
     c.red = get_hl_fg { "DiffDelete", "DiagnosticError", "GitSignsDelete", "Error" }
     c.orange = get_hl_fg { "DiffChange", "GitSignsChange", "Constant", "WarningMsg", "Number" }
     c.yellow = get_hl_fg { "DiagnosticWarn", "WarningMsg" }
@@ -67,7 +56,6 @@ function M.refresh_colors()
     c.blue = get_hl_fg { "Function", "Type", "Identifier" }
     c.violet = get_hl_fg { "Statement", "Keyword" }
     c.magenta = get_hl_fg { "Special", "Identifier", "PreProc" }
-    c.darkblue = c.blue
 end
 
 function M.setup_highlights()

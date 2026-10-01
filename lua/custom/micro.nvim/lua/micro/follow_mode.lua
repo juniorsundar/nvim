@@ -2,18 +2,6 @@ local M = {}
 
 local state = {}
 
-local function get_state(buf)
-    return state[buf]
-end
-
-local function set_state(buf, s)
-    state[buf] = s
-end
-
-local function clear_state(buf)
-    state[buf] = nil
-end
-
 -- Check if a line is visible in a window
 local function is_line_visible_in_window(win, line)
     local win_info = vim.fn.getwininfo(win)[1]
@@ -25,7 +13,7 @@ end
 
 -- Switch to the partner window if cursor is outside visible region
 local function maybe_switch_to_partner(buf)
-    local s = get_state(buf)
+    local s = state[buf]
     if not s then
         return
     end
@@ -51,7 +39,7 @@ end
 
 -- Update cursor visibility: active window has cursorline, partner doesn't
 local function update_cursor_visibility(buf)
-    local s = get_state(buf)
+    local s = state[buf]
     if not s then
         return
     end
@@ -90,7 +78,7 @@ end
 -- Realign the partner window to be contiguous with the active window
 local function realign_partner(active_win)
     local buf = vim.api.nvim_win_get_buf(active_win)
-    local s = get_state(buf)
+    local s = state[buf]
 
     if not s then
         return
@@ -133,7 +121,7 @@ end
 
 -- Deactivate follow-mode for a buffer
 local function deactivate_follow_mode(buf)
-    local s = get_state(buf)
+    local s = state[buf]
 
     if not s then
         return
@@ -159,7 +147,7 @@ local function deactivate_follow_mode(buf)
         end
     end
 
-    clear_state(buf)
+    state[buf] = nil
     vim.notify("Follow-mode deactivated", vim.log.levels.INFO)
 end
 
@@ -173,7 +161,7 @@ local function activate_follow_mode(win1, win2, created_by_follow_split)
         return false
     end
 
-    local existing = get_state(buf)
+    local existing = state[buf]
     if existing then
         deactivate_follow_mode(buf)
     end
@@ -185,14 +173,13 @@ local function activate_follow_mode(win1, win2, created_by_follow_split)
         [win2] = vim.api.nvim_get_option_value("cursorline", { win = win2 }),
     }
 
-    set_state(buf, {
+    state[buf] = {
         win1 = win1,
         win2 = win2,
-        active_win = win1,
         augroup = augroup,
         created_by_follow_split = created_by_follow_split,
         saved_cursorline = saved_cursorline,
-    })
+    }
 
     -- Set up scroll sync
     vim.api.nvim_create_autocmd("WinScrolled", {
@@ -234,7 +221,7 @@ local function activate_follow_mode(win1, win2, created_by_follow_split)
         group = augroup,
         callback = function()
             -- Check if either window was closed
-            local s = get_state(buf)
+            local s = state[buf]
             if s then
                 if not vim.api.nvim_win_is_valid(s.win1) or not vim.api.nvim_win_is_valid(s.win2) then
                     deactivate_follow_mode(buf)
@@ -253,7 +240,7 @@ end
 
 -- Check if follow-mode is active for a buffer
 local function is_follow_mode_active(buf)
-    return get_state(buf) ~= nil
+    return state[buf] ~= nil
 end
 
 -- Subcommand: :Micro follow split

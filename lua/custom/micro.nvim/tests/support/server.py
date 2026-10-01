@@ -2,22 +2,22 @@
 """Scripted stdio LSP server for the completion specs.
 
 Options (JSON argv[1]): label, kind (LSP CompletionItemKind, default 3), snippet, import, resolve_import, empty, never_reply,
-delays (per-completion-request ms, last repeats), incomplete, cancel_error,
+delays (per-completion-request ms, last repeats), incomplete,
 log (file path; one line appended per textDocument/completion request received),
 dynamic (as lua-language-server does: when the client advertises dynamic completion registration, omit completionProvider from initialize and register it afterwards),
 cwd_log (file path; the working directory is written once, at initialize),
-hover (advertise hoverProvider; reply markdown "<hover> @line:char", or null when ""), signature (advertise
-signatureHelpProvider; reply with this label), symbols (advertise documentSymbolProvider; reply with this list),
-encoding (positionEncoding to pick from the client's offer), reply_delays (per hover/signature/symbols request ms,
-last repeats). `log` also gets one line per hover/signature/symbols request.
-It deliberately replies after $/cancelRequest unless cancel_error is set.
+hover (advertise hoverProvider; reply markdown "<hover> @line:char", or null when ""),
+symbols (advertise documentSymbolProvider; reply with this list),
+encoding (positionEncoding to pick from the client's offer), reply_delays (per hover/symbols request ms,
+last repeats). `log` also gets one line per hover/symbols request.
+It deliberately replies after $/cancelRequest.
 """
 import json, os, re, sys, threading
 
 opts = json.loads(sys.argv[1])
 lock = threading.Lock()
-docs, cancelled, count, other = {}, set(), 0, 0
-FEATURES = {"textDocument/hover": "hover", "textDocument/signatureHelp": "signature", "textDocument/documentSymbol": "symbols"}
+docs, count, other = {}, 0, 0
+FEATURES = {"textDocument/hover": "hover", "textDocument/documentSymbol": "symbols"}
 dynamic = False
 DOC = "\n".join(["Probe documentation"] + [f"line {i:02}" for i in range(2, 60)])
 
@@ -66,23 +66,17 @@ def reply(req):
             caps["completionProvider"] = {"resolveProvider": True, "triggerCharacters": [".", "/"]}
         if "hover" in opts:
             caps["hoverProvider"] = True
-        if "signature" in opts:
-            caps["signatureHelpProvider"] = {"triggerCharacters": ["("]}
         if "symbols" in opts:
             caps["documentSymbolProvider"] = True
         if opts.get("encoding"):
             caps["positionEncoding"] = opts["encoding"]
         result = {"capabilities": caps}
     elif method == "textDocument/completion":
-        if req["id"] in cancelled and opts.get("cancel_error"):
-            return send({"jsonrpc": "2.0", "id": req["id"], "error": {"code": -32800, "message": "cancelled"}})
         result = completion(req)
     elif method == "textDocument/hover":
         pos = params["position"]
         if opts["hover"]:
             result = {"contents": {"kind": "markdown", "value": f'{opts["hover"]} @{pos["line"]}:{pos["character"]}'}}
-    elif method == "textDocument/signatureHelp":
-        result = {"signatures": [{"label": opts["signature"], "parameters": []}]}
     elif method == "textDocument/documentSymbol":
         result = opts["symbols"]
     elif method == "completionItem/resolve":
@@ -106,9 +100,7 @@ while True:
     method, params = req.get("method"), req.get("params", {})
     if method == "exit":
         break
-    if method == "$/cancelRequest":
-        cancelled.add(params["id"])
-    elif method == "textDocument/didOpen":
+    if method == "textDocument/didOpen":
         docs[params["textDocument"]["uri"]] = params["textDocument"]["text"]
     elif method == "textDocument/didChange":
         docs[params["textDocument"]["uri"]] = params["contentChanges"][-1]["text"]

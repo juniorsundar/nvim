@@ -1,7 +1,7 @@
-local M = {
-    sessions_map_dir = vim.fn.stdpath "data" .. "/micro/sessions/",
-    sessions_map_file = "sessions.lua",
-}
+local M = {}
+
+local dir = vim.fn.stdpath "data" .. "/micro/sessions/"
+local map_path = dir .. "sessions.lua"
 
 local defaults = {
     auto_save = true,
@@ -9,14 +9,9 @@ local defaults = {
 }
 local config = defaults
 
-local function get_map_path()
-    return M.sessions_map_dir .. M.sessions_map_file
-end
-
 local function read_map()
-    local path = get_map_path()
-    if vim.fn.filereadable(path) == 1 then
-        local chunk = loadfile(path)
+    if vim.fn.filereadable(map_path) == 1 then
+        local chunk = loadfile(map_path)
         if chunk then
             return chunk() or {}
         end
@@ -25,20 +20,14 @@ local function read_map()
 end
 
 local function write_map(map)
-    local path = get_map_path()
     local content = "return " .. vim.inspect(map)
     local lines = vim.split(content, "\n")
-    vim.fn.writefile(lines, path)
+    vim.fn.writefile(lines, map_path)
 end
 
 local ensure_data_dirs = function()
-    local dir_exists = vim.fn.isdirectory(M.sessions_map_dir)
-    if dir_exists == 0 then
-        vim.fn.mkdir(M.sessions_map_dir, "p")
-    end
-
-    local full_path = get_map_path()
-    if vim.fn.filereadable(full_path) == 0 then
+    vim.fn.mkdir(dir, "p")
+    if vim.fn.filereadable(map_path) == 0 then
         write_map {}
     end
 end
@@ -56,7 +45,7 @@ M.save_session = function()
         write_map(map)
     end
 
-    local session_file = M.sessions_map_dir .. map[cwd]
+    local session_file = dir .. map[cwd]
     vim.cmd("mksession! " .. vim.fn.fnameescape(session_file))
 end
 
@@ -65,7 +54,7 @@ M.load_session = function()
     local map = read_map()
 
     if map[cwd] then
-        local session_file = M.sessions_map_dir .. map[cwd]
+        local session_file = dir .. map[cwd]
         if vim.fn.filereadable(session_file) == 1 then
             vim.cmd("source " .. vim.fn.fnameescape(session_file))
         end

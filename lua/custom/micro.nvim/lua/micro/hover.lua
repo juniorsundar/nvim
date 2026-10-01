@@ -155,13 +155,7 @@ local function eldoc()
                 end
 
                 if target:match "^https?://" then
-                    if vim.ui and vim.ui.open then
-                        vim.ui.open(target)
-                    else
-                        local sys = vim.loop.os_uname().sysname
-                        local cmd = sys == "Darwin" and "open" or sys == "Windows_NT" and "explorer" or "xdg-open"
-                        vim.fn.jobstart({ cmd, target }, { detach = true })
-                    end
+                    vim.ui.open(target)
                 else
                     local path = target
                     local l_num, c_num

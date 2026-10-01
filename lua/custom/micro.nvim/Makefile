@@ -1,6 +1,5 @@
 TESTS_INIT=tests/minimal_init.lua
 TESTS_DIR=tests/
-CONFIG_HOME := $(abspath ../../..)
 
 .PHONY: test
 
