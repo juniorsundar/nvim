@@ -4,12 +4,12 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Typing `./` routes to exclusive filesystem candidates; no LSP or buffer words appear
-- [ ] Accepting `my folder/` after `open("./my fo` yields `open("./my folder/`, including with a multibyte prefix before the path
-- [ ] Switching from a pending language request to a path context never corrupts the prefix on acceptance
-- [ ] No new `textDocument/completion` is sent in a path context: server triggers, manual native `get()`, and queued triggers are refused
-- [ ] Leaving the path context restores native server-trigger completion and acceptance
+- [x] Typing `./` routes to exclusive filesystem candidates; no LSP or buffer words appear
+- [x] Accepting `my folder/` after `open("./my fo` yields `open("./my folder/`, including with a multibyte prefix before the path
+- [x] Switching from a pending language request to a path context never corrupts the prefix on acceptance
+- [x] No new `textDocument/completion` is sent in a path context: server triggers, manual native `get()`, and queued triggers are refused
+- [x] Leaving the path context restores native server-trigger completion and acceptance
 
 Spec: `docs/specs/completion/spec.md`. Evidence: `docs/completion-scope.md`.

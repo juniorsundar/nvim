@@ -120,6 +120,11 @@ function M.wrap_cmd(cmd)
             if method ~= "textDocument/completion" then
                 return request(method, params, callback, on_reply)
             end
+            -- Send-time eligibility: a native trigger timer may already be queued
+            -- when the route changes, and manual get() bypasses autotrigger.
+            if M.route_of(vim.uri_to_bufnr(params.textDocument.uri)) ~= "language" then
+                return false
+            end
             watch(api.nvim_get_current_buf())
             local ticket = { snapshot = snapshot() }
             ticket.retire = function()
@@ -164,6 +169,106 @@ function M.wrap_cmd(cmd)
     return wrapper
 end
 
+---------------------------------------------------------------------------
+-- Filesystem source (path context)
+---------------------------------------------------------------------------
+
+-- ponytail: `./` paths only; ticket 03 extends this to ../, src/, /, ~/.
+--- Returns { dir = "./sub/", start = <0-based byte col of final segment> } when the
+--- text before the cursor ends inside a `./` path, else nil.
+local function path_context(prefix)
+    local init, pos = nil, 1
+    while true do
+        local s = prefix:find("./", pos, true)
+        if not s then
+            break
+        end
+        if s == 1 or prefix:sub(s - 1, s - 1):match "[%s\"'(=,]" then
+            init = s
+        end
+        pos = s + 1
+    end
+    if not init then
+        return nil
+    end
+    local token = prefix:sub(init)
+    local quoted = init > 1 and prefix:sub(init - 1, init - 1):match "[\"']"
+    if token:find "[\"']" or (not quoted and token:find "%s") then
+        return nil
+    end
+    local slash = token:match "^.*()/"
+    return { dir = token:sub(1, slash), start = init - 1 + slash }
+end
+
+local function cursor_context()
+    local col = api.nvim_win_get_cursor(0)[2]
+    return path_context(api.nvim_get_current_line():sub(1, col))
+end
+
+--- `'complete'` function source (`F{func}`): enumerate, then fuzzy-filter, because
+--- `completeopt=fuzzy` ranks but never removes unrelated candidates.
+function M.path(findstart, base)
+    local ctx = cursor_context()
+    if findstart == 1 then
+        return ctx and ctx.start or -3
+    end
+    if not ctx then
+        return {}
+    end
+    local dir = vim.fs.joinpath(vim.fn.getcwd(), ctx.dir)
+    local items = {}
+    for name, kind in vim.fs.dir(dir) do
+        if base:sub(1, 1) == "." or name:sub(1, 1) ~= "." then
+            local is_dir = kind == "directory" or (kind == "link" and vim.fn.isdirectory(dir .. name) == 1)
+            items[#items + 1] = { word = is_dir and name .. "/" or name }
+        end
+    end
+    if base ~= "" then
+        items = vim.fn.matchfuzzy(items, base, { key = "word" })
+    end
+    return { words = items, refresh = "always" }
+end
+
+---------------------------------------------------------------------------
+-- Routing
+---------------------------------------------------------------------------
+
+local ROUTE_VAR = "micro_completion_route"
+
+function M.route_of(buf)
+    return vim.b[buf][ROUTE_VAR] or "language"
+end
+
+--- Switch a buffer between "language" (LSP + buffer words) and "path" (filesystem only).
+--- Native autotrigger hooks are installed once per buffer handle, so changing route
+--- means disabling native LSP completion and re-enabling it only for language.
+local function route(buf, wanted, force)
+    if not api.nvim_buf_is_valid(buf) then
+        return
+    end
+    if not wanted then
+        local ctx = buf == api.nvim_get_current_buf() and cursor_context()
+        wanted = ctx and "path" or "language"
+    end
+    if M.route_of(buf) == wanted and not force then
+        return
+    end
+    M.invalidate()
+    local clients = vim.lsp.get_clients { bufnr = buf, method = "textDocument/completion" }
+    for _, client in ipairs(clients) do
+        vim.lsp.completion.enable(false, client.id, buf)
+    end
+    vim.b[buf][ROUTE_VAR] = wanted
+    vim.bo[buf].omnifunc = "v:lua.vim.lsp.omnifunc"
+    vim.bo[buf].complete = wanted == "path" and "Fv:lua.require'micro.completion'.path" or ".,o"
+    vim.bo[buf].autocomplete = true
+    if wanted == "language" then
+        for _, client in ipairs(clients) do
+            vim.lsp.completion.enable(true, client.id, buf, { autotrigger = true })
+        end
+    end
+end
+
 function M.setup(_)
     api.nvim_clear_autocmds { group = group }
     M.invalidate()
@@ -188,18 +293,29 @@ function M.setup(_)
         end,
     })
 
-    -- Language context: LSP candidates and current-buffer words coexist natively.
     api.nvim_create_autocmd("LspAttach", {
         group = group,
         callback = function(ev)
             local client = vim.lsp.get_client_by_id(ev.data.client_id)
-            if not client or not client:supports_method("textDocument/completion", ev.buf) then
-                return
+            if client and client:supports_method("textDocument/completion", ev.buf) then
+                route(ev.buf, nil, true)
             end
-            vim.lsp.completion.enable(true, client.id, ev.buf, { autotrigger = true })
-            vim.bo[ev.buf].omnifunc = "v:lua.vim.lsp.omnifunc"
-            vim.bo[ev.buf].complete = ".,o"
-            vim.bo[ev.buf].autocomplete = true
+        end,
+    })
+    api.nvim_create_autocmd({ "BufEnter", "FileType", "InsertEnter", "TextChangedI", "CursorMovedI" }, {
+        group = group,
+        callback = function(ev)
+            route(ev.buf)
+        end,
+    })
+    -- Classify the character about to be inserted so the route is switched before
+    -- native triggers fire for it.
+    api.nvim_create_autocmd("InsertCharPre", {
+        group = group,
+        callback = function(ev)
+            local col = api.nvim_win_get_cursor(0)[2]
+            local prospective = api.nvim_get_current_line():sub(1, col) .. vim.v.char
+            route(ev.buf, path_context(prospective) and "path" or "language")
         end,
     })
 end

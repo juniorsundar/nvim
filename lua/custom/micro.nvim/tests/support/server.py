@@ -2,7 +2,8 @@
 """Scripted stdio LSP server for the completion specs.
 
 Options (JSON argv[1]): label, snippet, import, resolve_import, empty, never_reply,
-delays (per-completion-request ms, last repeats), incomplete, cancel_error.
+delays (per-completion-request ms, last repeats), incomplete, cancel_error,
+log (file path; one line appended per textDocument/completion request received).
 It deliberately replies after $/cancelRequest unless cancel_error is set.
 """
 import json, re, sys, threading
@@ -47,7 +48,7 @@ def reply(req):
     result = None
     if method == "initialize":
         result = {"capabilities": {"textDocumentSync": 1,
-                  "completionProvider": {"resolveProvider": True, "triggerCharacters": ["."]}}}
+                  "completionProvider": {"resolveProvider": True, "triggerCharacters": [".", "/"]}}}
     elif method == "textDocument/completion":
         if req["id"] in cancelled and opts.get("cancel_error"):
             return send({"jsonrpc": "2.0", "id": req["id"], "error": {"code": -32800, "message": "cancelled"}})
@@ -83,6 +84,9 @@ while True:
         continue
     delay = 0
     if method == "textDocument/completion":
+        if opts.get("log"):
+            with open(opts["log"], "a") as f:
+                f.write("completion\n")
         if opts.get("never_reply"):
             continue
         delays = opts.get("delays", [40])
