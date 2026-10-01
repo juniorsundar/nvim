@@ -1,0 +1,97 @@
+-- Drives a real headless Neovim child over RPC with real input keys, so the
+-- main loop, completion timers and LSP replies behave as in a live editor.
+local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h:h")
+local server = root .. "/tests/support/server.py"
+
+local Editor = {}
+Editor.__index = Editor
+
+function Editor.new()
+    local sock = vim.fn.tempname()
+    local bin = os.getenv "NVIM_BIN" or vim.v.progpath
+    local job = vim.fn.jobstart { bin, "--headless", "--clean", "-n", "--listen", sock, "--cmd", "set rtp^=" .. root }
+    assert(
+        vim.wait(5000, function()
+            return vim.uv.fs_stat(sock) ~= nil
+        end, 20),
+        "editor did not start"
+    )
+    local self = setmetatable({ job = job, chan = vim.fn.sockconnect("pipe", sock, { rpc = true }) }, Editor)
+    self:lua [[vim.o.shortmess = vim.o.shortmess .. "c"; vim.o.swapfile = false]]
+    return self
+end
+
+function Editor:lua(code, ...)
+    return vim.rpcrequest(self.chan, "nvim_exec_lua", code, { ... })
+end
+
+function Editor:input(keys)
+    vim.rpcrequest(self.chan, "nvim_input", keys)
+end
+
+-- Poll a Lua expression (evaluated in the editor) until truthy.
+function Editor:wait(expr, timeout)
+    local ok = vim.wait(timeout or 3000, function()
+        return self:lua("return " .. expr)
+    end, 25)
+    assert(ok, "timed out waiting for: " .. expr)
+end
+
+function Editor:sleep(ms)
+    vim.wait(ms)
+end
+
+function Editor:state()
+    return self:lua [[
+        local info = vim.fn.complete_info { "matches", "selected", "preview_bufnr" }
+        local words = {}
+        for _, item in ipairs(info.matches or {}) do
+            words[#words + 1] = item.word
+        end
+        local preview = {}
+        if info.preview_bufnr and vim.api.nvim_buf_is_valid(info.preview_bufnr) then
+            preview = vim.api.nvim_buf_get_lines(info.preview_bufnr, 0, -1, false)
+        end
+        return {
+            mode = vim.api.nvim_get_mode().mode,
+            lines = vim.api.nvim_buf_get_lines(0, 0, -1, false),
+            visible = vim.fn.pumvisible() == 1,
+            words = words,
+            selected = info.selected,
+            preview = preview,
+            snippet = vim.snippet.active(),
+        }
+    ]]
+end
+
+--- Opens a scratch buffer and starts the scripted server through the guarded cmd.
+--- opts: lines, row, server (server.py options), micro (extra micro.completion opts)
+function Editor:session(opts)
+    opts = opts or {}
+    self:lua(
+        [[
+        local o, server = ...
+        require("micro.completion").setup(o.micro or {})
+        vim.api.nvim_buf_set_lines(0, 0, -1, false, o.lines or { "BufThing", "" })
+        vim.api.nvim_win_set_cursor(0, { o.row or 2, 0 })
+        vim.bo.filetype = "probe"
+        local cmd = { vim.env.PYTHON or "python3", server, vim.json.encode(o.server or {}) }
+        vim.lsp.start {
+            name = o.name or "probe",
+            cmd = require("micro.completion").wrap_cmd(cmd),
+            root_dir = vim.fn.getcwd(),
+        }
+    ]],
+        opts,
+        server
+    )
+    self:wait [[#vim.lsp.get_clients { bufnr = 0 } > 0]]
+    self:wait [[vim.bo.autocomplete]]
+end
+
+function Editor:close()
+    vim.fn.jobstop(self.job)
+    vim.fn.chanclose(self.chan)
+end
+
+return Editor
