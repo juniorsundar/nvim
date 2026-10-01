@@ -8,14 +8,48 @@ local M = {}
 -- current buffer, `path` = filesystem paths. A source set to false is never queried.
 -- prefer_lsp: when a buffer word and an LSP item share the same word, show only the LSP item.
 -- skip_kinds: LSP CompletionItemKind names to drop from server replies, e.g. { "Text" }.
+-- icons: show a glyph instead of the kind name, coloured by a `MicroKind<Name>` highlight
+-- (default-linked to treesitter groups). true = built-in map, a table overrides entries
+-- (e.g. { Function = "f" }), false = native kind names.
 local defaults = {
     min_word_length = 2,
     debounce = 80,
     prefer_lsp = true,
     skip_kinds = {},
     sources = { lsp = true, buffer = true, path = true },
+    icons = false,
+}
+
+-- LSP CompletionItemKind name -> { glyph, highlight group the MicroKind group links to }.
+local KINDS = {
+    Text = { "󰉿", "@string" },
+    Method = { "󰆧", "@function.method" },
+    Function = { "󰊕", "@function" },
+    Constructor = { "", "@constructor" },
+    Field = { "󰜢", "@variable.member" },
+    Variable = { "󰀫", "@variable" },
+    Class = { "󰠱", "@type" },
+    Interface = { "", "@type" },
+    Module = { "", "@module" },
+    Property = { "󰜢", "@property" },
+    Unit = { "󰑭", "@number" },
+    Value = { "󰎠", "@number" },
+    Enum = { "", "@type" },
+    Keyword = { "󰌋", "@keyword" },
+    Snippet = { "", "@markup.raw" },
+    Color = { "󰏘", "@constant" },
+    File = { "󰈙", "Normal" },
+    Reference = { "󰈇", "@markup.link" },
+    Folder = { "󰉋", "Directory" },
+    EnumMember = { "", "@constant" },
+    Constant = { "󰏿", "@constant" },
+    Struct = { "󰙅", "@type" },
+    Event = { "", "@type" },
+    Operator = { "󰆕", "@operator" },
+    TypeParameter = { "", "@type" },
 }
 local opts = vim.deepcopy(defaults)
+local glyphs = {}
 
 local api = vim.api
 local epoch = 0
@@ -346,7 +380,13 @@ function M.path(findstart, base)
         for name, kind in vim.fs.dir(dir) do
             if base:sub(1, 1) == "." or name:sub(1, 1) ~= "." then
                 local is_dir = kind == "directory" or (kind == "link" and vim.fn.isdirectory(dir .. name) == 1)
-                items[#items + 1] = { word = is_dir and name .. "/" or name }
+                local kind = is_dir and "Folder" or "File"
+                items[#items + 1] = {
+                    word = is_dir and name .. "/" or name,
+                    kind = glyphs[kind],
+                    kind_hlgroup = glyphs[kind] and "MicroKind" .. kind,
+                    menu = glyphs[kind] and "[path]",
+                }
             end
         end
     end)
@@ -379,6 +419,15 @@ end
 --- repeats an earlier one unless it sets `dup` (LSP items do), so the buffer copy disappears.
 local function lsp_first(a, b)
     return from_lsp(a) and not from_lsp(b)
+end
+
+--- Native `convert`: swap the kind name for its glyph. Color items keep native swatches.
+local function decorate_kind(item)
+    local name = vim.lsp.protocol.CompletionItemKind[item.kind]
+    if not glyphs[name] or name == "Color" then
+        return {}
+    end
+    return { kind = glyphs[name], kind_hlgroup = "MicroKind" .. name }
 end
 
 local function route(buf, wanted, force)
@@ -432,6 +481,8 @@ local function route(buf, wanted, force)
             vim.lsp.completion.enable(true, client.id, buf, {
                 autotrigger = true,
                 cmp = opts.prefer_lsp and lsp_first or nil,
+                -- convert/cmp are stored once per buffer handle, so pass them on every enable.
+                convert = next(glyphs) and decorate_kind or nil,
             })
         end
     end
@@ -478,9 +529,22 @@ end
 
 function M.setup(user_opts)
     opts = vim.tbl_deep_extend("force", defaults, user_opts or {})
+    glyphs = {}
+    local overrides = type(opts.icons) == "table" and opts.icons or {}
+    for name, spec in pairs(opts.icons and KINDS or {}) do
+        glyphs[name] = overrides[name] or spec[1]
+    end
+    local function kind_highlights()
+        for name in pairs(glyphs) do
+            api.nvim_set_hl(0, "MicroKind" .. name, { link = KINDS[name][2], default = true })
+        end
+    end
+    kind_highlights()
     M.hook_enable()
     api.nvim_clear_autocmds { group = group }
     M.invalidate()
+    -- `:colorscheme` runs `:hi clear`, which drops default links.
+    api.nvim_create_autocmd("ColorScheme", { group = group, callback = kind_highlights })
 
     vim.opt.completeopt:append { "menu", "menuone", "noselect", "popup", "fuzzy" }
 

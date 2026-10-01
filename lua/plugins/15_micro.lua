@@ -5,6 +5,7 @@ require("micro").setup {
         sources = { lsp = true, buffer = true, path = true },
         prefer_lsp = true,
         skip_kinds = { "Text" },
+        icons = true,
     },
     folds = { enabled = true },
     follow_mode = { enabled = true },

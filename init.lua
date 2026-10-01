@@ -19,6 +19,7 @@ vim.g.clipboard = {
 vim.opt.clipboard = "unnamedplus"
 
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
+vim.o.completeitemalign = "kind,abbr,menu"
 vim.opt.mouse = "a"
 
 -- Tab
