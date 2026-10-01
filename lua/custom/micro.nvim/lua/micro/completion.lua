@@ -6,7 +6,13 @@ local M = {}
 
 -- sources: which candidate sources are used. `lsp` = language servers, `buffer` = words in the
 -- current buffer, `path` = filesystem paths. A source set to false is never queried.
-local defaults = { min_word_length = 2, debounce = 80, sources = { lsp = true, buffer = true, path = true } }
+-- prefer_lsp: when a buffer word and an LSP item share the same word, show only the LSP item.
+local defaults = {
+    min_word_length = 2,
+    debounce = 80,
+    prefer_lsp = true,
+    sources = { lsp = true, buffer = true, path = true },
+}
 local opts = vim.deepcopy(defaults)
 
 local api = vim.api
@@ -341,6 +347,16 @@ end
 --- Switch a buffer between "language" (LSP + buffer words) and "path" (filesystem only).
 --- Native autotrigger hooks are installed once per buffer handle, so changing route
 --- means disabling native LSP completion and re-enabling it only for language.
+local function from_lsp(item)
+    return vim.tbl_get(item, "user_data", "nvim", "lsp", "client_id") ~= nil
+end
+
+--- Sort comparator for native `cmp`: LSP items first. `complete()` drops a later item whose word
+--- repeats an earlier one unless it sets `dup` (LSP items do), so the buffer copy disappears.
+local function lsp_first(a, b)
+    return from_lsp(a) and not from_lsp(b)
+end
+
 local function route(buf, wanted, force)
     if not api.nvim_buf_is_valid(buf) then
         return
@@ -389,7 +405,10 @@ local function route(buf, wanted, force)
         end
         vim.bo[buf].complete = table.concat(flags, ",")
         for _, client in ipairs(clients) do
-            vim.lsp.completion.enable(true, client.id, buf, { autotrigger = true })
+            vim.lsp.completion.enable(true, client.id, buf, {
+                autotrigger = true,
+                cmp = opts.prefer_lsp and lsp_first or nil,
+            })
         end
     end
 end

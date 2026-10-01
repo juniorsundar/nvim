@@ -66,4 +66,51 @@ describe("micro.completion (source toggles)", function()
         ed:wait(has "LspThing")
         assert.is_true(vim.tbl_contains(ed:state().words, "BufThing"))
     end)
+
+    -- Words as "word:kind" in menu order; buffer words have an empty kind.
+    local function menu()
+        return ed:lua [[
+            return vim.tbl_map(function(i) return i.word .. ":" .. i.kind end, vim.fn.complete_info({ "matches" }).matches or {})
+        ]]
+    end
+
+    describe("prefer_lsp", function()
+        -- The buffer holds the same word the server suggests, plus an unrelated buffer word.
+        local function same_word(micro, delay)
+            ed:session {
+                lines = { "BufThing BufOther", "" },
+                micro = micro,
+                server = { label = "BufThing", delays = { delay } },
+            }
+            ed:input "iBu"
+            ed:wait(has "BufOther")
+            ed:sleep(800) -- let the LSP reply land whether it is slow or fast
+        end
+
+        for _, delay in ipairs { 20, 500 } do
+            it(("shows only the LSP copy of a shared word and lists it first (reply %d ms)"):format(delay), function()
+                same_word({}, delay)
+                assert.same({ "BufThing:Function", "BufOther:" }, menu())
+            end)
+        end
+
+        it("keeps both copies when prefer_lsp is off", function()
+            same_word({ prefer_lsp = false }, 20)
+            local words = menu()
+            assert.equals(3, #words)
+            assert.is_true(vim.tbl_contains(words, "BufThing:"))
+            assert.is_true(vim.tbl_contains(words, "BufThing:Function"))
+        end)
+
+        it("lists LSP items ahead of buffer words that do not repeat", function()
+            ed:session {
+                lines = { "BuFirst BuSecond", "" },
+                server = { label = "BuLsp", delays = { 20 } },
+            }
+            ed:input "iBu"
+            ed:wait(has "BuLsp")
+            ed:sleep(300)
+            assert.equals("BuLsp:Function", menu()[1])
+        end)
+    end)
 end)
