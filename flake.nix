@@ -51,7 +51,8 @@
               # uv pip install --quiet -r requirements.txt
 
               uv pip install pre-commit
-              pre-commit install
+              # -f: drop any pre-commit.legacy (left by concurrent installs), else hooks run in migration mode
+              pre-commit install -f
               # zsh
             '';
           };
