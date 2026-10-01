@@ -1,3 +1,5 @@
+local panel = require "micro.panel"
+
 ---@class TreesitNavigatorConfig
 ---@field highlights { source_node: string, tree_node: string, tree_win_hl: string }
 ---@field icons { branch_mid: string, branch_end: string, indent_mid: string, indent_end: string }
@@ -116,9 +118,7 @@ local function set_transient_keymaps()
 end
 
 local function close_tree_win()
-    if state.tree_win and vim.api.nvim_win_is_valid(state.tree_win) then
-        vim.api.nvim_win_close(state.tree_win, true)
-    end
+    panel.close "ts_tree"
     state.tree_win = nil
     clear_highlights()
     clear_transient_keymaps()
@@ -307,17 +307,10 @@ M.ts_tree_display = function()
         border = conf.window.border,
     }
 
+    local fresh = not panel.get "ts_tree"
     local buf
-    if state.tree_win and vim.api.nvim_win_is_valid(state.tree_win) then
-        buf = vim.api.nvim_win_get_buf(state.tree_win)
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-        vim.api.nvim_win_set_config(state.tree_win, opts)
-    else
-        buf = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-        vim.bo[buf].bufhidden = "wipe"
-
-        state.tree_win = vim.api.nvim_open_win(buf, false, opts)
+    state.tree_win, buf = panel.open("ts_tree", lines, opts)
+    if fresh then
         vim.api.nvim_set_option_value("winhl", conf.highlights.tree_win_hl, { win = state.tree_win })
 
         set_transient_keymaps()

@@ -4,6 +4,12 @@ Personal editing workflows and their behaviour.
 
 ## Language
 
+### Windows
+
+**Panel**:
+A transient window, floating or split, that micro creates, owns and cleans up to show generated content such as hover docs, the per-window statusline, the treesitter tree or web search results. Panel buffers are tagged so other features can recognise and skip them.
+_Avoid_: popup, scratch window, eldoc window
+
 ### Completion
 
 **Completion source**:

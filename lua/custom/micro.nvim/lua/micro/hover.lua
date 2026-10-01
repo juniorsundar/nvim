@@ -1,7 +1,6 @@
-local M = {}
+local panel = require "micro.panel"
 
-local eldoc_win_id = nil
-local eldoc_buf_id = nil
+local M = {}
 
 local function with_splitkeep_screen(fn)
     if not vim.Micro.hover.reduce_split_jank then
@@ -23,11 +22,8 @@ end
 
 local function close_eldoc_window()
     with_splitkeep_screen(function()
-        pcall(vim.api.nvim_win_close, eldoc_win_id, true)
-        pcall(vim.api.nvim_buf_delete, eldoc_buf_id, { force = true }, true)
+        panel.close "eldoc"
     end)
-    eldoc_buf_id = nil
-    eldoc_win_id = nil
 end
 
 local function extract_links_to_footnotes(lines)
@@ -79,28 +75,23 @@ local function eldoc()
         end
 
         if vim.Micro.hover.layout == "eldoc" then
-            if eldoc_win_id and vim.api.nvim_win_is_valid(eldoc_win_id) then
+            if panel.get "eldoc" then
                 return
             end
 
-            close_eldoc_window()
-
             lines = extract_links_to_footnotes(lines)
-
-            eldoc_buf_id = vim.api.nvim_create_buf(false, true)
-            vim.b[eldoc_buf_id].statusline_ignore = true
 
             local padded_lines = vim.list_extend({ "" }, lines)
             table.insert(padded_lines, "")
-            vim.api.nvim_buf_set_lines(eldoc_buf_id, 0, 0, false, padded_lines)
 
             local max_height = math.floor(vim.o.lines * vim.Micro.hover.opts.ratio)
             if vim.Micro.hover.opts.max_height then
                 max_height = math.min(max_height, vim.Micro.hover.opts.max_height)
             end
 
+            local eldoc_win_id, eldoc_buf_id
             with_splitkeep_screen(function()
-                eldoc_win_id = vim.api.nvim_open_win(eldoc_buf_id, false, {
+                eldoc_win_id, eldoc_buf_id = panel.open("eldoc", padded_lines, {
                     split = "below",
                     win = -1,
                     height = math.min(max_height, #padded_lines),
@@ -109,10 +100,6 @@ local function eldoc()
             end)
             vim.api.nvim_buf_set_name(eldoc_buf_id, "[LSP Eldoc]")
             vim.api.nvim_set_option_value("filetype", "markdown", { buf = eldoc_buf_id })
-            vim.api.nvim_set_option_value("buftype", "nofile", { buf = eldoc_buf_id })
-            vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = eldoc_buf_id })
-            vim.api.nvim_set_option_value("modifiable", false, { buf = eldoc_buf_id })
-            vim.api.nvim_set_option_value("swapfile", false, { buf = eldoc_buf_id })
             pcall(vim.treesitter.start, eldoc_buf_id, "markdown")
             vim.api.nvim_set_option_value("conceallevel", 2, { win = eldoc_win_id })
             vim.api.nvim_set_option_value("concealcursor", "nc", { win = eldoc_win_id })
@@ -121,7 +108,6 @@ local function eldoc()
             vim.api.nvim_set_option_value("breakindent", true, { win = eldoc_win_id })
             vim.api.nvim_set_option_value("signcolumn", "yes:2", { win = eldoc_win_id })
             vim.api.nvim_set_option_value("winhl", "SignColumn:Normal", { win = eldoc_win_id })
-            vim.api.nvim_win_set_var(eldoc_win_id, "statusline_ignore", true)
 
             local function open_link()
                 local line = vim.api.nvim_get_current_line()
@@ -241,7 +227,8 @@ function M.setup(opts)
         callback = function()
             -- A reply still in flight is for the old cursor position.
             require("micro.lsp").cancel "hover"
-            if not eldoc_win_id or not vim.api.nvim_win_is_valid(eldoc_win_id) then
+            local eldoc_win_id = panel.get "eldoc"
+            if not eldoc_win_id then
                 return
             end
             local current_win = vim.api.nvim_get_current_win()
@@ -277,7 +264,8 @@ end
 ---   vim.keymap.set("n", "<M-j>", function() require("micro.hover").scroll(1) end)
 ---   vim.keymap.set("n", "<M-k>", function() require("micro.hover").scroll(-1) end)
 function M.scroll(direction, step)
-    if not eldoc_win_id or not vim.api.nvim_win_is_valid(eldoc_win_id) then
+    local eldoc_win_id = panel.get "eldoc"
+    if not eldoc_win_id then
         return
     end
     local lines = step or 4

@@ -23,12 +23,13 @@ local function get_hl_bg(groups)
     return "NONE"
 end
 
+local panel = require "micro.panel"
+
 local M = {}
 
 M.config = {
     ignored = {
         names = {
-            ["[LSP Eldoc]"] = true,
             ["NvimTree_1"] = true,
             ["[Yazi]"] = true,
         },
@@ -54,10 +55,6 @@ M.config = {
         symbols = { info = " ", warn = " ", error = " " },
     },
     border_style = { " ", "─", "", "", "", "", "", "" },
-}
-
-M.state = {
-    wins = {},
 }
 
 function M.refresh_colors()
@@ -103,7 +100,7 @@ function M.is_ignored(buf_id)
     local buftype = vim.bo[buf_id].buftype
     local filetype = vim.bo[buf_id].filetype
 
-    if M.config.ignored.names[name] then
+    if vim.b[buf_id].micro_panel or M.config.ignored.names[name] then
         return true
     end
     if M.config.ignored.buftypes[buftype] then
@@ -388,11 +385,9 @@ function M.generate_content(win_id, buf_id, width)
 end
 
 function M.render_window(parent_win, buf_id)
+    local key = "statusline:" .. parent_win
     if M.is_ignored(buf_id) or vim.api.nvim_win_get_config(parent_win).relative ~= "" then
-        if M.state.wins[parent_win] then
-            pcall(vim.api.nvim_win_close, M.state.wins[parent_win], true)
-            M.state.wins[parent_win] = nil
-        end
+        panel.close(key)
         return
     end
 
@@ -403,9 +398,6 @@ function M.render_window(parent_win, buf_id)
     local row = height - 1
 
     local content, highlights = M.generate_content(parent_win, buf_id, width)
-
-    local status_win = M.state.wins[parent_win]
-    local status_buf
 
     local opts = {
         relative = "win",
@@ -420,16 +412,7 @@ function M.render_window(parent_win, buf_id)
         zindex = 10,
     }
 
-    if status_win and vim.api.nvim_win_is_valid(status_win) then
-        status_buf = vim.api.nvim_win_get_buf(status_win)
-        vim.api.nvim_win_set_config(status_win, opts)
-    else
-        status_buf = vim.api.nvim_create_buf(false, true)
-        status_win = vim.api.nvim_open_win(status_buf, false, opts)
-        M.state.wins[parent_win] = status_win
-    end
-
-    vim.api.nvim_buf_set_lines(status_buf, 0, -1, false, { content })
+    local status_win, status_buf = panel.open(key, { content }, opts, { parent = parent_win })
 
     vim.api.nvim_buf_clear_namespace(status_buf, ns_id, 0, -1)
     for _, hl in ipairs(highlights) do
@@ -461,14 +444,6 @@ end
 
 function M.update()
     vim.schedule(function()
-        for parent, status in pairs(M.state.wins) do
-            if not vim.api.nvim_win_is_valid(parent) then
-                if vim.api.nvim_win_is_valid(status) then
-                    pcall(vim.api.nvim_win_close, status, true)
-                end
-                M.state.wins[parent] = nil
-            end
-        end
         for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
             if vim.api.nvim_win_is_valid(win) then
                 pcall(M.render_window, win, vim.api.nvim_win_get_buf(win))
