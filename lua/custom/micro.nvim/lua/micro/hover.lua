@@ -204,9 +204,7 @@ local function eldoc()
         end
     end
 
-    require("micro.lsp").request("hover", 0, "textDocument/hover", function(client)
-        return vim.lsp.util.make_position_params(0, client.offset_encoding)
-    end, handler)
+    require("micro.lsp").request_cursor("hover", 0, "textDocument/hover", handler)
 end
 
 --- Show hover documentation for the symbol under the cursor in the configured layout.
@@ -226,8 +224,6 @@ function M.setup(opts)
     vim.api.nvim_create_autocmd({ "CursorMoved" }, {
         group = eldoc_close_augroup,
         callback = function()
-            -- A reply still in flight is for the old cursor position.
-            require("micro.lsp").cancel "hover"
             local eldoc_win_id = panel.get "eldoc"
             if not eldoc_win_id then
                 return

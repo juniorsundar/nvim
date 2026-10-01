@@ -92,11 +92,139 @@ describe("micro.lsp", function()
         assert.equals(1, requests())
     end)
 
+    it("keeps generic requests alive after focus and cursor changes", function()
+        ed:server({ hover = "B", reply_delays = { 200 } }, "b")
+        ed:lua [[
+            _G.hover()
+            vim.cmd.vsplit()
+            vim.api.nvim_win_set_cursor(0, { 1, 0 })
+        ]]
+        ed:sleep(400)
+        assert.same({ "B @0:4" }, got())
+    end)
+
     it("does not deliver to a window that no longer shows the buffer", function()
         ed:server({ hover = "B", reply_delays = { 200 } }, "b")
         ed:lua "_G.hover(); vim.cmd.enew()"
         ed:sleep(400)
         assert.same({}, got())
+    end)
+end)
+
+describe("micro.lsp cursor context", function()
+    local ed, log
+
+    before_each(function()
+        log = vim.fn.tempname()
+        ed = Editor.new()
+        ed:lua [[
+            vim.api.nvim_buf_set_lines(0, 0, -1, false, { "ééé xy", "other text" })
+            vim.api.nvim_win_set_cursor(0, { 1, 7 })
+            _G.got = {}
+            function _G.ask(opts)
+                require("micro.lsp").request_cursor("cursor", 0, "textDocument/hover", function(_, result)
+                    if result then
+                        table.insert(got, result.contents.value)
+                        return true
+                    end
+                end, opts)
+            end
+        ]]
+    end)
+    after_each(function()
+        ed:close()
+        vim.fn.delete(log)
+    end)
+
+    local function got()
+        return ed:lua "return _G.got"
+    end
+    local function requests()
+        return vim.fn.filereadable(log) == 1 and #vim.fn.readfile(log) or 0
+    end
+    local function pending()
+        ed:server({ hover = "B", reply_delays = { 300, 0 }, log = log }, "cursor")
+        ed:lua "_G.ask()"
+        assert.is_true(vim.wait(1000, function()
+            return requests() == 1
+        end, 10))
+    end
+    local function expired()
+        ed:sleep(400) -- the server deliberately replies even after cancellation
+        assert.same({}, got())
+        ed:lua "_G.ask()"
+        ed:wait "#_G.got == 1"
+        assert.same({ "B @0:4" }, got())
+    end
+
+    for _, encoding in ipairs { { "utf-16", 4 }, { "utf-8", 7 } } do
+        it("owns position construction for " .. encoding[1], function()
+            ed:server({ hover = "B", encoding = encoding[1] }, "cursor")
+            ed:lua "_G.ask { debounce = 50 }"
+            ed:wait "#_G.got == 1"
+            assert.same({ "B @0:" .. encoding[2] }, got())
+        end)
+    end
+
+    it("retires a debounced request when focus leaves, even if it returns", function()
+        ed:server({ hover = "B", log = log }, "cursor")
+        ed:lua [[
+            _G.ask { debounce = 100 }
+            vim.cmd.vsplit()
+            vim.api.nvim_win_set_cursor(0, { 1, 0 })
+            vim.cmd "wincmd p"
+        ]]
+        ed:sleep(250)
+        assert.equals(0, requests())
+        assert.same({}, got())
+    end)
+
+    it("retires an in-flight request when focus leaves and returns", function()
+        pending()
+        ed:lua [[vim.cmd.vsplit(); vim.cmd "wincmd p"]]
+        expired()
+    end)
+
+    it("retires an in-flight request when the cursor moves and returns", function()
+        pending()
+        ed:input "h"
+        ed:wait "vim.api.nvim_win_get_cursor(0)[2] == 6"
+        ed:input "l"
+        ed:wait "vim.api.nvim_win_get_cursor(0)[2] == 7"
+        expired()
+    end)
+
+    it("retires an in-flight request when other text is edited and restored", function()
+        pending()
+        ed:lua [[
+            vim.api.nvim_buf_set_lines(0, 1, 2, false, { "changed" })
+            vim.api.nvim_buf_set_lines(0, 1, 2, false, { "other text" })
+        ]]
+        expired()
+    end)
+
+    it("retires a request when the owner changes buffers and returns", function()
+        pending()
+        ed:lua [[
+            local buf = vim.api.nvim_get_current_buf()
+            vim.cmd.enew()
+            vim.api.nvim_win_set_buf(0, buf)
+        ]]
+        expired()
+    end)
+
+    it("keeps a fresh request created by the same cursor movement event", function()
+        ed:server({ hover = "B", log = log }, "cursor")
+        ed:lua [[
+            vim.api.nvim_create_autocmd("CursorMoved", {
+                callback = function() _G.ask { debounce = 50 } end,
+            })
+            _G.ask { debounce = 100 }
+        ]]
+        ed:input "h"
+        ed:wait "#_G.got == 1"
+        assert.same({ "B @0:3" }, got())
+        assert.equals(1, requests())
     end)
 end)
 
@@ -108,6 +236,30 @@ describe("LSP features on micro.lsp", function()
     end)
     after_each(function()
         ed:close()
+    end)
+
+    it("hover ignores a departed context and still displays a fresh reply", function()
+        ed:lua [[
+            vim.api.nvim_buf_set_lines(0, 0, -1, false, { "hover" })
+            require("micro.hover").setup {}
+        ]]
+        ed:server({ hover = "B", reply_delays = { 300, 0 } }, "hover")
+        ed:lua [[
+            require("micro.hover").show()
+            vim.cmd.vsplit()
+            vim.cmd "wincmd p"
+        ]]
+        ed:sleep(400)
+        assert.is_true(ed:lua [[return require("micro.panel").get("eldoc") == nil]])
+        ed:lua [[require("micro.hover").show()]]
+        ed:wait [[require("micro.panel").get("eldoc") ~= nil]]
+        assert.same(
+            { "", "B @0:0", "" },
+            ed:lua [[
+            local _, buf = require("micro.panel").get("eldoc")
+            return vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+        ]]
+        )
     end)
 
     it("signature help without a client does not error", function()

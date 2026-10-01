@@ -205,9 +205,7 @@ local function request_signature(debounce)
         return true
     end
 
-    require("micro.lsp").request("signature", 0, "textDocument/signatureHelp", function(client)
-        return vim.lsp.util.make_position_params(0, client.offset_encoding)
-    end, handler, { debounce = debounce })
+    require("micro.lsp").request_cursor("signature", 0, "textDocument/signatureHelp", handler, { debounce = debounce })
 end
 
 local function print_signature_help()
