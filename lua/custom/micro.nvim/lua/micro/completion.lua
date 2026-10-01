@@ -4,7 +4,9 @@
 -- `textDocument/completion` replies before they reach native completion.
 local M = {}
 
-local defaults = { min_word_length = 2, debounce = 80 }
+-- sources: which candidate sources are used. `lsp` = language servers, `buffer` = words in the
+-- current buffer, `path` = filesystem paths. A source set to false is never queried.
+local defaults = { min_word_length = 2, debounce = 80, sources = { lsp = true, buffer = true, path = true } }
 local opts = vim.deepcopy(defaults)
 
 local api = vim.api
@@ -148,7 +150,7 @@ function M.wrap_cmd(cmd)
             -- Send-time eligibility: a native trigger timer may already be queued
             -- when the route changes, and manual get() bypasses autotrigger.
             local owner = request_buf(params.textDocument.uri)
-            if owner and (excluded(owner) or M.route_of(owner) ~= "language") then
+            if not opts.sources.lsp or (owner and (excluded(owner) or M.route_of(owner) ~= "language")) then
                 return false
             end
             watch(api.nvim_get_current_buf())
@@ -349,11 +351,15 @@ local function route(buf, wanted, force)
         local ctx = buf == api.nvim_get_current_buf() and cursor_context()
         wanted = ctx and "path" or "language"
     end
-    local clients = vim.lsp.get_clients { bufnr = buf, method = "textDocument/completion" }
+    if wanted == "path" and not opts.sources.path then
+        wanted = "language"
+    end
+    local clients = opts.sources.lsp and vim.lsp.get_clients { bufnr = buf, method = "textDocument/completion" } or {}
     local stored = vim.b[buf][ROUTE_VAR]
-    -- A buffer with no completion-capable client yet stays unrouted, so a server that
-    -- registers completion dynamically (after LspAttach) is routed once it has.
-    if (stored or (wanted == "language" and #clients == 0 and "language")) == wanted and not force then
+    -- With LSP on, a buffer with no completion-capable client yet stays unrouted, so a server
+    -- that registers completion dynamically (after LspAttach) is routed once it has.
+    local waiting = opts.sources.lsp and wanted == "language" and #clients == 0 and "language"
+    if (stored or waiting) == wanted and not force then
         return
     end
     M.invalidate()
@@ -371,8 +377,17 @@ local function route(buf, wanted, force)
         return
     end
     vim.bo[buf].omnifunc = "v:lua.vim.lsp.omnifunc"
-    vim.bo[buf].complete = wanted == "path" and "Fv:lua.require'micro.completion'.path" or ".,o"
-    if wanted == "language" then
+    if wanted == "path" then
+        vim.bo[buf].complete = "Fv:lua.require'micro.completion'.path"
+    else
+        local flags = {}
+        if opts.sources.buffer then
+            flags[#flags + 1] = "."
+        end
+        if opts.sources.lsp then
+            flags[#flags + 1] = "o"
+        end
+        vim.bo[buf].complete = table.concat(flags, ",")
         for _, client in ipairs(clients) do
             vim.lsp.completion.enable(true, client.id, buf, { autotrigger = true })
         end
@@ -419,7 +434,7 @@ function M.trigger()
 end
 
 function M.setup(user_opts)
-    opts = vim.tbl_extend("force", defaults, user_opts or {})
+    opts = vim.tbl_deep_extend("force", defaults, user_opts or {})
     M.hook_enable()
     api.nvim_clear_autocmds { group = group }
     M.invalidate()
