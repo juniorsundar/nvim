@@ -10,6 +10,11 @@ Personal editing workflows and their behaviour.
 A transient window, floating or split, that micro creates, owns and cleans up to show generated content such as hover docs, the per-window statusline, the treesitter tree or web search results. Panel buffers are tagged so other features can recognise and skip them.
 _Avoid_: popup, scratch window, eldoc window
 
+### Cursor features
+
+**Cursor context**:
+The focused editing window, displayed document, cursor position and document text that hover or signature help refers to. Moving the cursor, editing the document or leaving the window ends that context, even if the same position is restored later.
+
 ### Completion
 
 **Completion source**:
