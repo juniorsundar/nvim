@@ -3,14 +3,17 @@
 
 Options (JSON argv[1]): label, snippet, import, resolve_import, empty, never_reply,
 delays (per-completion-request ms, last repeats), incomplete, cancel_error,
-log (file path; one line appended per textDocument/completion request received).
+log (file path; one line appended per textDocument/completion request received),
+dynamic (as lua-language-server does: when the client advertises dynamic completion registration, omit completionProvider from initialize and register it afterwards),
+cwd_log (file path; the working directory is written once, at initialize).
 It deliberately replies after $/cancelRequest unless cancel_error is set.
 """
-import json, re, sys, threading
+import json, os, re, sys, threading
 
 opts = json.loads(sys.argv[1])
 lock = threading.Lock()
 docs, cancelled, count = {}, set(), 0
+dynamic = False
 DOC = "\n".join(["Probe documentation"] + [f"line {i:02}" for i in range(2, 60)])
 
 
@@ -44,11 +47,19 @@ def completion(req):
 
 
 def reply(req):
+    global dynamic
     method, params = req["method"], req.get("params", {})
     result = None
     if method == "initialize":
-        result = {"capabilities": {"textDocumentSync": 1,
-                  "completionProvider": {"resolveProvider": True, "triggerCharacters": [".", "/"]}}}
+        if opts.get("cwd_log"):
+            with open(opts["cwd_log"], "w") as f:
+                f.write(os.getcwd())
+        caps = {"textDocumentSync": 1}
+        client = params.get("capabilities", {}).get("textDocument", {}).get("completion", {})
+        dynamic = bool(opts.get("dynamic") and client.get("dynamicRegistration"))
+        if not dynamic:
+            caps["completionProvider"] = {"resolveProvider": True, "triggerCharacters": [".", "/"]}
+        result = {"capabilities": caps}
     elif method == "textDocument/completion":
         if req["id"] in cancelled and opts.get("cancel_error"):
             return send({"jsonrpc": "2.0", "id": req["id"], "error": {"code": -32800, "message": "cancelled"}})
@@ -80,7 +91,11 @@ while True:
         docs[params["textDocument"]["uri"]] = params["textDocument"]["text"]
     elif method == "textDocument/didChange":
         docs[params["textDocument"]["uri"]] = params["contentChanges"][-1]["text"]
-    if "id" not in req:
+    if method == "initialized" and dynamic:
+        send({"jsonrpc": "2.0", "id": "reg", "method": "client/registerCapability", "params": {"registrations": [
+            {"id": "c", "method": "textDocument/completion",
+             "registerOptions": {"resolveProvider": True, "triggerCharacters": [".", "/"]}}]}})
+    if "id" not in req or method is None:  # notifications, and the client's reply to our request
         continue
     delay = 0
     if method == "textDocument/completion":

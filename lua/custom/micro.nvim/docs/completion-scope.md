@@ -220,3 +220,23 @@ Implement the production backend using the verified startup/guard wiring, then v
 - `micro.completion` owns the window-local switch of `'autocomplete'`: on in a language context only once the
   word before the cursor (including the character being inserted) reaches `min_word_length`, always on in a path
   context. LSP server trigger characters use native autotrigger, which does not depend on `'autocomplete'`.
+
+## Native trial profile (ticket 07)
+
+`micro.completion.setup()` now wraps `vim.lsp.enable` once (`hook_enable`, idempotent). Every
+name enabled afterwards has its resolved `cmd` decorated by `decorate()` before the client can
+start, so no server file changes. Configs whose executable is missing keep their list `cmd`, so
+native still skips them silently. Servers enabled before `setup()` are not retrofitted.
+
+Run the profile with real servers: `cd <project> && nvim -u <repo>/lua/custom/micro.nvim/tests/trial/init.lua`.
+It uses `after/lsp` + `after/ftplugin`, no cmp/blink, and the native default capabilities.
+
+Results (lua-language-server 3.19.1, nightly):
+
+- Started through `after/ftplugin` + `after/lsp`, `cmd` is the guard wrapper. Re-running `setup()` or `decorate()` does not stack wrappers.
+- Mixed menu (LSP + buffer words), resolved documentation (11 lines), and `<CR>` acceptance work; `string.format`, `math.max` accepted as expected.
+- Dynamic registration: with `dynamicRegistration=false` removed, lua-language-server registers `completionProvider` through `client/registerCapability`. Native supports it (`supports_method` true, completion returns items), but the client is not completion-capable at `LspAttach`, so the module now routes and enables native completion on the first routing event after registration. Covered by a spec using a server that registers dynamically.
+- 0.12.5 does not advertise `completion.dynamicRegistration` at all, so servers register statically there.
+- The snippet path was not exercised against lua-language-server (its default `callSnippet` is off); snippet acceptance is covered by the scripted-server specs.
+- `cmd` wrappers pass `cmd_cwd or root_dir` on nightly, as native does; a spec compares the server's actual working directory.
+- Not done: the active configuration (cmp, `serve_capabilities.lua`) is unchanged; ticket 08 removes the cmp/blink capability merge and the `dynamicRegistration=false` workaround.

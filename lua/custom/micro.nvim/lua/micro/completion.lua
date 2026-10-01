@@ -134,7 +134,8 @@ function M.wrap_cmd(cmd)
         })
         local rpc = type(cmd) == "function" and cmd(hooks, config)
             or vim.lsp.rpc.start(cmd, hooks, {
-                cwd = config.cmd_cwd,
+                -- Mirror native: nightly also falls back to root_dir.
+                cwd = config.cmd_cwd or (vim.fn.has "nvim-0.13" == 1 and config.root_dir or nil),
                 env = config.cmd_env,
                 detached = config.detached,
             })
@@ -192,6 +193,38 @@ function M.wrap_cmd(cmd)
     wrappers[cmd] = wrapper
     is_wrapper[wrapper] = true
     return wrapper
+end
+
+--- Decorate the resolved `cmd` of the named configs, so each client is guarded from its
+--- first request. Skips configs whose executable is missing: native silently skips those
+--- only while `cmd` is a list, and a function `cmd` would turn that into a startup error.
+function M.decorate(names)
+    for _, name in ipairs(vim._ensure_list(names)) do
+        local ok, config = pcall(function()
+            return vim.lsp.config[name]
+        end)
+        local cmd = ok and config and config.cmd
+        if cmd and not is_wrapper[cmd] and (type(cmd) == "function" or vim.fn.executable(cmd[1]) == 1) then
+            vim.lsp.config(name, { cmd = M.wrap_cmd(cmd) })
+        end
+    end
+end
+
+local enable, hooked = vim.lsp.enable, false
+
+--- The one shared decoration point: every server the config enables is decorated first.
+--- Idempotent. Servers enabled before this runs are not retrofitted (restart them).
+function M.hook_enable()
+    if hooked then
+        return
+    end
+    hooked = true
+    vim.lsp.enable = function(name, on)
+        if on ~= false then
+            M.decorate(name)
+        end
+        return enable(name, on)
+    end
 end
 
 ---------------------------------------------------------------------------
@@ -316,11 +349,14 @@ local function route(buf, wanted, force)
         local ctx = buf == api.nvim_get_current_buf() and cursor_context()
         wanted = ctx and "path" or "language"
     end
-    if M.route_of(buf) == wanted and not force then
+    local clients = vim.lsp.get_clients { bufnr = buf, method = "textDocument/completion" }
+    local stored = vim.b[buf][ROUTE_VAR]
+    -- A buffer with no completion-capable client yet stays unrouted, so a server that
+    -- registers completion dynamically (after LspAttach) is routed once it has.
+    if (stored or (wanted == "language" and #clients == 0 and "language")) == wanted and not force then
         return
     end
     M.invalidate()
-    local clients = vim.lsp.get_clients { bufnr = buf, method = "textDocument/completion" }
     for _, client in ipairs(clients) do
         vim.lsp.completion.enable(false, client.id, buf)
     end
@@ -384,6 +420,7 @@ end
 
 function M.setup(user_opts)
     opts = vim.tbl_extend("force", defaults, user_opts or {})
+    M.hook_enable()
     api.nvim_clear_autocmds { group = group }
     M.invalidate()
 
