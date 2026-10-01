@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Scripted stdio LSP server for the completion specs.
 
-Options (JSON argv[1]): label, snippet, import, resolve_import, empty, never_reply,
+Options (JSON argv[1]): label, kind (LSP CompletionItemKind, default 3), snippet, import, resolve_import, empty, never_reply,
 delays (per-completion-request ms, last repeats), incomplete, cancel_error,
 log (file path; one line appended per textDocument/completion request received),
 dynamic (as lua-language-server does: when the client advertises dynamic completion registration, omit completionProvider from initialize and register it afterwards),
@@ -37,7 +37,7 @@ def completion(req):
     snippet = opts.get("snippet")
     label = opts.get("label", "LspCall" if snippet else "LspThing")
     item = {
-        "label": label, "kind": 3, "insertTextFormat": 2 if snippet else 1, "data": {"probe": True},
+        "label": label, "kind": opts.get("kind", 3), "insertTextFormat": 2 if snippet else 1, "data": {"probe": True},
         "textEdit": {"range": {"start": {"line": pos["line"], "character": start}, "end": pos},
                      "newText": "LspCall(${1:arg})$0" if snippet else label},
     }

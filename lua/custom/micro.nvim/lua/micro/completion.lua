@@ -7,10 +7,12 @@ local M = {}
 -- sources: which candidate sources are used. `lsp` = language servers, `buffer` = words in the
 -- current buffer, `path` = filesystem paths. A source set to false is never queried.
 -- prefer_lsp: when a buffer word and an LSP item share the same word, show only the LSP item.
+-- skip_kinds: LSP CompletionItemKind names to drop from server replies, e.g. { "Text" }.
 local defaults = {
     min_word_length = 2,
     debounce = 80,
     prefer_lsp = true,
+    skip_kinds = {},
     sources = { lsp = true, buffer = true, path = true },
 }
 local opts = vim.deepcopy(defaults)
@@ -122,6 +124,27 @@ end
 
 --- Decorate a `vim.lsp.Config.cmd` (list or function factory). Must run before the
 --- client starts; idempotent. Only `textDocument/completion` replies are filtered.
+--- Remove items of the configured `skip_kinds` from a completion result (list or CompletionList).
+--- Unknown kind names are ignored. Returns the result unchanged when nothing is skipped.
+local function skip_kinds(result)
+    if type(result) ~= "table" or #opts.skip_kinds == 0 then
+        return result
+    end
+    local skip = {}
+    for _, name in ipairs(opts.skip_kinds) do
+        skip[vim.lsp.protocol.CompletionItemKind[name] or 0] = true
+    end
+    local function keep(items)
+        return vim.tbl_filter(function(item)
+            return not skip[item.kind]
+        end, items)
+    end
+    if result.items then
+        return vim.tbl_extend("force", result, { items = keep(result.items) })
+    end
+    return keep(result)
+end
+
 function M.wrap_cmd(cmd)
     if is_wrapper[cmd] then
         return cmd
@@ -173,7 +196,8 @@ function M.wrap_cmd(cmd)
                 local valid = not closed and not rpc.is_closing() and current(ticket)
                 ticket.retire()
                 if valid then
-                    callback(...)
+                    local err, result, ctx = ...
+                    callback(err, skip_kinds(result), ctx)
                 end
             end, function(rid)
                 -- Native pending-request accounting must always run, even for dropped replies.

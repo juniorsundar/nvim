@@ -113,4 +113,34 @@ describe("micro.completion (source toggles)", function()
             assert.equals("BuLsp:Function", menu()[1])
         end)
     end)
+
+    describe("skip_kinds", function()
+        local TEXT = 1 -- LSP CompletionItemKind.Text
+
+        it("drops LSP items of a skipped kind and keeps buffer words", function()
+            ed:session { micro = { skip_kinds = { "Text" } }, server = { kind = TEXT, delays = { 20 } } }
+            ed:input "iTh"
+            ed:wait(has "BufThing")
+            ed:sleep(400)
+            assert.is_false(vim.tbl_contains(ed:state().words, "LspThing"))
+        end)
+
+        it("keeps LSP items of other kinds", function()
+            ed:session { micro = { skip_kinds = { "Text" } }, server = { delays = { 20 } } }
+            ed:input "iTh"
+            ed:wait(has "LspThing")
+        end)
+
+        it("keeps Text items when nothing is skipped", function()
+            ed:session { server = { kind = TEXT, delays = { 20 } } }
+            ed:input "iTh"
+            ed:wait(has "LspThing")
+        end)
+
+        it("ignores a kind name that does not exist", function()
+            ed:session { micro = { skip_kinds = { "Nope" } }, server = { delays = { 20 } } }
+            ed:input "iTh"
+            ed:wait(has "LspThing")
+        end)
+    end)
 end)

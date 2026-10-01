@@ -2,8 +2,9 @@ require("micro").setup {
     breadcrumbs = { enabled = false },
     completion = {
         enabled = true,
-        -- Set a source to false to stop using it.
         sources = { lsp = true, buffer = true, path = true },
+        prefer_lsp = true,
+        skip_kinds = { "Text" },
     },
     dynamic_lnum = { enabled = true },
     folds = { enabled = true },
