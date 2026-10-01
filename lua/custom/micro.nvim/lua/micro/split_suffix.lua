@@ -3,13 +3,14 @@ local ns_id = vim.api.nvim_create_namespace "split_suffix_beacon"
 
 M.queue = {}
 
-local default = {
+local defaults = {
     modifiers = {
         ["vsplit"] = "<C-w><C-v>",
         ["split"] = "<C-w><C-s>",
         ["clear"] = "<C-w><C-x>",
     },
 }
+local config = defaults
 
 local function split_suffix(command)
     local buf_dest = vim.api.nvim_get_current_buf()
@@ -50,15 +51,15 @@ local function clear_opened_windows()
 end
 
 function M.setup(opts)
-    default = vim.tbl_deep_extend("force", default, opts or {})
+    config = vim.tbl_deep_extend("force", defaults, opts or {})
 
-    vim.keymap.set("n", default.modifiers.vsplit, function()
+    vim.keymap.set("n", config.modifiers.vsplit, function()
         split_suffix "vsplit"
     end, { desc = "Vertical Split Suffix" })
-    vim.keymap.set("n", default.modifiers.split, function()
+    vim.keymap.set("n", config.modifiers.split, function()
         split_suffix "split"
     end, { desc = "Horizontal Split Suffix" })
-    vim.keymap.set("n", default.modifiers.clear, function()
+    vim.keymap.set("n", config.modifiers.clear, function()
         clear_opened_windows()
     end, { desc = "Close Suffixed Windows" })
 end

@@ -3,10 +3,11 @@ local M = {
     sessions_map_file = "sessions.lua",
 }
 
-local default = {
+local defaults = {
     auto_save = true,
     auto_reload = false,
 }
+local config = defaults
 
 local function get_map_path()
     return M.sessions_map_dir .. M.sessions_map_file
@@ -74,14 +75,14 @@ end
 local function setup_autocmds()
     local group = vim.api.nvim_create_augroup("MicroSession", { clear = true })
 
-    if default.auto_reload then
+    if config.auto_reload then
         vim.api.nvim_create_autocmd("VimEnter", {
             group = group,
             callback = M.load_session,
         })
     end
 
-    if default.auto_save then
+    if config.auto_save then
         vim.api.nvim_create_autocmd("ExitPre", {
             group = group,
             callback = M.save_session,
@@ -90,7 +91,7 @@ local function setup_autocmds()
 end
 
 M.setup = function(opts)
-    default = vim.tbl_deep_extend("force", default, opts or {})
+    config = vim.tbl_deep_extend("force", defaults, opts or {})
     setup_autocmds()
 end
 

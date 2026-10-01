@@ -18,10 +18,6 @@ local defaults = {
 }
 
 function M.setup(opts)
-    if not vim.Micro then
-        vim.Micro = {}
-    end
-
     local config = vim.tbl_deep_extend("force", defaults, opts or {})
 
     local subcommands = {}

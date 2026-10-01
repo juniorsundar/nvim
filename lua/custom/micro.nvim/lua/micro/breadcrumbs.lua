@@ -192,8 +192,10 @@ end
 --- Requests document symbols from the LSP to update the breadcrumbs.
 --- This function initiates the request; `lsp_callback` handles the result.
 ---@return nil
+local shown = false
+
 local function breadcrumbs_set(debounce)
-    if not vim.Micro.breadcrumbs.enabled then
+    if not shown then
         return
     end
 
@@ -219,80 +221,65 @@ local function debounced_breadcrumbs_set()
     breadcrumbs_set(200)
 end
 
-local function check_breadcrumbs_state()
-    if vim.Micro.breadcrumbs == nil then
-        vim.notify("`vim.Micro.breadcrumbs` doesn't exists!", vim.log.levels.WARN, { title = "LSP" })
-        return false
-    end
-    if vim.Micro.breadcrumbs.enabled == nil then
-        vim.notify("`vim.Micro.breadcrumbs.enabled` doesn't exists!", vim.log.levels.WARN, { title = "LSP" })
-        return false
-    end
-    return true
-end
-
-local function breadcrumbs_set_enabled(enabled)
-    vim.Micro.breadcrumbs.enabled = enabled
-    if enabled then
-        vim.notify("Breadcrumbs enabled", vim.log.levels.INFO, { title = "LSP" })
-        debounced_breadcrumbs_set()
-    else
-        vim.notify("Breadcrumbs disabled", vim.log.levels.INFO, { title = "LSP" })
+local function set_shown(on)
+    shown = on
+    if not on then
+        pcall(vim.api.nvim_del_augroup_by_name, "Breadcrumbs")
         require("micro.lsp").cancel "breadcrumbs"
         vim.o.winbar = ""
-    end
-end
-
-function M.enable_breadcrumbs()
-    if not check_breadcrumbs_state() then
         return
     end
-    breadcrumbs_set_enabled(true)
-end
-
-function M.disable_breadcrumbs()
-    if not check_breadcrumbs_state() then
-        return
-    end
-    breadcrumbs_set_enabled(false)
-end
-
-function M.toggle_breadcrumbs()
-    if not check_breadcrumbs_state() then
-        return
-    end
-    breadcrumbs_set_enabled(not vim.Micro.breadcrumbs.enabled)
-end
-
--- Export subcommands for the global :Micro command
-M.subcommands = {
-    breadcrumbs = {
-        enable = M.enable_breadcrumbs,
-        disable = M.disable_breadcrumbs,
-        toggle = M.toggle_breadcrumbs,
-    },
-}
-
-function M.setup(opts)
-    vim.Micro.breadcrumbs = vim.tbl_deep_extend("force", { enabled = false }, opts or {})
-
-    ---Create a dedicated augroup
-    ---@type number
-    local breadcrumbs_augroup = vim.api.nvim_create_augroup("Breadcrumbs", { clear = true })
-
-    vim.api.nvim_create_autocmd({ "CursorHold" }, {
-        group = breadcrumbs_augroup,
+    local group = vim.api.nvim_create_augroup("Breadcrumbs", { clear = true })
+    vim.api.nvim_create_autocmd("CursorHold", {
+        group = group,
         callback = debounced_breadcrumbs_set,
         desc = "Set breadcrumbs.",
     })
-
-    vim.api.nvim_create_autocmd({ "WinLeave" }, {
-        group = breadcrumbs_augroup,
+    vim.api.nvim_create_autocmd("WinLeave", {
+        group = group,
         callback = function()
             vim.o.winbar = ""
         end,
         desc = "Clear breadcrumbs when leaving window.",
     })
+    debounced_breadcrumbs_set()
+end
+
+--- Show breadcrumbs in the winbar. Works whether or not the module was set up.
+function M.enable()
+    vim.notify("Breadcrumbs enabled", vim.log.levels.INFO, { title = "LSP" })
+    set_shown(true)
+end
+
+function M.disable()
+    vim.notify("Breadcrumbs disabled", vim.log.levels.INFO, { title = "LSP" })
+    set_shown(false)
+end
+
+function M.toggle()
+    if shown then
+        M.disable()
+    else
+        M.enable()
+    end
+end
+
+-- Export subcommands for the global :Micro command
+M.subcommands = {
+    breadcrumbs = {
+        enable = M.enable,
+        disable = M.disable,
+        toggle = M.toggle,
+    },
+}
+
+local defaults = {
+    show = false, -- show breadcrumbs at startup
+}
+
+function M.setup(opts)
+    local config = vim.tbl_deep_extend("force", defaults, opts or {})
+    set_shown(config.show)
 end
 
 return M

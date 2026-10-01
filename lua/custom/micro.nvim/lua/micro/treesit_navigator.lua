@@ -12,7 +12,7 @@ local M = {}
 
 ---Default configuration
 ---@type TreesitNavigatorConfig
-M.config = {
+local defaults = {
     highlights = {
         source_node = "Visual",
         tree_node = "PmenuSel",
@@ -43,6 +43,7 @@ M.config = {
         enable = true,
     },
 }
+local config = defaults
 
 ---@class TreesitNavigatorState
 ---@field tree_win? integer Window ID of the tree view
@@ -69,11 +70,11 @@ local function clear_highlights()
 end
 
 local function get_transient_key(name)
-    return M.config.transient_keymaps[name] or M.config.keymaps[name]
+    return config.transient_keymaps[name] or config.keymaps[name]
 end
 
 local function clear_transient_keymaps()
-    if not M.config.transient_keymaps.enable then
+    if not config.transient_keymaps.enable then
         return
     end
     if state.source_buf and vim.api.nvim_buf_is_valid(state.source_buf) then
@@ -96,7 +97,7 @@ local function clear_transient_keymaps()
 end
 
 local function set_transient_keymaps()
-    if not M.config.transient_keymaps.enable then
+    if not config.transient_keymaps.enable then
         return
     end
     if state.source_buf and vim.api.nvim_buf_is_valid(state.source_buf) then
@@ -218,7 +219,7 @@ local function highlight_source_node(target_node)
         vim.api.nvim_buf_set_extmark(state.source_buf, state.ns_nav, start_row, start_col, {
             end_row = end_row,
             end_col = end_col,
-            hl_group = M.config.highlights.source_node,
+            hl_group = config.highlights.source_node,
             priority = 100,
         })
     end
@@ -250,7 +251,7 @@ M.ts_tree_display = function()
 
     local lines = {}
     local highlights = {}
-    local conf = M.config
+    local conf = config
 
     table.insert(lines, root_of_view:type())
     if not parent then
@@ -458,10 +459,10 @@ end
 ---Setup function to initialize the plugin with user options.
 ---@param opts? table Partial configuration to merge with defaults.
 M.setup = function(opts)
-    M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+    config = vim.tbl_deep_extend("force", defaults, opts or {})
 
-    if M.config.keymaps.enable then
-        local km = M.config.keymaps
+    if config.keymaps.enable then
+        local km = config.keymaps
         local prefix = km.prefix or ""
 
         if prefix ~= "" then

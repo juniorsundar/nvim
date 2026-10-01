@@ -1,7 +1,5 @@
 local M = {}
 
-M.config = {}
-
 local state = {}
 
 local function get_state(buf)
@@ -312,10 +310,6 @@ local function follow_mode()
     end
 
     activate_follow_mode(current_win, partner, false)
-end
-
-function M.setup(opts)
-    M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 end
 
 -- Export subcommands for the global :Micro command

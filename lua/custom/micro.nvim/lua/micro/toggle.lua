@@ -1,6 +1,6 @@
 local M = {}
 
-local default = {
+local defaults = {
     toggle_prefix = "<localleader>T",
     toggle = {
         line_numbers = { modes = { "n" }, key = "n" },
@@ -9,6 +9,7 @@ local default = {
         breadcrumbs = { modes = { "n" }, key = "b" },
     },
 }
+local config = defaults
 
 local broadcast = function(toggle, state)
     vim.notify("Setting '" .. toggle .. "' to " .. tostring(state), vim.log.levels.INFO)
@@ -40,25 +41,20 @@ local function toggle_lsp_code_lens()
 end
 
 local function toggle_breadcrumbs()
-    require("micro.breadcrumbs").toggle_breadcrumbs()
+    require("micro.breadcrumbs").toggle()
 end
 
 function M.setup(opts)
-    default = vim.tbl_deep_extend("force", default, opts or {})
+    config = vim.tbl_deep_extend("force", defaults, opts or {})
 
-    vim.keymap.set({ "n", "v" }, default.toggle_prefix, "", { desc = "Toggle", noremap = false, silent = true })
-    vim.keymap.set(
-        default.toggle.line_numbers.modes,
-        default.toggle_prefix .. default.toggle.line_numbers.key,
-        function()
-            toggle_line_numbers()
-        end,
-        { desc = "Line Numbers" }
-    )
+    vim.keymap.set({ "n", "v" }, config.toggle_prefix, "", { desc = "Toggle", noremap = false, silent = true })
+    vim.keymap.set(config.toggle.line_numbers.modes, config.toggle_prefix .. config.toggle.line_numbers.key, function()
+        toggle_line_numbers()
+    end, { desc = "Line Numbers" })
 
     vim.keymap.set(
-        default.toggle.lsp_inlay_hints.modes,
-        default.toggle_prefix .. default.toggle.lsp_inlay_hints.key,
+        config.toggle.lsp_inlay_hints.modes,
+        config.toggle_prefix .. config.toggle.lsp_inlay_hints.key,
         function()
             toggle_lsp_inlay_hints()
         end,
@@ -66,15 +62,15 @@ function M.setup(opts)
     )
 
     vim.keymap.set(
-        default.toggle.lsp_code_lens.modes,
-        default.toggle_prefix .. default.toggle.lsp_code_lens.key,
+        config.toggle.lsp_code_lens.modes,
+        config.toggle_prefix .. config.toggle.lsp_code_lens.key,
         function()
             toggle_lsp_code_lens()
         end,
         { desc = "LSP CodeLens" }
     )
 
-    vim.keymap.set(default.toggle.breadcrumbs.modes, default.toggle_prefix .. default.toggle.breadcrumbs.key, function()
+    vim.keymap.set(config.toggle.breadcrumbs.modes, config.toggle_prefix .. config.toggle.breadcrumbs.key, function()
         toggle_breadcrumbs()
     end, { desc = "Breadcrumbs" })
 end

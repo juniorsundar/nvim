@@ -29,7 +29,7 @@ require("micro").setup {
 require("micro.completion_keys").setup()
 
 vim.keymap.set("n", "<leader>Lk", function()
-    vim.Micro.eldoc()
+    require("micro.hover").show()
 end, { desc = "Hover", noremap = false, silent = true })
 vim.keymap.set("n", "<M-j>", function()
     require("micro.hover").scroll(1)

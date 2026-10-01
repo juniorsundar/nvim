@@ -1,10 +1,7 @@
 local M = {}
 local fn = vim.fn
 
--- Ensure syntax highlighting is enabled globally
-vim.cmd "syntax enable"
-
-function _G.qftf(info)
+function M.qftf(info)
     local items
     local ret = {}
     -- The name of item in list is based on the directory of quickfix window.
@@ -53,23 +50,26 @@ function _G.qftf(info)
     return ret
 end
 
-vim.o.qftf = "{info -> v:lua._G.qftf(info)}"
+function M.setup()
+    -- Ensure syntax highlighting is enabled globally
+    vim.cmd "syntax enable"
+    vim.o.qftf = "{info -> v:lua.require'micro.quickfix'.qftf(info)}"
 
--- Custom quickfix syntax integration
-local qf_augroup = vim.api.nvim_create_augroup("CustomQfSyntax", { clear = true })
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = "qf",
-    group = qf_augroup,
-    callback = function()
-        -- Use a custom guard to avoid conflicts with Neovim's default qf syntax
-        if vim.b.qf_custom_syntax_loaded then
-            return
-        end
+    -- Custom quickfix syntax integration
+    local qf_augroup = vim.api.nvim_create_augroup("CustomQfSyntax", { clear = true })
+    vim.api.nvim_create_autocmd("FileType", {
+        pattern = "qf",
+        group = qf_augroup,
+        callback = function()
+            -- Use a custom guard to avoid conflicts with Neovim's default qf syntax
+            if vim.b.qf_custom_syntax_loaded then
+                return
+            end
 
-        -- Clear default quickfix syntax to prevent rule conflicts
-        vim.cmd "syntax clear"
+            -- Clear default quickfix syntax to prevent rule conflicts
+            vim.cmd "syntax clear"
 
-        vim.cmd [[
+            vim.cmd [[
             syntax match qfFileName /^[^│]*/ nextgroup=qfSeparatorLeft
             syntax match qfSeparatorLeft /│/ contained nextgroup=qfLineNr
             syntax match qfLineNr /[^│]*/ contained nextgroup=qfSeparatorRight
@@ -89,8 +89,9 @@ vim.api.nvim_create_autocmd("FileType", {
             highlight default link qfNote DiagnosticHint
         ]]
 
-        vim.b.qf_custom_syntax_loaded = true
-    end,
-})
+            vim.b.qf_custom_syntax_loaded = true
+        end,
+    })
+end
 
 return M

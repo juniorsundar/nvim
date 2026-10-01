@@ -2,8 +2,27 @@ local panel = require "micro.panel"
 
 local M = {}
 
+local defaults = {
+    enabled = false,
+    auto_hover = {
+        enabled = false,
+        delay = 500,
+    },
+    layout = "eldoc",
+    reduce_split_jank = true,
+    opts = {
+        border = "rounded",
+        relative = "editor",
+        offset_x = vim.o.columns,
+        ratio = 0.4,
+        max_height = 15,
+    },
+}
+
+local config = defaults
+
 local function with_splitkeep_screen(fn)
-    if not vim.Micro.hover.reduce_split_jank then
+    if not config.reduce_split_jank then
         fn()
         return
     end
@@ -74,7 +93,7 @@ local function eldoc()
             return
         end
 
-        if vim.Micro.hover.layout == "eldoc" then
+        if config.layout == "eldoc" then
             if panel.get "eldoc" then
                 return
             end
@@ -84,9 +103,9 @@ local function eldoc()
             local padded_lines = vim.list_extend({ "" }, lines)
             table.insert(padded_lines, "")
 
-            local max_height = math.floor(vim.o.lines * vim.Micro.hover.opts.ratio)
-            if vim.Micro.hover.opts.max_height then
-                max_height = math.min(max_height, vim.Micro.hover.opts.max_height)
+            local max_height = math.floor(vim.o.lines * config.opts.ratio)
+            if config.opts.max_height then
+                max_height = math.min(max_height, config.opts.max_height)
             end
 
             local eldoc_win_id, eldoc_buf_id
@@ -185,8 +204,8 @@ local function eldoc()
                 desc = "Close LSP eldoc window",
             })
             return true
-        elseif vim.Micro.hover.layout == "float" then
-            vim.lsp.util.open_floating_preview(lines, "markdown", vim.Micro.hover.opts)
+        elseif config.layout == "float" then
+            vim.lsp.util.open_floating_preview(lines, "markdown", config.opts)
             return true
         end
     end
@@ -196,28 +215,16 @@ local function eldoc()
     end, handler)
 end
 
-local default_opts = {
-    enabled = false,
-    auto_hover = {
-        enabled = false,
-        delay = 500,
-    },
-    layout = "eldoc",
-    reduce_split_jank = true,
-    opts = {
-        border = "rounded",
-        relative = "editor",
-        offset_x = vim.o.columns,
-        ratio = 0.4,
-        max_height = 15,
-    },
-}
+--- Show hover documentation for the symbol under the cursor in the configured layout.
+function M.show()
+    eldoc()
+end
 
 function M.setup(opts)
     ---@type table
-    vim.Micro.hover = vim.tbl_deep_extend("force", default_opts, opts or {})
+    config = vim.tbl_deep_extend("force", defaults, opts or {})
 
-    vim.o.updatetime = vim.Micro.hover.auto_hover.delay
+    vim.o.updatetime = config.auto_hover.delay
 
     local lsp_hover_augroup = vim.api.nvim_create_augroup("LspHoverOnHold", { clear = true })
     local eldoc_close_augroup = vim.api.nvim_create_augroup("LspEldocAutoClose", { clear = true })
@@ -243,18 +250,13 @@ function M.setup(opts)
         group = lsp_hover_augroup,
         pattern = "*",
         callback = function()
-            if not vim.Micro.hover then
-                return
-            end
-            if not vim.Micro.hover.auto_hover.enabled then
+            if not config.auto_hover.enabled then
                 return
             end
             eldoc()
         end,
         desc = "Show LSP hover documentation on CursorHold (silently ignores empty responses)",
     })
-
-    vim.Micro.eldoc = eldoc
 end
 
 --- Scroll the eldoc window from your current buffer without switching focus.
@@ -280,7 +282,7 @@ end
 M.subcommands = {
     hover = {
         show = function()
-            eldoc()
+            M.show()
         end,
         scroll = function(direction, step)
             M.scroll(tonumber(direction) or 1, tonumber(step))

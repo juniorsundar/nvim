@@ -125,7 +125,6 @@ describe("LSP features on micro.lsp", function()
         -- breadcrumbs shows paths relative to the client root (the cwd), so keep the file under it
         ed:lua("vim.cmd.cd(vim.fs.dirname(...)); vim.cmd.edit(...)", file)
         ed:lua [[
-            vim.Micro = { breadcrumbs = { enabled = true } }
             vim.notify = function() end
             vim.api.nvim_win_set_cursor(0, { 1, 7 })
         ]]
@@ -135,7 +134,7 @@ describe("LSP features on micro.lsp", function()
                 { name = "Target", kind = 12, range = range(4, 5), selectionRange = range(4, 5) },
             },
         }, "sym")
-        ed:lua [[require("micro.breadcrumbs").subcommands.breadcrumbs.enable()]]
+        ed:lua [[require("micro.breadcrumbs").enable()]]
         ed:wait "vim.wo.winbar:find('Target') ~= nil"
         vim.fn.delete(file)
     end)

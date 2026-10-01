@@ -1,6 +1,3 @@
-vim.opt.statusline = " "
-vim.opt.scrolloff = 1
-vim.g.micro_statusline = true
 local ns_id = vim.api.nvim_create_namespace "StatusLineNS"
 
 local function get_hl_fg(groups)
@@ -27,7 +24,7 @@ local panel = require "micro.panel"
 
 local M = {}
 
-M.config = {
+local defaults = {
     ignored = {
         names = {
             ["NvimTree_1"] = true,
@@ -56,9 +53,10 @@ M.config = {
     },
     border_style = { " ", "─", "", "", "", "", "", "" },
 }
+local config = defaults
 
 function M.refresh_colors()
-    local c = M.config.colors
+    local c = config.colors
     c.fg = get_hl_fg { "Normal" }
     c.bg = get_hl_bg { "StatusLine", "Normal" }
     c.red = get_hl_fg { "DiffDelete", "DiagnosticError", "GitSignsDelete", "Error" }
@@ -78,21 +76,21 @@ function M.setup_highlights()
     vim.api.nvim_set_hl(0, "StatusLine", { bg = "None", fg = "None" })
     vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "None", fg = "None" })
 
-    vim.api.nvim_set_hl(0, "StatusLineFilename", { fg = M.config.colors.fg, bg = "None", bold = true })
-    vim.api.nvim_set_hl(0, "StatusLineFilenameEdited", { fg = M.config.colors.yellow, bg = "None", bold = true })
-    vim.api.nvim_set_hl(0, "StatusLineFilenameRO", { fg = M.config.colors.red, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineFilename", { fg = config.colors.fg, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineFilenameEdited", { fg = config.colors.yellow, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineFilenameRO", { fg = config.colors.red, bg = "None", bold = true })
 
-    vim.api.nvim_set_hl(0, "StatusLineGitBranch", { fg = M.config.colors.violet, bg = "None", bold = true })
+    vim.api.nvim_set_hl(0, "StatusLineGitBranch", { fg = config.colors.violet, bg = "None", bold = true })
 
-    vim.api.nvim_set_hl(0, "StatusLineDiffAdd", { fg = M.config.colors.green, bg = "None" })
-    vim.api.nvim_set_hl(0, "StatusLineDiffChange", { fg = M.config.colors.orange, bg = "None" })
-    vim.api.nvim_set_hl(0, "StatusLineDiffDelete", { fg = M.config.colors.red, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiffAdd", { fg = config.colors.green, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiffChange", { fg = config.colors.orange, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiffDelete", { fg = config.colors.red, bg = "None" })
 
-    vim.api.nvim_set_hl(0, "StatusLineDiagError", { fg = M.config.colors.red, bg = "None" })
-    vim.api.nvim_set_hl(0, "StatusLineDiagWarn", { fg = M.config.colors.yellow, bg = "None" })
-    vim.api.nvim_set_hl(0, "StatusLineDiagInfo", { fg = M.config.colors.cyan, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiagError", { fg = config.colors.red, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiagWarn", { fg = config.colors.yellow, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineDiagInfo", { fg = config.colors.cyan, bg = "None" })
 
-    vim.api.nvim_set_hl(0, "StatusLineLspProgress", { fg = M.config.colors.green, bg = "None" })
+    vim.api.nvim_set_hl(0, "StatusLineLspProgress", { fg = config.colors.green, bg = "None" })
 end
 
 function M.is_ignored(buf_id)
@@ -100,13 +98,13 @@ function M.is_ignored(buf_id)
     local buftype = vim.bo[buf_id].buftype
     local filetype = vim.bo[buf_id].filetype
 
-    if vim.b[buf_id].micro_panel or M.config.ignored.names[name] then
+    if vim.b[buf_id].micro_panel or config.ignored.names[name] then
         return true
     end
-    if M.config.ignored.buftypes[buftype] then
+    if config.ignored.buftypes[buftype] then
         return true
     end
-    if M.config.ignored.filetypes[filetype] then
+    if config.ignored.filetypes[filetype] then
         return true
     end
     if not vim.g.micro_statusline then
@@ -142,7 +140,7 @@ end
 
 function M.get_mode_color()
     local m = vim.fn.mode()
-    local c = M.config.colors
+    local c = config.colors
     local map = {
         n = c.blue,
         i = c.green,
@@ -180,17 +178,17 @@ function M.get_git_diff(buf_id)
         return {}
     end
 
-    local config = M.config.diff
+    local diff = config.diff
     local parts = { { text = " ", group = "None" } }
 
     if (signs.added or 0) > 0 then
-        table.insert(parts, { text = config.symbols.added .. signs.added .. " ", group = "StatusLineDiffAdd" })
+        table.insert(parts, { text = diff.symbols.added .. signs.added .. " ", group = "StatusLineDiffAdd" })
     end
     if (signs.changed or 0) > 0 then
-        table.insert(parts, { text = config.symbols.modified .. signs.changed .. " ", group = "StatusLineDiffChange" })
+        table.insert(parts, { text = diff.symbols.modified .. signs.changed .. " ", group = "StatusLineDiffChange" })
     end
     if (signs.removed or 0) > 0 then
-        table.insert(parts, { text = config.symbols.removed .. signs.removed .. " ", group = "StatusLineDiffDelete" })
+        table.insert(parts, { text = diff.symbols.removed .. signs.removed .. " ", group = "StatusLineDiffDelete" })
     end
 
     return parts
@@ -199,7 +197,7 @@ end
 function M.get_diagnostics(buf_id)
     local count = vim.diagnostic.count(buf_id)
     local parts = { { text = " ", group = "None" } }
-    local sym = M.config.lsp_errors.symbols
+    local sym = config.lsp_errors.symbols
 
     if (count[vim.diagnostic.severity.HINT] or 0) > 0 then
         table.insert(parts, { text = sym.info .. count[4] .. " ", group = "StatusLineDiagInfo" })
@@ -406,7 +404,7 @@ function M.render_window(parent_win, buf_id)
         height = 1,
         row = row,
         col = 0,
-        border = M.config.border_style,
+        border = config.border_style,
         style = "minimal",
         focusable = false,
         zindex = 10,
@@ -497,8 +495,11 @@ M.subcommands = {
 }
 
 function M.setup(opts)
-    M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+    config = vim.tbl_deep_extend("force", defaults, opts or {})
 
+    vim.opt.statusline = " "
+    vim.opt.scrolloff = 1
+    vim.g.micro_statusline = true
     M.setup_highlights()
 
     local grp = vim.api.nvim_create_augroup("CustomStatusLine", { clear = true })
