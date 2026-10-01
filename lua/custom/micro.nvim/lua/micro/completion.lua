@@ -369,6 +369,19 @@ local function tune_here(buf)
     tune(buf, api.nvim_get_current_line():sub(1, col))
 end
 
+--- Manual completion for an expr mapping: route the buffer first (so a path or language
+--- context is chosen for the cursor as it is now, and an excluded buffer becomes "disabled"),
+--- then return the native key that opens it. Native `<C-n>` ignores the word threshold.
+--- Returns "" when nothing should open.
+function M.trigger()
+    local buf = api.nvim_get_current_buf()
+    if vim.fn.pumvisible() == 1 then
+        return ""
+    end
+    route(buf)
+    return M.route_of(buf) == "disabled" and "" or "<C-n>"
+end
+
 function M.setup(user_opts)
     opts = vim.tbl_extend("force", defaults, user_opts or {})
     api.nvim_clear_autocmds { group = group }

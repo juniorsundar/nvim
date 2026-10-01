@@ -72,6 +72,7 @@ function Editor:session(opts)
         [[
         local o, server = ...
         require("micro.completion").setup(o.micro or {})
+        require("micro.completion_keys").setup()
         vim.api.nvim_buf_set_lines(0, 0, -1, false, o.lines or { "BufThing", "" })
         vim.api.nvim_win_set_cursor(0, { o.row or 2, 0 })
         vim.bo.buftype = o.buftype or ""

@@ -4,14 +4,17 @@
 
 **Blocked by:** 02, 05
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Ctrl-Space opens context-appropriate completion (language mix or exclusive paths) and bypasses the threshold; excluded buffers get nothing
-- [ ] Enter accepts only an explicitly selected candidate, otherwise inserts a newline
-- [ ] Tab/Shift-Tab navigate an open menu, otherwise snippet placeholders, otherwise keep normal behaviour, in insert and select modes
-- [ ] Navigating the menu inside an active snippet keeps the snippet active
-- [ ] Ctrl-E cancels completion, including an in-flight request with no menu, which then never reopens
-- [ ] Ctrl-B/Ctrl-F scroll the native documentation popup only while it is open, otherwise keep normal behaviour
-- [ ] Excluded refer-shaped buffers keep their own key handling
+- [x] Ctrl-Space opens context-appropriate completion (language mix or exclusive paths) and bypasses the threshold; excluded buffers get nothing
+- [x] Enter accepts only an explicitly selected candidate, otherwise inserts a newline
+- [x] Tab/Shift-Tab navigate an open menu, otherwise snippet placeholders, otherwise keep normal behaviour, in insert and select modes
+- [x] Navigating the menu inside an active snippet keeps the snippet active
+- [x] Ctrl-E cancels completion, including an in-flight request with no menu, which then never reopens
+- [x] Ctrl-B/Ctrl-F scroll the native documentation popup only while it is open, otherwise keep normal behaviour
+- [x] Excluded refer-shaped buffers keep their own key handling
 
 Spec: `docs/specs/completion/spec.md`. Evidence: `docs/completion-scope.md`.
+
+Note: the mappings live in `micro.completion_keys` (`setup()`), kept apart from the backend. They are deliberately
+not called from `lua/plugins/15_micro.lua` yet: enabling them beside active cmp would clash. Ticket 08 wires them in.
