@@ -83,7 +83,13 @@ local function eval_code(code)
         table.insert(captured_output, table.concat(strs, "\t"))
     end
 
-    local ok, ret = pcall(load(code))
+    local chunk, syntax_err = load(code)
+    local ok, ret
+    if chunk then
+        ok, ret = pcall(chunk)
+    else
+        ok, ret = false, syntax_err
+    end
     _G.print = original_print
 
     for _, line in ipairs(captured_output) do

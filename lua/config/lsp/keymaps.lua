@@ -1,35 +1,3 @@
----Open definition, declaration and implementation as a split/vsplit/or tab
----depending on amount of space available.
----@param handler string
-local function lsp_function(handler)
-    local params = vim.lsp.util.make_position_params(0, "utf-32")
-    vim.lsp.buf_request(0, "textDocument/" .. handler, params, function(err, result, _, _)
-        if err or not result or vim.tbl_isempty(result) then
-            return
-        end
-
-        if #result > 1 then
-            vim.cmd("lua Snacks.picker.lsp_" .. handler .. "s()")
-        else
-            local win_width = vim.api.nvim_win_get_width(0)
-            local win_height = vim.api.nvim_win_get_height(0)
-            local width_threshold = 100
-            local height_threshold = 30
-            local width_bound = win_width > width_threshold
-            local height_bound = win_height > height_threshold
-            if width_bound and height_bound then
-                vim.cmd("split | lua vim.lsp.buf." .. handler .. "()")
-            elseif width_bound and not height_bound then
-                vim.cmd("vsplit | lua vim.lsp.buf." .. handler .. "()")
-            elseif not width_bound and height_bound then
-                vim.cmd("split | lua vim.lsp.buf." .. handler .. "()")
-            else
-                vim.cmd("tab sb | lua vim.lsp.buf." .. handler .. "()")
-            end
-        end
-    end)
-end
-
 vim.keymap.set("n", "<leader>L", "", { desc = "LSP", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>LD", "", { desc = "Document", noremap = false, silent = true })
 vim.keymap.set("n", "<leader>LW", "", { desc = "Workspace", noremap = false, silent = true })

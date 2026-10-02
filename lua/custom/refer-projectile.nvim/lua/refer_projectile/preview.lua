@@ -27,8 +27,7 @@ function M.open_preview_tab()
 
     _initial_buf = vim.api.nvim_win_get_buf(win)
 
-    vim.api.nvim_win_set_width(win, vim.o.columns)
-    vim.api.nvim_win_set_height(win, vim.o.lines)
+    vim.api.nvim_win_set_config(win, { width = vim.o.columns, height = vim.o.lines })
 
     vim.cmd "stopinsert"
 

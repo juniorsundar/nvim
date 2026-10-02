@@ -172,8 +172,8 @@ local function eldoc()
                         vim.cmd "wincmd p"
                         vim.cmd("edit " .. vim.fn.fnameescape(expanded_path))
                         if l_num then
-                            local l = tonumber(l_num)
-                            local c = c_num and math.max(0, tonumber(c_num) - 1) or 0
+                            local l = tonumber(l_num) or 1
+                            local c = c_num and math.max(0, (tonumber(c_num) or 1) - 1) or 0
                             local max_l = vim.api.nvim_buf_line_count(0)
                             l = math.min(l, max_l)
                             pcall(vim.api.nvim_win_set_cursor, 0, { l, c })

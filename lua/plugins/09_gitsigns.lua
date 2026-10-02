@@ -125,7 +125,7 @@ function _G.MyStatusColumn()
     local diag_lane = "  "
 
     for _, mark in ipairs(extmarks) do
-        local details = mark[4]
+        local details = mark[4] or {}
         local hl = details.sign_hl_group or ""
         local text = details.sign_text or ""
 
