@@ -1,5 +1,4 @@
--- Drives a real headless Neovim child over RPC with real input keys, so the
--- main loop, completion timers and LSP replies behave as in a live editor.
+-- Real input keys exercise the main loop, completion timers and LSP replies.
 local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h:h")
 local server = root .. "/tests/support/server.py"
 
@@ -29,7 +28,6 @@ function Editor:input(keys)
     vim.rpcrequest(self.chan, "nvim_input", keys)
 end
 
--- Poll a Lua expression (evaluated in the editor) until truthy.
 function Editor:wait(expr, timeout)
     local ok = vim.wait(timeout or 3000, function()
         return self:lua("return " .. expr)
@@ -64,8 +62,7 @@ function Editor:state()
     ]]
 end
 
---- Starts the scripted server (server.py options in `opts`) for the current buffer.
---- name: client name (distinct names give distinct clients); wrap: launch through micro.completion's cmd guard.
+--- `name` distinguishes clients; `wrap` enables the completion cmd guard.
 function Editor:server(opts, name, wrap)
     local count = self:lua "return #vim.lsp.get_clients { bufnr = 0 }"
     self:lua(
@@ -86,8 +83,7 @@ function Editor:server(opts, name, wrap)
     self:wait(("#vim.lsp.get_clients { bufnr = 0 } > %d"):format(count))
 end
 
---- Opens a scratch buffer and starts the scripted server through the guarded cmd.
---- opts: lines, row, filetype, buftype, server (server.py options), micro (micro.completion opts)
+--- `opts` configures the scratch buffer, server and completion module.
 function Editor:session(opts)
     opts = opts or {}
     self:lua(

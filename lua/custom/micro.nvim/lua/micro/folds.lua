@@ -5,11 +5,10 @@ function M.setup(opts)
         group = vim.api.nvim_create_augroup("FoldConfig", { clear = true }),
         callback = function(_)
             vim.o.foldmethod = "expr"
-            vim.o.foldcolumn = "0" -- '0' is not bad
-            vim.o.foldlevel = 99 -- Using ufo provider need a large value, feel free to decrease the value
+            vim.o.foldcolumn = "0"
+            vim.o.foldlevel = 99 -- ufo needs a large value.
             vim.o.foldlevelstart = 99
             vim.o.foldenable = true
-            -- vim.o.foldexpr = "nvim_treesitter#foldexpr()"
 
             local function fold_virt_text(result, s, lnum, coloff)
                 if not coloff then

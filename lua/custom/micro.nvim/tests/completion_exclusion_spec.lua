@@ -56,7 +56,7 @@ describe("micro.completion (exclusions)", function()
 
     it("drops a reply already in flight when vim.b.completion becomes false", function()
         ed:session { server = { delays = { 400 }, log = log } }
-        ed:input "iTh" -- matches LspThing, so the reply would show if delivered
+        ed:input "iTh"
         ed:wait(("vim.fn.filereadable(%q) == 1"):format(log))
         ed:lua [[vim.b.completion = false]]
         ed:sleep(800)

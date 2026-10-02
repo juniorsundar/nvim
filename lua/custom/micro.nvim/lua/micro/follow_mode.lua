@@ -2,7 +2,6 @@ local M = {}
 
 local state = {}
 
--- Check if a line is visible in a window
 local function is_line_visible_in_window(win, line)
     local win_info = vim.fn.getwininfo(win)[1]
     if not win_info then
@@ -11,7 +10,6 @@ local function is_line_visible_in_window(win, line)
     return line >= win_info.topline and line <= win_info.botline
 end
 
--- Switch to the partner window if cursor is outside visible region
 local function maybe_switch_to_partner(buf)
     local s = state[buf]
     if not s then
@@ -37,7 +35,6 @@ local function maybe_switch_to_partner(buf)
     end
 end
 
--- Update cursor visibility: active window has cursorline, partner doesn't
 local function update_cursor_visibility(buf)
     local s = state[buf]
     if not s then
@@ -46,7 +43,6 @@ local function update_cursor_visibility(buf)
 
     local current_win = vim.api.nvim_get_current_win()
 
-    -- Set cursorline on the active window, off on the partner
     if current_win == s.win1 then
         if vim.api.nvim_win_is_valid(s.win1) then
             vim.api.nvim_set_option_value("cursorline", true, { win = s.win1 })
@@ -64,18 +60,15 @@ local function update_cursor_visibility(buf)
     end
 end
 
--- Determine if win_a is positioned before win_b on screen (left or above)
 local function is_window_before(win_a, win_b)
     local pos_a = vim.fn.win_screenpos(win_a)
     local pos_b = vim.fn.win_screenpos(win_b)
-    -- Compare columns first (side-by-side), then rows (stacked)
     if pos_a[2] ~= pos_b[2] then
         return pos_a[2] < pos_b[2]
     end
     return pos_a[1] < pos_b[1]
 end
 
--- Realign the partner window to be contiguous with the active window
 local function realign_partner(active_win)
     local buf = vim.api.nvim_win_get_buf(active_win)
     local s = state[buf]
@@ -119,7 +112,6 @@ local function realign_partner(active_win)
     end)
 end
 
--- Deactivate follow-mode for a buffer
 local function deactivate_follow_mode(buf)
     local s = state[buf]
 
@@ -151,7 +143,6 @@ local function deactivate_follow_mode(buf)
     vim.notify("Follow-mode deactivated", vim.log.levels.INFO)
 end
 
--- Activate follow-mode on two windows showing the same buffer
 local function activate_follow_mode(win1, win2, created_by_follow_split)
     local buf = vim.api.nvim_win_get_buf(win1)
     local buf2 = vim.api.nvim_win_get_buf(win2)
@@ -181,7 +172,6 @@ local function activate_follow_mode(win1, win2, created_by_follow_split)
         saved_cursorline = saved_cursorline,
     }
 
-    -- Set up scroll sync
     vim.api.nvim_create_autocmd("WinScrolled", {
         group = augroup,
         callback = function()
@@ -194,7 +184,6 @@ local function activate_follow_mode(win1, win2, created_by_follow_split)
         end,
     })
 
-    -- Cursor auto-switch
     vim.api.nvim_create_autocmd("CursorMoved", {
         group = augroup,
         callback = function()
@@ -205,7 +194,6 @@ local function activate_follow_mode(win1, win2, created_by_follow_split)
         end,
     })
 
-    -- Update cursor visibility when entering a window
     vim.api.nvim_create_autocmd("WinEnter", {
         group = augroup,
         callback = function()
@@ -216,11 +204,9 @@ local function activate_follow_mode(win1, win2, created_by_follow_split)
         end,
     })
 
-    -- Auto-deactivate on partner close
     vim.api.nvim_create_autocmd("WinClosed", {
         group = augroup,
         callback = function()
-            -- Check if either window was closed
             local s = state[buf]
             if s then
                 if not vim.api.nvim_win_is_valid(s.win1) or not vim.api.nvim_win_is_valid(s.win2) then
@@ -238,37 +224,28 @@ local function activate_follow_mode(win1, win2, created_by_follow_split)
     return true
 end
 
--- Check if follow-mode is active for a buffer
 local function is_follow_mode_active(buf)
     return state[buf] ~= nil
 end
 
--- Subcommand: :Micro follow split
--- Creates a vsplit and activates follow-mode
 local function follow_split()
     local buf = vim.api.nvim_get_current_buf()
     local current_win = vim.api.nvim_get_current_win()
 
-    -- If already active, deactivate
     if is_follow_mode_active(buf) then
         deactivate_follow_mode(buf)
         return
     end
 
-    -- Create vertical split
     vim.cmd "vsplit"
 
     local new_win = vim.api.nvim_get_current_win()
 
-    -- Switch back to original window
     vim.api.nvim_set_current_win(current_win)
 
-    -- Activate follow-mode
     activate_follow_mode(current_win, new_win, true)
 end
 
--- Subcommand: :Micro follow mode
--- Activates follow-mode on existing windows showing the same buffer
 local function follow_mode()
     local buf = vim.api.nvim_get_current_buf()
     local current_win = vim.api.nvim_get_current_win()
@@ -299,7 +276,6 @@ local function follow_mode()
     activate_follow_mode(current_win, partner, false)
 end
 
--- Export subcommands for the global :Micro command
 M.subcommands = {
     follow = {
         split = follow_split,

@@ -1,9 +1,16 @@
--- Keyed LSP requests. Each key holds at most one live request:
--- a new request (or `cancel`) for the same key supersedes the old one, and replies
--- belonging to a superseded request are dropped.
+-- Keyed LSP requests: a new request or `cancel` on a key supersedes it, and superseded replies are dropped.
 local M = {}
 
----@type table<string, { gen: integer, timer?: uv.uv_timer_t, cancel?: fun(), cursor?: table }>
+---@class micro.lsp.Cursor
+---@field win integer
+---@field buf integer
+---@field pos integer[] (1,0)-indexed cursor.
+---@field tick integer
+---@field uri string
+
+---@alias micro.lsp.Handler fun(err: lsp.ResponseError?, result: any, ctx: lsp.HandlerContext): boolean?
+
+---@type table<string, { gen: integer, timer?: uv.uv_timer_t, cancel?: fun(), cursor?: micro.lsp.Cursor }>
 local slots = {}
 
 local function live(win, buf, cursor)
@@ -19,7 +26,6 @@ local function live(win, buf, cursor)
         )
 end
 
---- Cancel the pending request and debounce timer for `key`; its replies are dropped.
 ---@param key string
 function M.cancel(key)
     local s = slots[key]
@@ -39,7 +45,7 @@ function M.cancel(key)
     end
 end
 
----@param cursor? table
+---@param cursor? micro.lsp.Cursor
 local function request(key, win, method, params_fn, handler, opts, cursor)
     M.cancel(key)
     local s = slots[key] or { gen = 0 }
@@ -78,27 +84,23 @@ local function request(key, win, method, params_fn, handler, opts, cursor)
     s.timer:start(ms, 0, vim.schedule_wrap(send))
 end
 
---- Send `method` for the buffer shown in `win` to every client that supports it.
---- `params_fn(client, buf)` builds each client's params; use `client.offset_encoding`
---- for positions. `handler(err, result, ctx)` sees replies in arrival order until it
---- returns true (reply consumed). It never runs once the request is superseded or
---- `win` no longer shows the buffer. No capable client: nothing is sent.
+--- Send `method` to every capable client of the buffer in `win`. `handler` sees replies in arrival
+--- order until it returns true, and never after the request is superseded or `win` changes buffer.
 ---@param key string
 ---@param win integer
 ---@param method string
----@param params_fn fun(client: vim.lsp.Client, buf: integer): table
----@param handler fun(err: lsp.ResponseError?, result: any, ctx: lsp.HandlerContext): boolean?
----@param opts? { debounce?: integer } delay in ms before sending
+---@param params_fn fun(client: vim.lsp.Client, buf: integer): table Use `client.offset_encoding` for positions.
+---@param handler micro.lsp.Handler
+---@param opts? { debounce?: integer } Delay in ms before sending.
 function M.request(key, win, method, params_fn, handler, opts)
     return request(key, win, method, params_fn, handler, opts)
 end
 
---- Request at the focused window's captured cursor context, using each client's encoding.
---- Cursor movement, text edits or owner departure permanently expire the request.
+--- Like `request`, at the cursor; moving, editing or leaving the window expires it.
 ---@param key string
 ---@param win integer
 ---@param method string
----@param handler fun(err: lsp.ResponseError?, result: any, ctx: lsp.HandlerContext): boolean?
+---@param handler micro.lsp.Handler
 ---@param opts? { debounce?: integer }
 function M.request_cursor(key, win, method, handler, opts)
     win = win == 0 and vim.api.nvim_get_current_win() or win

@@ -2,10 +2,7 @@ local M = {}
 
 local showing_signature = false
 
--- Check if the cursor is currently inside a function call.
--- Uses a parenthesis-stack approach: counts unmatched `(` and verifies
--- an identifier precedes the innermost one. Handles nested calls,
--- method chains, and multiple param lists.
+-- The unmatched-parenthesis scan handles nested calls, method chains, and multiple parameter lists.
 local function is_at_function_call()
     local bufnr = vim.api.nvim_get_current_buf()
     local row, col = unpack(vim.api.nvim_win_get_cursor(0))
@@ -105,7 +102,7 @@ end
 
 ---@param debounce? integer
 local function request_signature(debounce)
-    -- Returns true once a signature has been echoed, so later clients' replies are ignored.
+    -- Returning true after echoing prevents later clients' replies from replacing it.
     local function handler(err, result, ctx)
         if err or not result or not result.signatures or #result.signatures == 0 then
             if showing_signature then
@@ -238,7 +235,6 @@ function M.setup(opts)
     vim.keymap.set("n", "<leader>Ls", print_signature_help, { desc = "Signature" })
 end
 
--- Export subcommands for the global :Micro command
 M.subcommands = {
     signature = {
         print = print_signature_help,

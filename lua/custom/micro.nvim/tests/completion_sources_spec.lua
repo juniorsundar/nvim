@@ -55,7 +55,7 @@ describe("micro.completion (source toggles)", function()
         }
         ed:input "A./"
         ed:wait [[vim.b.micro_completion_route == "language"]]
-        ed:wait(("vim.fn.filereadable(%q) == 1"):format(log)) -- the "/" trigger reaches the LSP
+        ed:wait(("vim.fn.filereadable(%q) == 1"):format(log))
         ed:sleep(300)
         assert.is_false(vim.tbl_contains(ed:state().words, "alpha.txt"))
     end)

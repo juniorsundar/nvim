@@ -43,11 +43,9 @@ function M.qftf(info)
 end
 
 function M.setup()
-    -- Ensure syntax highlighting is enabled globally
     vim.cmd "syntax enable"
     vim.o.qftf = "{info -> v:lua.require'micro.quickfix'.qftf(info)}"
 
-    -- Custom quickfix syntax integration
     local qf_augroup = vim.api.nvim_create_augroup("CustomQfSyntax", { clear = true })
     vim.api.nvim_create_autocmd("FileType", {
         pattern = "qf",

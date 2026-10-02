@@ -1,4 +1,3 @@
--- Minimal async HTTP GET over curl.
 local M = {}
 
 local function percent_encode(value)
@@ -9,9 +8,7 @@ local function percent_encode(value)
     )
 end
 
---- GET `opts.url` (with `opts.query` params and `opts.headers`); follows redirects.
---- `cb(err, res)` runs on the main loop: `err = { message }` on curl failure, otherwise
---- `res = { status, body, json? }` where `json` is set for JSON responses.
+--- GET with redirects followed. `cb` runs on the main loop; `res.json` is set for JSON responses.
 ---@param opts { url: string, query?: table<string, any>, headers?: table<string, string>, timeout?: integer }
 ---@param cb fun(err: { message: string }?, res: { status: integer, body: string, json: any }?)
 function M.request(opts, cb)

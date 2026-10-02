@@ -21,9 +21,7 @@ local defaults = {
             ["[Yazi]"] = true,
         },
         buftypes = {
-            -- ["terminal"] = true,
             ["prompt"] = true,
-            -- ["nofile"] = true,
         },
         filetypes = {
             ["snacks_dashboard"] = true,
@@ -98,7 +96,7 @@ function M.is_ignored(buf_id)
     if not vim.g.micro_statusline then
         return true
     end
-    -- Per-buffer runtime toggle, exported via :Micro statusline enable/disable/toggle
+    -- `:Micro statusline` toggles this buffer's statusline.
     if vim.b[buf_id].micro_statusline_disabled then
         return true
     end
@@ -249,21 +247,17 @@ function M.get_file_info(buf_id, max_width)
     if full_path == "" then
         filename = "[No Name]"
     else
-        -- Level 0: full relative path
         local rel = vim.fn.fnamemodify(full_path, ":.")
         if vim.fn.strdisplaywidth(rel) <= path_budget then
             filename = rel
         else
-            -- Level 1: pathshorten (e.g. lua/m/s/file.lua)
             local shortened = vim.fn.pathshorten(rel)
             if vim.fn.strdisplaywidth(shortened) <= path_budget then
                 filename = shortened
             else
-                -- Level 2: tail only (e.g. file.lua)
                 if vim.fn.strdisplaywidth(tail) <= path_budget then
                     filename = tail
                 else
-                    -- Level 3: truncate tail with ellipsis
                     local truncated = vim.fn.strcharpart(tail, 0, math.max(path_budget - 1, 1)) .. "…"
                     filename = truncated
                 end
@@ -288,13 +282,11 @@ function M.generate_content(win_id, buf_id, width)
         return w
     end
 
-    -- A. Fetch all auxiliary components early
     local diffs = M.get_git_diff(buf_id)
     local lsp_status = M.get_lsp_status(buf_id)
     local diags = M.get_diagnostics(buf_id)
     local branch = M.get_git_branch(buf_id)
 
-    -- B. Adaptive component hiding
     local icon_width = 3
     local min_path_width = 20
 
@@ -319,7 +311,6 @@ function M.generate_content(win_id, buf_id, width)
 
     local path_budget = available_for_path()
 
-    -- C. Build components with adaptive file info
     local left_components = {}
     local right_components = {}
 
@@ -341,14 +332,12 @@ function M.generate_content(win_id, buf_id, width)
         table.insert(right_components, b)
     end
 
-    -- D. Calculate Spacer
     local left_len = get_components_width(left_components)
     local right_len = get_components_width(right_components)
 
     local space_len = width - left_len - right_len
     local spacer_text = string.rep(" ", math.max(space_len, 0))
 
-    -- E. Assemble and Track Highlights
     local full_text = ""
     local highlights = {}
 
@@ -415,9 +404,7 @@ function M.render_window(parent_win, buf_id)
         if mode == "\19" then
             mode_name = "SBlock"
         end
-        -- Highlight group names may only contain [A-Za-z0-9_]; modes like "r?"
-        -- (prompt shown by e.g. neogit's blocking confirm dialog) or "noCTRL-V"
-        -- contain illegal characters, so sanitize the suffix.
+        -- Highlight names allow only [A-Za-z0-9_], but modes like "r?" (neogit's confirm prompt) do not.
         mode_name = mode_name:gsub("[^%w_]", "")
 
         local hl_name = "StatusBorderActive" .. mode_name

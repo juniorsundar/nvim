@@ -1,9 +1,8 @@
--- Owns a window's line numbers: shown (number + relativenumber) or hidden, and with
--- `dynamic`, relative numbers give way to absolute ones while in insert mode.
+-- Owns each window's line-number state; `dynamic` switches to absolute numbers in insert mode.
 local M = {}
 
 local defaults = {
-    dynamic = false, -- absolute numbers in insert mode, relative elsewhere
+    dynamic = false,
 }
 local config = defaults
 

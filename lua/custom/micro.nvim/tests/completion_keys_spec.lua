@@ -32,7 +32,7 @@ describe("micro.completion_keys", function()
             ed:session { server = { delays = { 20 }, log = log } }
             ed:input "iT"
             ed:sleep(400)
-            assert.is_false(ed:state().visible) -- one character: no automatic menu
+            assert.is_false(ed:state().visible)
             ed:input "<C-Space>"
             ed:wait(menu_has "BufThing")
             ed:wait(menu_has "LspThing")
@@ -149,9 +149,8 @@ describe("micro.completion_keys", function()
         end)
 
         it("cancels a request still in flight with no menu, so it never reopens", function()
-            -- A server trigger character sends a request while 'autocomplete' is off, so no
-            -- completion mode is active and native <C-e> fires no CompleteDone: only the
-            -- key's own invalidate stands between the late reply and the popup.
+            -- A trigger character requests with no completion mode active, so native <C-e> fires no
+            -- CompleteDone and only the key's own invalidate blocks the late reply.
             ed:session { lines = { "x", "" }, server = { delays = { 400 }, log = log } }
             ed:input "i."
             ed:wait(("vim.fn.filereadable(%q) == 1"):format(log))
@@ -181,7 +180,6 @@ describe("micro.completion_keys", function()
             ed:wait("(" .. TOPLINE .. ") ~= nil and (" .. TOPLINE .. ") > 1")
             local state = ed:state()
             assert.equals(0, state.selected)
-            -- The key scrolled the docs; it neither inserted text nor moved the selection.
             assert.same({ "BufThing", "LspThing" }, vim.list_slice(state.lines, 1, 2))
         end)
 

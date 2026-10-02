@@ -1,12 +1,9 @@
--- Panels: transient windows (float or split) micro creates, owns and cleans up.
--- Each key holds at most one panel; opening an existing key reuses its window.
--- Panel buffers carry `vim.b.micro_panel = key` so other features can skip them.
+-- One reusable transient window per key. `vim.b.micro_panel` marks panel buffers so other features can skip them.
 local M = {}
 
 ---@type table<string, { win: integer, buf: integer, parent?: integer }>
 local panels = {}
 
---- The panel's window and buffer, or nil if it is not open (forgets panels closed by hand).
 ---@param key string
 ---@return integer? win, integer? buf
 function M.get(key)
@@ -26,12 +23,11 @@ function M.close(key)
     end
 end
 
---- Show `lines` in the panel for `key`, creating it with `config` (as for nvim_open_win)
---- or, if open, reconfiguring it. The buffer is read-only and wiped when hidden.
+--- Show read-only `lines` for `key`, reusing and reconfiguring an open panel.
 ---@param key string
 ---@param lines string[]
 ---@param config vim.api.keyset.win_config
----@param opts? { parent?: integer } close the panel when this window closes
+---@param opts? { parent?: integer } Close the panel when this window closes.
 ---@return integer win, integer buf
 function M.open(key, lines, config, opts)
     local win, buf = M.get(key)

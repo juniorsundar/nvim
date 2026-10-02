@@ -9,7 +9,6 @@ local panel = require "micro.panel"
 ---@class TreesitNavigator
 local M = {}
 
----Default configuration
 ---@type TreesitNavigatorConfig
 local defaults = {
     highlights = {
@@ -130,7 +129,7 @@ end
 local function get_node_end_pos(node, buf)
     local _, _, er, ec = node:range()
     if ec == 0 then
-        -- Ends at start of line, so actually ends at previous line
+        -- A zero end column means the node ends on the previous line.
         if er > 0 then
             local r = er - 1
             if buf and vim.api.nvim_buf_is_valid(buf) then
@@ -194,9 +193,7 @@ local function highlight_source_node(target_node)
     end
 end
 
----Displays the treesitter tree view for the current node.
 M.ts_tree_display = function()
-    -- Initialize source buffer if starting fresh
     if not state.tree_win then
         state.source_buf = vim.api.nvim_get_current_buf()
     end
@@ -314,7 +311,6 @@ local function update_nav(target_node, pos_type)
     end
 end
 
----Moves the cursor to the start of the current navigation node.
 M.goto_node_start = function()
     local node = get_nav_node()
     if node then
@@ -322,7 +318,6 @@ M.goto_node_start = function()
     end
 end
 
----Moves the cursor to the end of the current navigation node.
 M.goto_node_end = function()
     local node = get_nav_node()
     if node then
@@ -330,7 +325,6 @@ M.goto_node_end = function()
     end
 end
 
----Moves the cursor to the parent of the current navigation node.
 M.goto_parent = function()
     local node = get_nav_node()
     if not node then
@@ -363,7 +357,6 @@ local function find_first_child_jump(node, root_start_row, root_start_col)
     end
 end
 
----Moves the cursor to the first child of the current navigation node.
 M.goto_child = function()
     local node = get_nav_node()
     if not node then
@@ -379,7 +372,6 @@ M.goto_child = function()
     end
 end
 
----Moves the cursor to the next named sibling of the current navigation node.
 M.goto_next = function()
     local node = get_nav_node()
     if not node then
@@ -393,7 +385,6 @@ M.goto_next = function()
     end
 end
 
----Moves the cursor to the previous named sibling of the current navigation node.
 M.goto_prev = function()
     local node = get_nav_node()
     if not node then

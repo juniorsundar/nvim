@@ -86,7 +86,6 @@ local function eldoc()
             return
         end
 
-        ---@type string[]
         local lines = vim.lsp.util.convert_input_to_markdown_lines(result.contents)
 
         if vim.tbl_isempty(lines) then
@@ -207,13 +206,11 @@ local function eldoc()
     require("micro.lsp").request_cursor("hover", 0, "textDocument/hover", handler)
 end
 
---- Show hover documentation for the symbol under the cursor in the configured layout.
 function M.show()
     eldoc()
 end
 
 function M.setup(opts)
-    ---@type table
     config = vim.tbl_deep_extend("force", defaults, opts or {})
 
     vim.o.updatetime = config.auto_hover.delay
@@ -249,12 +246,9 @@ function M.setup(opts)
     })
 end
 
---- Scroll the eldoc window from your current buffer without switching focus.
---- direction: 1 to scroll down, -1 to scroll up.
---- step: number of lines to scroll per call (default 4).
---- Example keymap usage:
----   vim.keymap.set("n", "<M-j>", function() require("micro.hover").scroll(1) end)
----   vim.keymap.set("n", "<M-k>", function() require("micro.hover").scroll(-1) end)
+--- Scroll the eldoc window without switching focus.
+---@param direction integer Positive scrolls down; negative scrolls up.
+---@param step? integer Number of lines (default 4).
 function M.scroll(direction, step)
     local eldoc_win_id = panel.get "eldoc"
     if not eldoc_win_id then
@@ -267,8 +261,7 @@ function M.scroll(direction, step)
     end)
 end
 
--- Export subcommands for the global :Micro command; leaf handlers receive
--- leftover fargs as strings, so numeric args are converted here
+-- Command fargs are strings, so numeric arguments are converted here.
 M.subcommands = {
     hover = {
         show = function()

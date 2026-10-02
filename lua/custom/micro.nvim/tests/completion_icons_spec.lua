@@ -55,7 +55,6 @@ describe("micro.completion (kind icons)", function()
             { link = "@function", default = true },
             ed:lua "return vim.api.nvim_get_hl(0, { name = 'MicroKindFunction' })"
         )
-        -- buffer words stay undecorated
         assert.is_true(vim.tbl_contains(items(), "BufThing|||") or vim.tbl_contains(items(), "BufThing||?|"))
     end)
 

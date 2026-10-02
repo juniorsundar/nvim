@@ -1,6 +1,4 @@
--- Convenience keys for native completion. Kept apart from `micro.completion` (the backend):
--- these only call its public `trigger()`/`invalidate()` and otherwise return native keys.
--- Tab/snippet interaction is the delicate part; see docs/specs/completion/spec.md.
+-- Native completion keys, separate from the backend; Tab/snippet interaction is documented in docs/specs/completion/spec.md.
 local M = {}
 
 local function menu_open()
@@ -11,7 +9,6 @@ local function selected()
     return menu_open() and vim.fn.complete_info({ "selected" }).selected >= 0
 end
 
--- Tab / Shift-Tab: open menu, then snippet placeholders, then the normal key.
 local function tab(direction, native_key, menu_key)
     return function()
         if menu_open() then
@@ -24,9 +21,7 @@ local function tab(direction, native_key, menu_key)
     end
 end
 
--- Scroll the native documentation popup, only while it is showing. The window id comes from
--- complete_info({"selected"}); scrolling is scheduled because normal commands are not
--- allowed while an <expr> mapping is evaluated.
+-- Schedule scrolling: normal commands are forbidden while an <expr> mapping is evaluated.
 local function scroll(native_key, scroll_key)
     return function()
         local win = vim.fn.complete_info({ "selected" }).preview_winid

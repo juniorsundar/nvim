@@ -1,26 +1,20 @@
 local M = {}
 
--- Handle of the singleton scratch buffer (nil if not yet created or wiped).
 local scratch_buf = nil
 
 local RESULT_PREFIXES = {
-    print = "-- >>", -- captured print() output
-    value = "-- =>", -- return value of evaluated chunk
-    error = "-- !!", -- runtime errors
+    print = "-- >>",
+    value = "-- =>",
+    error = "-- !!",
 }
 
---- Seed text inserted when a new scratch buffer is created.
 local SEED = [[-- Neovim Lua Scratch Buffer
 -- Eval visual selection: <CR> (visual mode)
 -- Eval entire buffer:    <CR> (normal mode)
 -- Clear results:         <localleader>x
 ]]
 
-----------------------------------------------------------------------
--- Buffer lifecycle
-----------------------------------------------------------------------
-
---- Return the existing scratch buffer if it's still valid, or nil.
+---@return integer?
 local function get_existing_buf()
     if scratch_buf and vim.api.nvim_buf_is_valid(scratch_buf) then
         return scratch_buf
@@ -29,9 +23,8 @@ local function get_existing_buf()
     return nil
 end
 
---- Create a brand-new scratch buffer, seeded with SEED.
 local function create_scratch_buf()
-    local buf = vim.api.nvim_create_buf(false, true) -- unlisted, scratch
+    local buf = vim.api.nvim_create_buf(false, true)
     vim.bo[buf].buftype = "nofile"
     vim.bo[buf].filetype = "lua"
     vim.bo[buf].swapfile = false
@@ -42,10 +35,6 @@ local function create_scratch_buf()
     scratch_buf = buf
     return buf
 end
-
-----------------------------------------------------------------------
--- Helpers
-----------------------------------------------------------------------
 
 --- Check if a line is a result line (starts with any result prefix).
 ---@param line string
@@ -84,7 +73,6 @@ end
 local function eval_code(code)
     local result_lines = {}
 
-    -- Redirect print() to capture its output
     local original_print = print
     local captured_output = {}
     _G.print = function(...)
@@ -98,12 +86,10 @@ local function eval_code(code)
     local ok, ret = pcall(load(code))
     _G.print = original_print
 
-    -- Print output
     for _, line in ipairs(captured_output) do
         table.insert(result_lines, RESULT_PREFIXES.print .. " " .. line)
     end
 
-    -- Error or return value
     if not ok then
         table.insert(result_lines, RESULT_PREFIXES.error .. " " .. tostring(ret))
     elseif ret ~= nil then
@@ -112,10 +98,6 @@ local function eval_code(code)
 
     return result_lines
 end
-
-----------------------------------------------------------------------
--- Evaluation and clearing
-----------------------------------------------------------------------
 
 --- Evaluate the entire scratch buffer and append results at the bottom.
 ---@param buf number
@@ -137,7 +119,6 @@ local function eval_buffer(buf)
     local bottom = vim.api.nvim_buf_line_count(buf)
     vim.api.nvim_buf_set_lines(buf, bottom, bottom, false, result_lines)
 
-    -- Scroll to show results
     local win = vim.fn.bufwinid(buf)
     if win ~= -1 then
         vim.api.nvim_win_call(win, function()
@@ -168,10 +149,8 @@ local function eval_selection(buf)
         return
     end
 
-    -- Insert results below the selection
     vim.api.nvim_buf_set_lines(buf, end_line, end_line, false, result_lines)
 
-    -- Exit visual mode after insertion
     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", false)
 end
 
@@ -193,10 +172,6 @@ local function clear_results(buf)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, keep_lines)
 end
 
-----------------------------------------------------------------------
--- Keybindings
-----------------------------------------------------------------------
-
 --- Apply buffer-local keymaps to the scratch buffer.
 local function apply_keymaps(buf)
     vim.keymap.set("n", "<CR>", function()
@@ -209,10 +184,6 @@ local function apply_keymaps(buf)
         clear_results(buf)
     end, { buffer = buf, silent = true, desc = "Clear scratch results" })
 end
-
-----------------------------------------------------------------------
--- Public API
-----------------------------------------------------------------------
 
 --- Open or focus the singleton scratch buffer.
 local function open_scratch()
@@ -231,10 +202,7 @@ local function open_scratch()
     end
 end
 
-function M.setup(_)
-    -- No configurable options for now; setup is a no-op.
-    -- The module is always ready; the scratch buffer is created on first open.
-end
+function M.setup(_) end
 
 M.subcommands = {
     scratch = open_scratch,

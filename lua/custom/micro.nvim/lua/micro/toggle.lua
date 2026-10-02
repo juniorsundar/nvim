@@ -69,7 +69,6 @@ function M.setup(opts)
     end, { desc = "Breadcrumbs" })
 end
 
--- Export subcommands for the global :Micro command
 M.subcommands = {
     toggle = {
         line_numbers = toggle_line_numbers,

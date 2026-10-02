@@ -1,8 +1,6 @@
 local Editor = require "tests.support.editor"
 
--- The repo starts servers through lsp/*.lua configs enabled from ftplugin files. These specs
--- reproduce that flow: one shared decoration point wraps every config's `cmd` before
--- vim.lsp.enable() can start a client.
+-- Mirrors the ftplugin startup flow: decorate each config's `cmd` before `vim.lsp.enable()`.
 describe("micro.completion (startup wiring)", function()
     local ed, root, log
 
@@ -22,7 +20,6 @@ describe("micro.completion (startup wiring)", function()
 
     local server = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h") .. "/support/server.py"
 
-    -- Registers a probe server config the way after/lsp/*.lua does (a plain `cmd` table).
     local function enable_probe(opts)
         ed:lua(
             [[
@@ -50,7 +47,7 @@ describe("micro.completion (startup wiring)", function()
         ed:wait(("vim.fn.filereadable(%q) == 1"):format(log))
         ed:input "<C-e>"
         ed:sleep(800)
-        assert.is_false(vim.tbl_contains(ed:state().words, "LspThing")) -- the late reply was dropped
+        assert.is_false(vim.tbl_contains(ed:state().words, "LspThing"))
     end)
 
     it("starts wrapped servers in the same directory native would", function()
@@ -86,7 +83,6 @@ describe("micro.completion (startup wiring)", function()
             return require("micro.completion").wrap_cmd(cmd) == cmd
         ]]
         assert.is_true(same)
-        -- one wrapper level: a late reply is still dropped exactly once and a fresh one shown
         assert.equals("function", ed:lua [[return type(vim.lsp.config["probe"].cmd)]])
     end)
 
@@ -141,7 +137,7 @@ describe("micro.completion (startup wiring)", function()
         ed:wait [[vim.lsp.get_clients({ bufnr = 0 })[1]:supports_method("textDocument/completion", 0)]]
         ed:input "GiTh"
         ed:wait [[vim.bo.complete == ".,o"]]
-        ed:wait(("vim.fn.filereadable(%q) == 1"):format(log)) -- native completion is enabled for this client
+        ed:wait(("vim.fn.filereadable(%q) == 1"):format(log))
         ed:input "<C-e>"
         ed:sleep(800)
         assert.is_false(vim.tbl_contains(ed:state().words, "LspThing"))

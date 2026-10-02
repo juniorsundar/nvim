@@ -1,16 +1,31 @@
--- Backend-only enhancement of native completion (see docs/specs/completion/spec.md).
--- Native Neovim owns the popup, matching, LSP requests, resolution, snippets and
--- acceptance. This module adds a lifecycle guard that drops stale
--- `textDocument/completion` replies before they reach native completion.
+-- Backend for native completion: drops stale LSP replies and routes path vs language contexts.
+-- Native Neovim still owns the menu, matching, requests, snippets and acceptance.
 local M = {}
 
--- sources: which candidate sources are used. `lsp` = language servers, `buffer` = words in the
--- current buffer, `path` = filesystem paths. A source set to false is never queried.
--- prefer_lsp: when a buffer word and an LSP item share the same word, show only the LSP item.
--- skip_kinds: LSP CompletionItemKind names to drop from server replies, e.g. { "Text" }.
--- icons: show a glyph instead of the kind name, coloured by a `MicroKind<Name>` highlight
--- (default-linked to treesitter groups). true = built-in map, a table overrides entries
--- (e.g. { Function = "f" }), false = native kind names.
+---@alias micro.completion.Route "language"|"path"|"disabled"
+
+---@class micro.completion.Sources
+---@field lsp boolean
+---@field buffer boolean Words from the current buffer.
+---@field path boolean
+
+---@class micro.completion.Opts
+---@field min_word_length integer
+---@field debounce integer Milliseconds; ignored by Neovim 0.12.5.
+---@field prefer_lsp boolean Show a shared word once, as the LSP item, and list LSP items first.
+---@field skip_kinds string[] LSP CompletionItemKind names dropped from server replies.
+---@field sources micro.completion.Sources
+---@field icons boolean|table<string, string> `true` for built-in glyphs; a table overrides entries.
+
+---@alias micro.completion.Cmd fun(dispatchers: vim.lsp.rpc.Dispatchers, config: vim.lsp.ClientConfig): vim.lsp.rpc.Client
+
+---@class micro.completion.Ticket
+---@field snapshot table Editor state when the request was sent.
+---@field retire fun()
+---@field dead? boolean
+---@field id? integer
+
+---@type micro.completion.Opts
 local defaults = {
     min_word_length = 2,
     debounce = 80,
@@ -20,7 +35,8 @@ local defaults = {
     icons = false,
 }
 
--- LSP CompletionItemKind name -> { glyph, highlight group the MicroKind group links to }.
+--- Kind name -> { glyph, group that `MicroKind<Name>` links to }.
+---@type table<string, string[]>
 local KINDS = {
     Text = { "󰉿", "@string" },
     Method = { "󰆧", "@function.method" },
@@ -53,7 +69,8 @@ local glyphs = {}
 
 local api = vim.api
 local epoch = 0
--- ticket -> true; weak so abandoned tickets never leak.
+-- Weak-keyed so abandoned tickets never leak.
+---@type table<micro.completion.Ticket, true>
 local active = setmetatable({}, { __mode = "k" })
 -- original cmd -> wrapper, and wrapper -> true, for idempotent decoration.
 local wrappers = setmetatable({}, { __mode = "k" })
@@ -63,8 +80,6 @@ local group = api.nvim_create_augroup("micro_completion", { clear = true })
 
 local excluded_filetypes = { refer_input = true, refer_results = true }
 
---- Buffers that never get completion: refer prompt/results, any non-file buffer,
---- and anything that opts out with `vim.b.completion = false`.
 local function excluded(buf)
     return vim.b[buf].completion == false
         or vim.bo[buf].buftype ~= ""
@@ -92,7 +107,7 @@ local function watch(buf)
     })
 end
 
---- Expire every in-flight completion reply (e.g. after the user dismisses with no menu open).
+--- Expire every in-flight completion reply, e.g. when dismissing with no menu open.
 function M.invalidate()
     epoch = epoch + 1
     for ticket in pairs(active) do
@@ -117,6 +132,9 @@ local function snapshot()
     }
 end
 
+--- True if the reply for `ticket` still matches the editor state it was requested in.
+---@param ticket micro.completion.Ticket
+---@return boolean
 local function current(ticket)
     local s = ticket.snapshot
     if ticket.dead or epoch ~= s.epoch or excluded(s.buf) then
@@ -130,8 +148,8 @@ local function current(ticket)
     local line = api.nvim_get_current_line()
     local prefix, suffix = line:sub(1, cursor[2]), line:sub(cursor[2] + 1)
     local extra = prefix:sub(#s.prefix + 1)
-    -- ponytail: only keyword-prefix extension is accepted; other edits expire the
-    -- reply instead of rebasing native replacement ranges.
+    -- TODO: only keyword-prefix extension is accepted; other edits expire the reply
+    -- instead of rebasing native replacement ranges.
     return cursor[1] == s.cursor[1]
         and prefix:sub(1, #s.prefix) == s.prefix
         and suffix == s.suffix
@@ -143,7 +161,9 @@ local function current(ticket)
         and vim.fn.complete_info({ "selected" }).selected < 0
 end
 
--- Existing buffer whose URI is exactly `uri`, or nil. Never creates buffers.
+--- Loaded buffer for `uri`; unlike `vim.uri_to_bufnr` it never creates one.
+---@param uri string
+---@return integer?
 local function request_buf(uri)
     local cur = api.nvim_get_current_buf()
     if vim.uri_from_bufnr(cur) == uri then
@@ -156,10 +176,9 @@ local function request_buf(uri)
     end
 end
 
---- Decorate a `vim.lsp.Config.cmd` (list or function factory). Must run before the
---- client starts; idempotent. Only `textDocument/completion` replies are filtered.
---- Remove items of the configured `skip_kinds` from a completion result (list or CompletionList).
---- Unknown kind names are ignored. Returns the result unchanged when nothing is skipped.
+--- Drop items whose kind is in `opts.skip_kinds`; unknown kind names are ignored.
+---@param result? lsp.CompletionList|lsp.CompletionItem[]
+---@return lsp.CompletionList|lsp.CompletionItem[]|nil
 local function skip_kinds(result)
     if type(result) ~= "table" or #opts.skip_kinds == 0 then
         return result
@@ -179,8 +198,12 @@ local function skip_kinds(result)
     return keep(result)
 end
 
+--- Wrap an LSP `cmd` so stale completion replies are dropped. Idempotent; must run before the client starts.
+---@param cmd string[]|micro.completion.Cmd
+---@return micro.completion.Cmd
 function M.wrap_cmd(cmd)
     if is_wrapper[cmd] then
+        ---@cast cmd micro.completion.Cmd
         return cmd
     end
     if wrappers[cmd] then
@@ -198,6 +221,7 @@ function M.wrap_cmd(cmd)
             end,
         })
         local rpc = type(cmd) == "function" and cmd(hooks, config)
+            ---@diagnostic disable-next-line: param-type-mismatch -- `cmd` is a list here; the `and/or` hides that.
             or vim.lsp.rpc.start(cmd, hooks, {
                 -- Mirror native: nightly also falls back to root_dir.
                 cwd = config.cmd_cwd or (vim.fn.has "nvim-0.13" == 1 and config.root_dir or nil),
@@ -261,9 +285,9 @@ function M.wrap_cmd(cmd)
     return wrapper
 end
 
---- Decorate the resolved `cmd` of the named configs, so each client is guarded from its
---- first request. Skips configs whose executable is missing: native silently skips those
---- only while `cmd` is a list, and a function `cmd` would turn that into a startup error.
+--- Wrap the resolved `cmd` of each named config. A missing executable is left alone, because
+--- native only skips it quietly while `cmd` is a list.
+---@param names string|string[]
 function M.decorate(names)
     for _, name in ipairs(vim._ensure_list(names)) do
         local ok, config = pcall(function()
@@ -278,8 +302,7 @@ end
 
 local enable, hooked = vim.lsp.enable, false
 
---- The one shared decoration point: every server the config enables is decorated first.
---- Idempotent. Servers enabled before this runs are not retrofitted (restart them).
+--- Make `vim.lsp.enable` decorate configs first; idempotent. Clients started earlier are not retrofitted.
 function M.hook_enable()
     if hooked then
         return
@@ -293,11 +316,9 @@ function M.hook_enable()
     end
 end
 
----------------------------------------------------------------------------
--- Filesystem source (path context)
----------------------------------------------------------------------------
-
--- Text after the last unterminated quote before the end of `prefix`, if any.
+--- Byte index of the quote left open at the end of `prefix`, or nil.
+---@param prefix string
+---@return integer?
 local function open_quote(prefix)
     local quote
     local i = 1
@@ -317,13 +338,10 @@ local function open_quote(prefix)
     return quote and prefix:match("^.*()" .. quote) or nil
 end
 
---- Returns { dir = "src/", start = <0-based byte col of final segment> } when the text
---- before the cursor ends inside a path, else nil. Paths are `./`, `../`, `~/`, absolute
---- `/` and relative `name/` forms. Spaces are allowed only inside an open quote.
---- `$VAR` and glob characters never form a path; `//` (comments, URLs) does not either.
---- ponytail: an unquoted `word/` counts as a path only if `word` is a directory in the window cwd;
---- `a/b` still routes to paths when a directory named `a` exists there. Add lexical
---- (treesitter) context if that proves annoying.
+--- Path being typed at the end of `prefix`: `dir` up to the last slash, `start` the 0-based
+--- byte column of the final segment.
+---@param prefix string
+---@return { dir: string, start: integer }?
 local function path_context(prefix)
     local quote_at = open_quote(prefix)
     local token, token_start
@@ -334,15 +352,15 @@ local function path_context(prefix)
         token = prefix:match "[^%s%(%)=,;<>%[%]{}'\"`|]*$"
         token_start = #prefix - #token + 1
     end
+    -- `$VAR`, globs and `//` (comments, URLs) are never paths.
     if token:find "[%$%*%?]" or token:find("//", 1, true) then
         return nil
     end
+    ---@type integer|boolean|nil
     local shaped = token:find "^%./" or token:find "^%.%./" or token:find "^~/" or token:find "^/"
     if not shaped then
-        -- relative `src/...`; unquoted tokens must be a plain word chain, quoted may hold spaces
-        -- A purely numeric first segment (`1./2`, `3/4`) is arithmetic, not a path.
-        -- An unquoted `word/` is a path only when `word` is an existing directory under the
-        -- window cwd, so division in code (`total/he`) stays language.
+        -- Numeric first segments (`3/4`) are arithmetic. TODO: an unquoted `word/` is a path only if
+        -- `word` is a directory in the cwd, so `a/b` still misroutes when `a/` exists; treesitter would fix it.
         local first = not quote_at and token:match "^([%w_%.%-@+]+)/"
         shaped = (quote_at and token:find "/" or (first and vim.fn.isdirectory(vim.fn.getcwd() .. "/" .. first) == 1))
             and not token:find "^[%d%.]+/"
@@ -359,8 +377,10 @@ local function cursor_context()
     return path_context(api.nvim_get_current_line():sub(1, col))
 end
 
---- `'complete'` function source (`F{func}`): enumerate, then fuzzy-filter, because
---- `completeopt=fuzzy` ranks but never removes unrelated candidates.
+--- `'complete'` `F{func}` source. Filters itself because `completeopt=fuzzy` only ranks items.
+---@param findstart integer
+---@param base string
+---@return integer|table
 function M.path(findstart, base)
     local ctx = cursor_context()
     if findstart == 1 then
@@ -369,7 +389,6 @@ function M.path(findstart, base)
     if not ctx then
         return {}
     end
-    -- Relative paths resolve from the window's cwd (respects :lcd/:tcd), not the buffer's directory.
     local dir = ctx.dir
     if dir:sub(1, 2) == "~/" then
         dir = vim.fs.joinpath(vim.env.HOME or "", dir:sub(3))
@@ -401,27 +420,22 @@ function M.path(findstart, base)
     return { words = items, refresh = "always" }
 end
 
----------------------------------------------------------------------------
--- Routing
----------------------------------------------------------------------------
-
 local ROUTE_VAR = "micro_completion_route"
 -- True while the module itself writes options, so its own OptionSet events do not invalidate.
 local tuning = false
 
+---@param buf integer
+---@return micro.completion.Route
 function M.route_of(buf)
     return vim.b[buf][ROUTE_VAR] or "language"
 end
 
---- Switch a buffer between "language" (LSP + buffer words) and "path" (filesystem only).
---- Native autotrigger hooks are installed once per buffer handle, so changing route
---- means disabling native LSP completion and re-enabling it only for language.
 local function from_lsp(item)
     return vim.tbl_get(item, "user_data", "nvim", "lsp", "client_id") ~= nil
 end
 
---- Sort comparator for native `cmp`: LSP items first. `complete()` drops a later item whose word
---- repeats an earlier one unless it sets `dup` (LSP items do), so the buffer copy disappears.
+--- Native `cmp` comparator putting LSP items first. `complete()` then drops the later buffer copy
+--- of a repeated word, since only LSP items set `dup`.
 local function lsp_first(a, b)
     return from_lsp(a) and not from_lsp(b)
 end
@@ -435,6 +449,11 @@ local function decorate_kind(item)
     return { kind = glyphs[name], kind_hlgroup = "MicroKind" .. name }
 end
 
+--- Apply the route for the cursor (or `wanted`). Native autotrigger hooks are installed once per
+--- buffer handle, so a switch disables native completion and re-enables it for language only.
+---@param buf integer
+---@param wanted? micro.completion.Route
+---@param force? boolean Re-apply even if the route is unchanged.
 local function route(buf, wanted, force)
     if not api.nvim_buf_is_valid(buf) then
         return
@@ -450,8 +469,8 @@ local function route(buf, wanted, force)
     end
     local clients = opts.sources.lsp and vim.lsp.get_clients { bufnr = buf, method = "textDocument/completion" } or {}
     local stored = vim.b[buf][ROUTE_VAR]
-    -- With LSP on, a buffer with no completion-capable client yet stays unrouted, so a server
-    -- that registers completion dynamically (after LspAttach) is routed once it has.
+    -- Stay unrouted until a completion client exists, so servers that register completion
+    -- dynamically (after LspAttach) still get routed.
     local waiting = opts.sources.lsp and wanted == "language" and #clients == 0 and "language"
     if (stored or waiting) == wanted and not force then
         return
@@ -462,7 +481,7 @@ local function route(buf, wanted, force)
     end
     vim.b[buf][ROUTE_VAR] = wanted
     if wanted == "disabled" then
-        -- Leave the buffer's own omnifunc/complete alone; just stop automatic completion.
+        -- Leave the buffer's own omnifunc and complete untouched.
         tuning = true
         pcall(function()
             vim.bo[buf].autocomplete = false
@@ -493,12 +512,10 @@ local function route(buf, wanted, force)
     end
 end
 
---- Native `'autocomplete'` has no minimum word length, so the module owns the switch:
---- in a language context it is on only once the word before the cursor (including the
---- character being inserted) reaches `min_word_length`. Native `'autocompletedelay'` is
---- the debounce (ponytail: 0.12.5 ignores that option, so the debounce only takes effect on
---- nightly; add a module timer if stable needs it). Paths open at once. Server trigger characters use native LSP autotrigger,
---- which does not depend on `'autocomplete'`.
+--- Native `'autocomplete'` has no minimum word length, so enable it only once the keyword is long
+--- enough. TODO: 0.12.5 ignores `'autocompletedelay'`, so the debounce only works on nightly.
+---@param buf integer
+---@param prefix string Line text up to and including the character being inserted.
 local function tune(buf, prefix)
     if buf ~= api.nvim_get_current_buf() or M.route_of(buf) == "disabled" then
         return
@@ -519,10 +536,8 @@ local function tune_here(buf)
     tune(buf, api.nvim_get_current_line():sub(1, col))
 end
 
---- Manual completion for an expr mapping: route the buffer first (so a path or language
---- context is chosen for the cursor as it is now, and an excluded buffer becomes "disabled"),
---- then return the native key that opens it. Native `<C-n>` ignores the word threshold.
---- Returns "" when nothing should open.
+--- Expr-mapping helper: route for the cursor, then return `<C-n>`, or "" when nothing should open.
+---@return string
 function M.trigger()
     local buf = api.nvim_get_current_buf()
     if vim.fn.pumvisible() == 1 then
@@ -532,6 +547,7 @@ function M.trigger()
     return M.route_of(buf) == "disabled" and "" or "<C-n>"
 end
 
+---@param user_opts? micro.completion.Opts
 function M.setup(user_opts)
     opts = vim.tbl_deep_extend("force", defaults, user_opts or {})
     glyphs = {}
@@ -564,8 +580,6 @@ function M.setup(user_opts)
             vim.o.autocompletedelay = opts.debounce
         end,
     })
-    -- `vim.b.completion` is a plain variable with no event, so re-check on the events
-    -- that follow most changes to it; the transport gate covers requests in between.
     api.nvim_create_autocmd("OptionSet", {
         group = group,
         pattern = { "complete", "omnifunc", "autocomplete", "iskeyword" },
