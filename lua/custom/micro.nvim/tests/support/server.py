@@ -7,7 +7,8 @@ log (file path; one line appended per textDocument/completion request received),
 dynamic (as lua-language-server does: when the client advertises dynamic completion registration, omit completionProvider from initialize and register it afterwards),
 cwd_log (file path; the working directory is written once, at initialize),
 hover (advertise hoverProvider; reply markdown "<hover> @line:char", or null when ""),
-symbols (advertise documentSymbolProvider; reply with this list),
+symbols (advertise documentSymbolProvider; reply with this list), symbols_changed (reply with this list
+instead once the document has changed; the reply reflects the text at the time the request arrived),
 encoding (positionEncoding to pick from the client's offer), reply_delays (per hover/symbols request ms,
 last repeats). `log` also gets one line per hover/symbols request.
 It deliberately replies after $/cancelRequest.
@@ -16,7 +17,7 @@ import json, os, re, sys, threading
 
 opts = json.loads(sys.argv[1])
 lock = threading.Lock()
-docs, count, other = {}, 0, 0
+docs, count, other, changed = {}, 0, 0, False
 FEATURES = {"textDocument/hover": "hover", "textDocument/documentSymbol": "symbols"}
 dynamic = False
 DOC = "\n".join(["Probe documentation"] + [f"line {i:02}" for i in range(2, 60)])
@@ -78,7 +79,7 @@ def reply(req):
         if opts["hover"]:
             result = {"contents": {"kind": "markdown", "value": f'{opts["hover"]} @{pos["line"]}:{pos["character"]}'}}
     elif method == "textDocument/documentSymbol":
-        result = opts["symbols"]
+        result = opts["symbols_changed"] if req.get("changed") and "symbols_changed" in opts else opts["symbols"]
     elif method == "completionItem/resolve":
         result = dict(params, documentation={"kind": "plaintext", "value": DOC})
         if opts.get("resolve_import"):
@@ -104,6 +105,7 @@ while True:
         docs[params["textDocument"]["uri"]] = params["textDocument"]["text"]
     elif method == "textDocument/didChange":
         docs[params["textDocument"]["uri"]] = params["contentChanges"][-1]["text"]
+        changed = True
     if method == "initialized" and dynamic:
         send({"jsonrpc": "2.0", "id": "reg", "method": "client/registerCapability", "params": {"registrations": [
             {"id": "c", "method": "textDocument/completion",
@@ -121,6 +123,7 @@ while True:
         delay = delays[min(count, len(delays) - 1)] / 1000
         count += 1
     elif method in FEATURES:
+        req["changed"] = changed
         if opts.get("log"):
             with open(opts["log"], "a") as f:
                 f.write(FEATURES[method] + "\n")

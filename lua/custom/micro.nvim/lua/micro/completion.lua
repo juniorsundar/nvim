@@ -35,35 +35,7 @@ local defaults = {
     icons = false,
 }
 
---- Kind name -> { glyph, group that `MicroKind<Name>` links to }.
----@type table<string, string[]>
-local KINDS = {
-    Text = { "󰉿", "@string" },
-    Method = { "󰆧", "@function.method" },
-    Function = { "󰊕", "@function" },
-    Constructor = { "", "@constructor" },
-    Field = { "󰜢", "@variable.member" },
-    Variable = { "󰀫", "@variable" },
-    Class = { "󰠱", "@type" },
-    Interface = { "", "@type" },
-    Module = { "", "@module" },
-    Property = { "󰜢", "@property" },
-    Unit = { "󰑭", "@number" },
-    Value = { "󰎠", "@number" },
-    Enum = { "", "@type" },
-    Keyword = { "󰌋", "@keyword" },
-    Snippet = { "", "@markup.raw" },
-    Color = { "󰏘", "@constant" },
-    File = { "󰈙", "Normal" },
-    Reference = { "󰈇", "@markup.link" },
-    Folder = { "󰉋", "Directory" },
-    EnumMember = { "", "@constant" },
-    Constant = { "󰏿", "@constant" },
-    Struct = { "󰙅", "@type" },
-    Event = { "", "@type" },
-    Operator = { "󰆕", "@operator" },
-    TypeParameter = { "", "@type" },
-}
+local KINDS = require("micro.kinds").KINDS
 local opts = vim.deepcopy(defaults)
 local glyphs = {}
 
@@ -556,9 +528,7 @@ function M.setup(user_opts)
         glyphs[name] = overrides[name] or spec[1]
     end
     local function kind_highlights()
-        for name in pairs(glyphs) do
-            api.nvim_set_hl(0, "MicroKind" .. name, { link = KINDS[name][2], default = true })
-        end
+        require("micro.kinds").highlights(vim.tbl_keys(glyphs))
     end
     kind_highlights()
     M.hook_enable()

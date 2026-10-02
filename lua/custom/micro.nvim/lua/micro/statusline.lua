@@ -367,7 +367,8 @@ function M.render_window(parent_win, buf_id)
     end
 
     local width = vim.api.nvim_win_get_width(parent_win)
-    local height = vim.api.nvim_win_get_height(parent_win)
+    -- `relative = "win"` rows start below the winbar, which nvim_win_get_height still counts.
+    local height = vim.fn.getwininfo(parent_win)[1].height
     local is_active = vim.api.nvim_get_current_win() == parent_win
 
     local row = height - 1
@@ -445,7 +446,7 @@ function M.autoscroll()
     local last_line = vim.fn.line "$"
 
     if current_line == last_line then
-        local win_height = vim.api.nvim_win_get_height(win)
+        local win_height = vim.fn.getwininfo(win)[1].height
         local cursor_win_line = vim.fn.winline()
         if math.abs(cursor_win_line - win_height) <= 1 then
             vim.cmd "normal! \5"

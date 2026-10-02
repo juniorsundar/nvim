@@ -1,5 +1,5 @@
 require("micro").setup {
-    breadcrumbs = { enabled = false },
+    breadcrumbs = { enabled = true, show = true },
     completion = {
         enabled = true,
         sources = { lsp = true, buffer = true, path = true },

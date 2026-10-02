@@ -45,6 +45,14 @@ function M.cancel(key)
     end
 end
 
+--- Cancel `key` and forget it, for per-buffer keys whose buffer is gone.
+---@param key string
+function M.forget(key)
+    M.cancel(key)
+    -- Superseded callbacks hold their own slot table and still see the bumped generation.
+    slots[key] = nil
+end
+
 ---@param cursor? micro.lsp.Cursor
 local function request(key, win, method, params_fn, handler, opts, cursor)
     M.cancel(key)
