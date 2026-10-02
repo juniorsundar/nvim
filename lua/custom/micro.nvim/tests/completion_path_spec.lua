@@ -176,6 +176,28 @@ describe("micro.completion (path context)", function()
             ed:wait [[vim.tbl_contains((function() local w = {} for _, i in ipairs(vim.fn.complete_info({'matches'}).matches or {}) do w[#w+1] = i.word end return w end)(), "LspThing")]]
         end)
 
+        it("keeps division in code as language completion", function()
+            type_path("local r = ", "total/Th")
+            ed:wait [[vim.b.micro_completion_route == "language"]]
+            ed:wait [[vim.tbl_contains((function() local w = {} for _, i in ipairs(vim.fn.complete_info({'matches'}).matches or {}) do w[#w+1] = i.word end return w end)(), "LspThing")]]
+        end)
+
+        it("treats an unquoted word/ as a path when that directory exists", function()
+            type_path("ls ", "src/")
+            ed:input "<C-n>"
+            ed:wait(words_are { "index.lua", "inner/" })
+            ed:input "<C-e>inner/"
+            ed:input "<C-n>"
+            ed:wait(words_are { "deep.txt" }) -- nested segments resolve from the first one
+        end)
+
+        it("checks an unquoted word/ against the window cwd, not the buffer directory", function()
+            ed:session { lines = { "ls " }, row = 1, server = { delays = { 20 } } }
+            ed:lua("vim.api.nvim_buf_set_name(0, ...)", dir .. "/other/x.sh") -- other/ has no src/
+            ed:input "Asrc/"
+            ed:wait [[vim.b.micro_completion_route == "path"]]
+        end)
+
         it("resolves relative paths from the window cwd, not the buffer directory", function()
             local other = vim.fn.tempname()
             vim.fn.mkdir(other, "p")

@@ -321,8 +321,9 @@ end
 --- before the cursor ends inside a path, else nil. Paths are `./`, `../`, `~/`, absolute
 --- `/` and relative `name/` forms. Spaces are allowed only inside an open quote.
 --- `$VAR` and glob characters never form a path; `//` (comments, URLs) does not either.
---- ponytail: an unquoted `word/` is always a path (needed for `src/`), so `a/b` in prose or a
---- comment also routes to paths; add lexical (treesitter) context if that proves annoying.
+--- ponytail: an unquoted `word/` counts as a path only if `word` is a directory in the window cwd;
+--- `a/b` still routes to paths when a directory named `a` exists there. Add lexical
+--- (treesitter) context if that proves annoying.
 local function path_context(prefix)
     local quote_at = open_quote(prefix)
     local token, token_start
@@ -340,7 +341,11 @@ local function path_context(prefix)
     if not shaped then
         -- relative `src/...`; unquoted tokens must be a plain word chain, quoted may hold spaces
         -- A purely numeric first segment (`1./2`, `3/4`) is arithmetic, not a path.
-        shaped = (quote_at and token:find "/" or token:find "^[%w_%.%-@+]+/") and not token:find "^[%d%.]+/"
+        -- An unquoted `word/` is a path only when `word` is an existing directory under the
+        -- window cwd, so division in code (`total/he`) stays language.
+        local first = not quote_at and token:match "^([%w_%.%-@+]+)/"
+        shaped = (quote_at and token:find "/" or (first and vim.fn.isdirectory(vim.fn.getcwd() .. "/" .. first) == 1))
+            and not token:find "^[%d%.]+/"
     end
     if not shaped then
         return nil
