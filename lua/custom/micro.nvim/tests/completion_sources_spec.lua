@@ -114,6 +114,82 @@ describe("micro.completion (source toggles)", function()
         end)
     end)
 
+    describe("candidate ranking", function()
+        local VARIABLE, FUNCTION = 6, 3
+
+        -- The server ranks functions ahead of variables, as lua-language-server does.
+        local function rank(typed, lines)
+            ed:session {
+                lines = lines or { "", "" },
+                server = {
+                    delays = { 20 },
+                    items = {
+                        { label = "load_user_profile_settings", kind = FUNCTION, sortText = "0001" },
+                        { label = "load_user_profile", kind = VARIABLE, sortText = "0002" },
+                        { label = "load_user_prefs", kind = VARIABLE, sortText = "0003" },
+                    },
+                },
+            }
+            ed:input("i" .. typed)
+            ed:wait(has "load_user_profile")
+            ed:sleep(300)
+            return menu()
+        end
+
+        it("ranks an exact match first, over the server's order", function()
+            local words = rank "load_user_profile"
+            assert.equals("load_user_profile:Variable", words[1])
+            assert.equals("load_user_profile_settings:Function", words[2])
+        end)
+
+        it("ranks a closer match first for a typed prefix", function()
+            -- Shorter leftovers win: the variable beats the function the server listed first.
+            assert.same({
+                "load_user_prefs:Variable",
+                "load_user_profile:Variable",
+                "load_user_profile_settings:Function",
+            }, rank "load_user_p")
+        end)
+
+        it("keeps the server's order between equally good matches", function()
+            ed:session {
+                server = {
+                    delays = { 20 },
+                    items = {
+                        { label = "tie_bravo", sortText = "1" },
+                        { label = "tie_alpha", sortText = "2" },
+                    },
+                },
+            }
+            ed:input "itie"
+            ed:wait(has "tie_alpha")
+            ed:sleep(300)
+            assert.same({ "tie_bravo:Function", "tie_alpha:Function" }, menu())
+        end)
+
+        it("falls back to the label when the server sends no sortText", function()
+            ed:session {
+                server = { delays = { 20 }, items = { { label = "tie_bravo" }, { label = "tie_alpha" } } },
+            }
+            ed:input "itie"
+            ed:wait(has "tie_alpha")
+            ed:sleep(300)
+            assert.same({ "tie_alpha:Function", "tie_bravo:Function" }, menu())
+        end)
+
+        it("keeps LSP candidates ahead of an exact buffer word, then ranks buffer words by match", function()
+            local words = rank("load_user", { "load_userXXXXXXXX load_user", "" })
+            -- Buffer words have an empty kind, so they end in ":".
+            assert.same(
+                { false, false, false, true, true },
+                vim.tbl_map(function(w)
+                    return w:sub(-1) == ":"
+                end, words)
+            )
+            assert.same({ "load_user:", "load_userXXXXXXXX:" }, { words[4], words[5] })
+        end)
+    end)
+
     describe("skip_kinds", function()
         local TEXT = 1 -- LSP CompletionItemKind.Text
 

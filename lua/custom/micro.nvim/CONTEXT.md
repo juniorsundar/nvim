@@ -23,6 +23,10 @@ A provider of suggestions for the text being edited. The required sources are la
 **Completion candidate**:
 A suggestion offered for selection, together with the information needed to display it and apply it to the text.
 
+**Candidate ranking**:
+The order of completion candidates in a language context: language-server candidates before buffer words; within each group, better match quality first, then the server's own order (language server) or alphabetical order (buffer words).
+_Avoid_: kind priority, sorting
+
 **Path context**:
 An editing position where the token being completed is path-shaped, such as `./src/`, `../`, `~/`, or `/tmp/`. Relative filesystem paths are interpreted from the effective working directory, not the current file's directory.
 

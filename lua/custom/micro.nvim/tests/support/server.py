@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Scripted stdio LSP server for the completion specs.
 
-Options (JSON argv[1]): label, kind (LSP CompletionItemKind, default 3), snippet, import, resolve_import, empty, never_reply,
+Options (JSON argv[1]): label, kind (LSP CompletionItemKind, default 3), items (list of {label, kind?, sortText?},
+replacing label/kind), snippet, import, resolve_import, empty, never_reply,
 delays (per-completion-request ms, last repeats), incomplete,
 log (file path; one line appended per textDocument/completion request received),
 dynamic (as lua-language-server does: when the client advertises dynamic completion registration, omit completionProvider from initialize and register it afterwards),
@@ -49,7 +50,10 @@ def completion(req):
     }
     if opts.get("import"):
         item["additionalTextEdits"] = edit("import LspThing\n")
-    return {"isIncomplete": bool(opts.get("incomplete")), "items": [] if opts.get("empty") else [item]}
+    items = [item]
+    if opts.get("items"):
+        items = [dict(item, **extra, textEdit=dict(item["textEdit"], newText=extra["label"])) for extra in opts["items"]]
+    return {"isIncomplete": bool(opts.get("incomplete")), "items": [] if opts.get("empty") else items}
 
 
 def reply(req):

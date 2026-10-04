@@ -406,10 +406,45 @@ local function from_lsp(item)
     return vim.tbl_get(item, "user_data", "nvim", "lsp", "client_id") ~= nil
 end
 
---- Native `cmp` comparator putting LSP items first. `complete()` then drops the later buffer copy
---- of a repeated word, since only LSP items set `dup`.
+-- Fuzzy scores for the current sort, keyed by item; reset when the typed text changes.
+local scores = setmetatable({}, { __mode = "k" })
+local scored_for
+
+--- Native fuzzy score of the item against the keyword typed before the cursor (0 if none).
+local function rank_score(item)
+    local line = api.nvim_get_current_line():sub(1, api.nvim_win_get_cursor(0)[2])
+    local typed = line:sub(vim.fn.match(line, "\\k*$") + 1)
+    if typed ~= scored_for then
+        scores, scored_for = setmetatable({}, { __mode = "k" }), typed
+    end
+    if scores[item] == nil then
+        local found = typed ~= "" and vim.fn.matchfuzzypos({ item.word }, typed)[3][1]
+        scores[item] = found or 0
+    end
+    return scores[item]
+end
+
+--- Native `cmp` comparator implementing candidate ranking: LSP items before buffer words, then
+--- fuzzy match quality, then the server's order (sortText, label) or the word. `complete()` then
+--- drops the later buffer copy of a repeated word, since only LSP items set `dup`.
 local function lsp_first(a, b)
-    return from_lsp(a) and not from_lsp(b)
+    local la, lb = from_lsp(a), from_lsp(b)
+    if la ~= lb then
+        return la
+    end
+    local sa, sb = rank_score(a), rank_score(b)
+    if sa ~= sb then
+        return sa > sb
+    end
+    if la then
+        local ia, ib = a.user_data.nvim.lsp.completion_item, b.user_data.nvim.lsp.completion_item
+        local ka = (ia.sortText or "") ~= "" and ia.sortText or ia.label
+        local kb = (ib.sortText or "") ~= "" and ib.sortText or ib.label
+        if ka ~= kb then
+            return ka < kb
+        end
+    end
+    return a.word < b.word
 end
 
 --- Native `convert`: swap the kind name for its glyph. Color items keep native swatches.
