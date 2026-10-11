@@ -17,11 +17,11 @@
       "src": "https://github.com/folke/flash.nvim"
     },
     "gitsigns.nvim": {
-      "rev": "070a5d7b985546cc57e1fc61e5bc507fecac6045",
+      "rev": "851a051e2bd2caba97e23314c68d69f1b1cf5d19",
       "src": "https://github.com/lewis6991/gitsigns.nvim"
     },
     "md-render.nvim": {
-      "rev": "cb79d5a1c4cd929fe0144c4d75be50a1ad4c2c74",
+      "rev": "8bc28beac878f8a21093aa186dcb1fb7d9f4ae03",
       "src": "https://github.com/delphinus/md-render.nvim"
     },
     "mini.move": {
