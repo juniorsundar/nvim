@@ -4,10 +4,10 @@ local files = {}
 
 if vim.g.vscode then
     files = {
-        "06_nvim-surround",
-        "07_flash",
-        "08_mini",
-        "17_micro_vscode",
+        "05_nvim-surround",
+        "06_flash",
+        "07_mini",
+        "15_micro_vscode",
     }
 else
     for file_name, file_type in vim.fs.dir(plugins_dir) do

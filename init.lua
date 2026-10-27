@@ -4,18 +4,6 @@ vim.g.maplocalleader = "  "
 vim.keymap.set({ "n", "v" }, "<leader>", "", { desc = "Leader", noremap = false, silent = true })
 vim.keymap.set({ "n", "v" }, "<leader><leader>", "", { desc = "LocalLeader", noremap = false, silent = true })
 
-local osc52 = require "vim.ui.clipboard.osc52"
-vim.g.clipboard = {
-    name = "osc52",
-    copy = {
-        ["+"] = osc52.copy "+",
-        ["*"] = osc52.copy "*",
-    },
-    paste = {
-        ["+"] = osc52.paste "+",
-        ["*"] = osc52.paste "*",
-    },
-}
 vim.opt.clipboard = "unnamedplus"
 
 vim.opt.completeopt = { "menu", "menuone", "noselect" }
@@ -123,6 +111,19 @@ if vim.g.vscode then
     require "plugins"
 else
     -- Custom local plugins
+    local osc52 = require "vim.ui.clipboard.osc52"
+    vim.g.clipboard = {
+        name = "osc52",
+        copy = {
+            ["+"] = osc52.copy "+",
+            ["*"] = osc52.copy "*",
+        },
+        paste = {
+            ["+"] = osc52.paste "+",
+            ["*"] = osc52.paste "*",
+        },
+    }
+
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/refer.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/refer-projectile.nvim")
     vim.opt.rtp:prepend(vim.fn.stdpath "config" .. "/lua/custom/cling.nvim")
